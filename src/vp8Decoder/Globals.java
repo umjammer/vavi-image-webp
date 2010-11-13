@@ -20,8 +20,23 @@ public class Globals {
 	public static final int B_VL_PRED=7; /* SSW (vertical left) "" */
 	public static final int B_HD_PRED=8; /* ESE (horizontal down) "" */
 	public static final int B_HU_PRED=9; /* ENE (horizontal up) "" */
-
 	
+	public static final int MAX_MB_SEGMENTS=4;
+	public static final int MB_LVL_MAX=2;
+	public static int [] vp8_mb_feature_data_bits = {7, 6};
+	public static final int MB_FEATURE_TREE_PROBS=3;
+	
+
+	public static int mb_segment_tree[]  =
+	{
+	2, 4,
+	/* root: "0", "1" subtrees */
+	-0, -1,
+	/* "00" = 0th value, "01" = 1st value */
+	-2, -3
+	/* "10" = 2nd value, "11" = 3rd value */
+	};
+
 	
 	public static int vp8_kf_ymode_tree[] =
 	{

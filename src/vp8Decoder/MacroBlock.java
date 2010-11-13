@@ -682,4 +682,24 @@ public class MacroBlock {
 			}
 		}
 	}
+	public void drawDebug() {
+		for(int j=0; j<4; j++) 
+			for(int i=0; i<4; i++) {
+			SubBlock sb = ySubBlocks[i][0];
+			sb.drawDebugH();
+			sb = ySubBlocks[0][j];
+			sb.drawDebugV();
+		}
+		
+		/*for(int j=0; j<2; j++) 
+			for(int i=0; i<2; i++) {
+			SubBlock sb = uSubBlocks[0][j];
+			sb.drawDebugH();
+		}
+		for(int j=0; j<2; j++) 
+			for(int i=0; i<2; i++) {
+			SubBlock sb = vSubBlocks[0][j];
+			sb.drawDebugH();
+		}*/
+	}
 }

@@ -517,6 +517,45 @@ public class SubBlock {
 
 		return r;
 	}
+	public void drawDebugV() {
+		if(dest!=null) {
+			//dest[0][0]=128;
+			//dest[1][0]=128;
+			//dest[2][0]=128;
+			//dest[3][0]=128;
+			dest[0][0]=0;
+			dest[0][1]=0;
+			dest[0][2]=0;
+			dest[0][3]=0;
+		}
+	}
+		
+	public void drawDebugH() {
+			if(dest!=null) {
+				dest[0][0]=0;
+				dest[1][0]=0;
+				dest[2][0]=0;
+				dest[3][0]=0;
+				//dest[0][0]=128;
+				//dest[0][1]=128;
+				//dest[0][2]=128;
+				//dest[0][3]=128;
+			}
+
+	}
+	public void drawDebug() {
+		if(dest!=null) {
+			dest[0][0]=128;
+			dest[1][0]=128;
+			dest[2][0]=128;
+			dest[3][0]=128;
+			dest[0][0]=128;
+			dest[0][1]=128;
+			dest[0][2]=128;
+			dest[0][3]=128;
+		}
+
+}
 
 
 }

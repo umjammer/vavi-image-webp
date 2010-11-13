@@ -1,6 +1,8 @@
 package vp8Decoder;
 
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class VP8Frame {
 	private static int MAX_REF_LF_DELTAS = 4;
@@ -33,6 +35,7 @@ public class VP8Frame {
 	}
 
 	private int frameType;
+	private Logger logger;
 	public int getFrameType() {
 		return frameType;
 	}
@@ -41,6 +44,7 @@ public class VP8Frame {
 		this.coefProbs=coef_probs;
 		tokenBoolDecoders = new Vector<BoolDecoder>();
 		//coef_probs = Tree.get_default_coef_probs();
+		logger = Logger.getAnonymousLogger();
 	}
 	private void createMacroBlocks() {
     	macroBlocks = new MacroBlock[macroBlockCols+2][macroBlockRows+2];
@@ -73,6 +77,13 @@ public class VP8Frame {
 		return ret;
 	}
 	private boolean debug=false;
+	private int width;
+	private int height;
+	private int segmentation_mode;
+	private int mb_segement_abs_delta;
+	private int[] mb_segment_tree_probs;
+	private int update_mb_segmentation_map;
+	private int update_mb_segmentaton_data;
 	public boolean decodeFrame(boolean debug) {
 		
 		this.debug=debug;
@@ -80,17 +91,17 @@ public class VP8Frame {
 		int[] mode_lf_deltas = new int[MAX_MODE_LF_DELTAS];
 		int c, offset = 0;
 		c = frame[offset++];
-		System.out.println("frame.length: " + frame.length);
+		logger.log(Level.INFO, "frame.length: " + frame.length);
 		frameType = getBitAsInt(c, 0);
-		System.out.println("Frame type: " + frameType);
+		logger.log(Level.INFO, "Frame type: " + frameType);
 		if(frameType!=0)
 			return false;
 		int versionNumber = getBitAsInt(c, 1) << 1;
 
 		versionNumber += getBitAsInt(c, 2) << 1;
 		versionNumber += getBitAsInt(c, 3);
-		System.out.println("Version Number: " + versionNumber);
-		System.out.println("show_frame: " + getBit(c, 4));
+		logger.log(Level.INFO, "Version Number: " + versionNumber);
+		logger.log(Level.INFO, "show_frame: " + getBit(c, 4));
 
 		int first_partition_length_in_bytes;
 		first_partition_length_in_bytes = getBitAsInt(c, 5) << 0;
@@ -100,31 +111,31 @@ public class VP8Frame {
 		first_partition_length_in_bytes += c << 3;
 		c = frame[offset++];
 		first_partition_length_in_bytes += c << 11;
-		System.out.println("first_partition_length_in_bytes: "
+		logger.log(Level.INFO, "first_partition_length_in_bytes: "
 				+ first_partition_length_in_bytes);
 
 		c = frame[offset++];
-		System.out.print("StartCode: " + c);
+		logger.log(Level.INFO, "StartCode: " + c);
 		c = frame[offset++];
-		System.out.print(" " + c);
+		logger.log(Level.INFO, " " + c);
 		c = frame[offset++];
-		System.out.println(" " + c);
+		logger.log(Level.INFO, " " + c);
 
 		c = frame[offset++];
 		int hBytes = c;
 		c = frame[offset++];
 		hBytes += c << 8;
-		int width = (hBytes & 0x3fff);
-		System.out.println("width: " + width);
-		System.out.println("hScale: " + (hBytes >> 14));
+		width = (hBytes & 0x3fff);
+		logger.log(Level.INFO, "width: " + width);
+		logger.log(Level.INFO, "hScale: " + (hBytes >> 14));
 
 		c = frame[offset++];
 		int vBytes = c;
 		c = frame[offset++];
 		vBytes += c << 8;
-		int height = (vBytes & 0x3fff);
-		System.out.println("vSize: " + height);
-		System.out.println("vScale: " + (vBytes >> 14));
+		height = (vBytes & 0x3fff);
+		logger.log(Level.INFO, "height: " + height);
+		logger.log(Level.INFO, "vScale: " + (vBytes >> 14));
 		int tWidth = width;
 		int tHeight = height;
 		if ((tWidth & 0xf) != 0)
@@ -134,8 +145,8 @@ public class VP8Frame {
 			tHeight += 16 - (tHeight & 0xf);
 		macroBlockRows=tHeight >> 4;
 		macroBlockCols=tWidth >> 4;
-		System.out.println("macroBlockCols: "+macroBlockCols);
-		System.out.println("macroBlockRows: "+macroBlockRows);
+		logger.log(Level.INFO, "macroBlockCols: "+macroBlockCols);
+		logger.log(Level.INFO, "macroBlockRows: "+macroBlockRows);
 
 		createMacroBlocks();
 
@@ -143,33 +154,76 @@ public class VP8Frame {
 
 		if (frameType == 0) {
 			int clr_type = bc.read_bit();
-			System.out.println("clr_type: " + clr_type);
-			System.out.println(bc);
+			logger.log(Level.INFO, "clr_type: " + clr_type);
+			logger.log(Level.INFO, ""+bc);
 
 			int clamp_type = bc.read_bit();
-			System.out.println("clamp_type: " + clamp_type);
+			logger.log(Level.INFO, "clamp_type: " + clamp_type);
 
 		}
 		segmentation_enabled = bc.read_bit();
-		System.out.println("segmentation_enabled: " + segmentation_enabled);
+		logger.log(Level.INFO, "segmentation_enabled: " + segmentation_enabled);
 		if (segmentation_enabled > 0) {
-			System.out.println("TODO");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO");
+			update_mb_segmentation_map = bc.read_bit();
+			update_mb_segmentaton_data = bc.read_bit();
+			logger.log(Level.INFO, "update_mb_segmentaton_map: "+update_mb_segmentation_map);
+			logger.log(Level.INFO, "update_mb_segmentaton_data: "+update_mb_segmentaton_data);
+			if(update_mb_segmentaton_data > 0 ) {
+				
+				if(update_mb_segmentaton_data > 0) {
+					mb_segement_abs_delta = bc.read_bit();
+		            /* For each segmentation feature (Quant and loop filter level) */
+		            for (int i = 0; i < Globals.MB_LVL_MAX; i++)
+		            {
+		                for (int j = 0; j < Globals.MAX_MB_SEGMENTS; j++)
+		                {
+	                    	//System.out.print("["+i+"]["+j+"]: ");
+		                    /* Frame level data */
+		                    if (bc.read_bit() > 0)
+		                    {
+		                    	int value = bc.read_literal(Globals.vp8_mb_feature_data_bits[i]);
+		                    	if(bc.read_bit()>0)
+		                    		value=-value;
+		                    	
+		                     //   xd->segment_feature_data[i][j] = (signed char)vp8_read_literal(bc, mb_feature_data_bits[i]);
+	//
+		                    //    if (vp8_read_bit(bc))
+		                    //        xd->segment_feature_data[i][j] = -xd->segment_feature_data[i][j];
+		                    }
+		                   //     xd->segment_feature_data[i][j] = 0;
+		                }
+		            }
+				}
+					if(update_mb_segmentation_map > 0) {
+						mb_segment_tree_probs = new int[Globals.MB_FEATURE_TREE_PROBS];
+						for (int i = 0; i < Globals.MB_FEATURE_TREE_PROBS; i++) {
+							int value=255;
+							if (bc.read_bit()>0) {
+								value = bc.read_literal(8);
+							}
+							else
+								value = 255;
+							mb_segment_tree_probs[i] = value;
+					}
+				}
+			}
+			//throw new IllegalArgumentException("bad input: segmentation_enabled");
 		}
 		filterType = bc.read_bit();
-		System.out.println("filter_type: " + filterType);
+		logger.log(Level.INFO, "filter_type: " + filterType);
 		filterLevel = bc.read_literal(6);
 		
-		System.out.println("filter_level: " + filterLevel);
+		logger.log(Level.INFO, "filter_level: " + filterLevel);
 		sharpnessLevel = bc.read_literal(3);
-		System.out.println("sharpness_level: " + sharpnessLevel);
+		logger.log(Level.INFO, "sharpness_level: " + sharpnessLevel);
 		int mode_ref_lf_delta_enabled = bc.read_bit();
-		System.out.println("mode_ref_lf_delta_enabled: "
+		logger.log(Level.INFO, "mode_ref_lf_delta_enabled: "
 				+ mode_ref_lf_delta_enabled);
 		if (mode_ref_lf_delta_enabled > 0) {
 			// Do the deltas need to be updated
 			int mode_ref_lf_delta_update = bc.read_bit();
-			System.out.println("mode_ref_lf_delta_update: "
+			logger.log(Level.INFO, "mode_ref_lf_delta_update: "
 					+ mode_ref_lf_delta_update);
 			if (mode_ref_lf_delta_update > 0) {
 				for (int i = 0; i < MAX_REF_LF_DELTAS; i++) {
@@ -178,7 +232,7 @@ public class VP8Frame {
 						ref_lf_deltas[i] = bc.read_literal(6);
 						if (bc.read_bit() > 0) // Apply sign
 							ref_lf_deltas[i] = ref_lf_deltas[i] * -1;
-						System.out.println("ref_lf_deltas[i]: "
+						logger.log(Level.INFO, "ref_lf_deltas[i]: "
 								+ ref_lf_deltas[i]);
 					}
 				}
@@ -188,66 +242,66 @@ public class VP8Frame {
 						mode_lf_deltas[i] = bc.read_literal(6);
 						if (bc.read_bit() > 0) // Apply sign
 							mode_lf_deltas[i] = mode_lf_deltas[i] * -1;
-						System.out.println("mode_lf_deltas[i]: "
+						logger.log(Level.INFO, "mode_lf_deltas[i]: "
 								+ mode_lf_deltas[i]);
 					}
 				}
 			}
 		}
-		System.out.println("offset: " + offset);
+		logger.log(Level.INFO, "offset: " + offset);
 
 		setupTokenDecoder(bc, frame, first_partition_length_in_bytes,
 				offset);
 
 		int Qindex = bc.read_literal(7);
-		System.out.println("Q: " + Qindex);
+		logger.log(Level.INFO, "Q: " + Qindex);
 		qIndex = Qindex;
 		boolean q_update = false;
 		DeltaQ v = get_delta_q(bc, 0);
 		int y1dc_delta_q = v.v;
 		q_update = q_update || v.update;
-		System.out.println("y1dc_delta_q: " + y1dc_delta_q);
-		System.out.println("q_update: " + q_update);
+		logger.log(Level.INFO, "y1dc_delta_q: " + y1dc_delta_q);
+		logger.log(Level.INFO, "q_update: " + q_update);
 		v = get_delta_q(bc, 0);
 		int y2dc_delta_q = v.v;
 		q_update = q_update || v.update;
-		System.out.println("y2dc_delta_q: " + y2dc_delta_q);
-		System.out.println("q_update: " + q_update);
+		logger.log(Level.INFO, "y2dc_delta_q: " + y2dc_delta_q);
+		logger.log(Level.INFO, "q_update: " + q_update);
 		v = get_delta_q(bc, 0);
 		int y2ac_delta_q = v.v;
 		q_update = q_update || v.update;
-		System.out.println("y2ac_delta_q: " + y2ac_delta_q);
-		System.out.println("q_update: " + q_update);
+		logger.log(Level.INFO, "y2ac_delta_q: " + y2ac_delta_q);
+		logger.log(Level.INFO, "q_update: " + q_update);
 		v = get_delta_q(bc, 0);
 		int uvdc_delta_q = v.v;
 		q_update = q_update || v.update;
-		System.out.println("uvdc_delta_q: " + uvdc_delta_q);
-		System.out.println("q_update: " + q_update);
+		logger.log(Level.INFO, "uvdc_delta_q: " + uvdc_delta_q);
+		logger.log(Level.INFO, "q_update: " + q_update);
 		v = get_delta_q(bc, 0);
 		int uvac_delta_q = v.v;
 		q_update = q_update || v.update;
-		System.out.println("uvac_delta_q: " + uvac_delta_q);
-		System.out.println("q_update: " + q_update);
+		logger.log(Level.INFO, "uvac_delta_q: " + uvac_delta_q);
+		logger.log(Level.INFO, "q_update: " + q_update);
 		
 		if(y1dc_delta_q>0) {
-			System.out.println("TODO");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+y1dc_delta_q);
+			//throw new IllegalArgumentException("bad input: delta_q");
 		}
 		if(y2dc_delta_q>0) {
-			System.out.println("TODO");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+y2dc_delta_q);
+			//throw new IllegalArgumentException("bad input: delta_q");
 		}
 		if(y2ac_delta_q>0) {
-			System.out.println("TODO");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+y2ac_delta_q);
+			//throw new IllegalArgumentException("bad input: delta_q");
 		}
 		if(uvdc_delta_q>0) {
-			System.out.println("TODO");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+uvdc_delta_q);
+			//throw new IllegalArgumentException("bad input: delta_q");
 		}
 		if(uvac_delta_q>0) {
-			System.out.println("TODO");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+uvac_delta_q);
+			//throw new IllegalArgumentException("bad input: delta_q");
 		}
 
 		// Determine if the golden frame or ARF buffer should be updated and
@@ -255,11 +309,11 @@ public class VP8Frame {
 		// For all non key frames the GF and ARF refresh flags and sign bias
 		// flags must be set explicitly.
 		if (frameType != 0) {
-			System.out.println("TODO:");
-			System.exit(1);
+			logger.log(Level.SEVERE, "TODO:");
+			throw new IllegalArgumentException("bad input: not intra");
 		}
 		int refresh_entropy_probs = bc.read_bit();
-		System.out.println("refresh_entropy_probs: " + refresh_entropy_probs);
+		logger.log(Level.INFO, "refresh_entropy_probs: " + refresh_entropy_probs);
 		if (refresh_entropy_probs > 0) {
 
 		}
@@ -268,7 +322,7 @@ public class VP8Frame {
 			refresh_last_frame = 1;
 		else
 			refresh_last_frame = bc.read_bit();
-		System.out.println("refresh_last_frame: " + refresh_last_frame);
+		logger.log(Level.INFO, "refresh_last_frame: " + refresh_last_frame);
 
 		for (int i = 0; i < BLOCK_TYPES; i++)
 			for (int j = 0; j < COEF_BANDS; j++)
@@ -283,13 +337,13 @@ public class VP8Frame {
 
 		// Read the mb_no_coeff_skip flag
 		mb_no_coeff_skip = (int) bc.read_bit();
-		System.out.println("mb_no_coeff_skip: " + mb_no_coeff_skip);
+		logger.log(Level.INFO, "mb_no_coeff_skip: " + mb_no_coeff_skip);
 
 		if (frameType == 0) {
 			readModes(bc);
 		} else {
-			System.out.println("TODO:");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO:");
+			throw new IllegalArgumentException("bad input: not intra");
 		}
 
 		int ibc = 0;
@@ -297,11 +351,12 @@ public class VP8Frame {
 
 		for (int mb_row = 0; mb_row < macroBlockRows; mb_row++) {
 
-
 			if (num_part > 1) {
 
 				tokenBoolDecoder = tokenBoolDecoders.elementAt(ibc);
+
 				decodeMacroBlockRow(mb_row);
+
 				ibc++;
 				if(ibc==num_part)
 					ibc=0;
@@ -311,9 +366,19 @@ public class VP8Frame {
 
 		}
 
+		if(debug)
+			drawDebug();
 		return true;
 	}
 	
+	private void drawDebug() {
+		for (int mb_row = 0; mb_row < macroBlockRows; mb_row++) {
+			for (int mb_col = 0; mb_col < macroBlockCols; mb_col++) {
+				macroBlocks[mb_col+1][mb_row+1].drawDebug();
+			}
+		}
+	}
+		
 	public int getFilterType() {
 		return filterType;
 	}
@@ -321,14 +386,13 @@ public class VP8Frame {
 		return filterLevel;
 	}
 	private void decodeMacroBlockRow(int mbRow) {
-		
 		for (int mb_col = 0; mb_col < macroBlockCols; mb_col++) {
 			//if(mbRow==27 && mb_col==1) {
 				//System.exit(0);
 			//}
-			
+
 			MacroBlock mb = getMacroBlock(mb_col, mbRow);
-			
+
 			mb.decodeMacroBlock(this);
 
 			mb.dequantMacroBlock(this);
@@ -392,12 +456,9 @@ public class VP8Frame {
 			}
 		}
 		else {
-			System.out.println("TODO: ");
-			System.exit(0);
+			logger.log(Level.SEVERE, "TODO: ");
+			throw new IllegalArgumentException("bad input: getAboveRightSubBlock()");
 		}
-		System.exit(0);
-		r=sb;
-		return r;
 	}
 
 	public SubBlock getAboveSubBlock(SubBlock sb, SubBlock.PLANE plane) {
@@ -542,6 +603,7 @@ public class VP8Frame {
 	private void readModes(BoolDecoder bc) {
 		int mb_row = -1;
 		int prob_skip_false = 0;
+		
 		if (mb_no_coeff_skip > 0) {
 			prob_skip_false = bc.read_literal(8);
 		}
@@ -550,13 +612,18 @@ public class VP8Frame {
 			int mb_col = -1;
 			while (++mb_col < macroBlockCols) {
 
-				if (this.segmentation_enabled > 0) {
-					System.out.println("TODO:");
-					System.exit(0);
-				}
+				//if (this.segmentation_enabled > 0) {
+				//	logger.log(Level.SEVERE, "TODO:");
+				//	throw new IllegalArgumentException("bad input: segmentation_enabled()");
+				//}
 				// Read the macroblock coeff skip flag if this feature is in
 				// use, else default to 0
 				MacroBlock mb = getMacroBlock(mb_col, mb_row);
+				
+				if ((segmentation_enabled >0) &&( update_mb_segmentation_map > 0)) {
+					int value = bc.treed_read(Globals.mb_segment_tree, this.mb_segment_tree_probs);
+					}
+				
 				int mb_skip_coeff = 0;
 				if (mb_no_coeff_skip > 0)
 					mb_skip_coeff = bc.read_bool(prob_skip_false);
@@ -650,10 +717,10 @@ public class VP8Frame {
 		int partitionsStart = offset+first_partition_length_in_bytes;
 		int partition = partitionsStart;
 		multiTokenPartition = bc.read_literal(2);
-		System.out.println("multi_token_partition: "
+		logger.log(Level.INFO, "multi_token_partition: "
 				+ multiTokenPartition);
 		int num_part = 1 << multiTokenPartition;
-		System.out.println("num_part: " + num_part);
+		logger.log(Level.INFO, "num_part: " + num_part);
 		if (num_part > 1) {
 			partition += 3 * (num_part - 1);
 		}
@@ -677,5 +744,11 @@ public class VP8Frame {
 	
 	public void loopFilter() {
 		LoopFilter.loopFilter(this);
+	}
+	public int getWidth() {
+		return width;
+	}
+	public int getHeight() {
+		return height;
 	}
 }

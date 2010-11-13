@@ -7,14 +7,15 @@ import java.io.IOException;
 public class VP8Decoder {
 	private int[][][][] coefProbs;
 	private int frameCount=0;
+	VP8Frame f;
 	public VP8Decoder() {
 		coefProbs = Globals.get_default_coef_probs();
 	}
 	public void decodeFrame(int[] frameData, boolean debug) {
 		coefProbs = Globals.get_default_coef_probs();
-		VP8Frame f = new VP8Frame(frameData, coefProbs);
+		f = new VP8Frame(frameData, coefProbs);
 		if(f.decodeFrame(debug)) {
-			writeYV12File(""+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());
+			//writeYV12File(""+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());
 			//f.loopFilter();
 			//writeYV12File("lf"+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());
 		}
@@ -69,5 +70,14 @@ public class VP8Decoder {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public int getWidth() {
+		return f.getWidth();
+	}
+	public int getHeight() {
+		return f.getHeight();
+	}
+	public VP8Frame getFrame() {
+		return f;
 	}
 }
