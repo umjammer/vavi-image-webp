@@ -28,6 +28,9 @@ public class MacroBlock {
 	private int yMode;
 
 	private int uvMode;
+	private int segmentId;
+	private int filter_level;
+	private int uv_filter_level;
 	public int getYMode() {
 		return yMode;
 	}
@@ -716,5 +719,21 @@ public class MacroBlock {
 			SubBlock sb = vSubBlocks[0][j];
 			sb.drawDebugH();
 		}*/
+	}
+	public void setSegmentId(int value) {
+		this.segmentId=value;
+	}
+	public void setFilterLevel(int value) {
+		this.filter_level=value;
+	}
+	public void setUVFilterLevel(int value) {
+		this.uv_filter_level=value;
+	}
+	
+	public int getFilterLevel() {
+		return this.filter_level;
+	}
+	public int getUVFilterLevel() {
+		return this.uv_filter_level;
 	}
 }

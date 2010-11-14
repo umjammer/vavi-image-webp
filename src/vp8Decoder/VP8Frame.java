@@ -43,7 +43,7 @@ public class VP8Frame {
 	private Vector<BoolDecoder> tokenBoolDecoders;
 	private MacroBlock[][] macroBlocks;
 	private int filterLevel;
-	private int filterType;
+	private int simpleFilter;
 	private int sharpnessLevel;
 	public int getSharpnessLevel() {
 		return sharpnessLevel;
@@ -99,11 +99,14 @@ public class VP8Frame {
 	private int[] mb_segment_tree_probs;
 	private int update_mb_segmentation_map;
 	private int update_mb_segmentaton_data;
+	private int filter_type;
+	private int mode_ref_lf_delta_enabled;
+	private int[] ref_lf_deltas = new int[MAX_REF_LF_DELTAS];
+	private int[] mode_lf_deltas = new int[MAX_MODE_LF_DELTAS];
 	public boolean decodeFrame(boolean debug) {
 		
 		this.debug=debug;
-		int[] ref_lf_deltas = new int[MAX_REF_LF_DELTAS];
-		int[] mode_lf_deltas = new int[MAX_MODE_LF_DELTAS];
+
 		int c, offset = 0;
 		c = frame[offset++];
 		logger.log(Level.INFO, "frame.length: " + frame.length);
@@ -225,14 +228,14 @@ public class VP8Frame {
 			}
 			//throw new IllegalArgumentException("bad input: segmentation_enabled");
 		}
-		filterType = bc.read_bit();
-		logger.log(Level.INFO, "filter_type: " + filterType);
+		simpleFilter = bc.read_bit();
+		logger.log(Level.INFO, "filter_type: " + simpleFilter);
 		filterLevel = bc.read_literal(6);
 		
 		logger.log(Level.INFO, "filter_level: " + filterLevel);
 		sharpnessLevel = bc.read_literal(3);
 		logger.log(Level.INFO, "sharpness_level: " + sharpnessLevel);
-		int mode_ref_lf_delta_enabled = bc.read_bit();
+		mode_ref_lf_delta_enabled = bc.read_bit();
 		logger.log(Level.INFO, "mode_ref_lf_delta_enabled: "
 				+ mode_ref_lf_delta_enabled);
 		if (mode_ref_lf_delta_enabled > 0) {
@@ -240,6 +243,7 @@ public class VP8Frame {
 			int mode_ref_lf_delta_update = bc.read_bit();
 			logger.log(Level.INFO, "mode_ref_lf_delta_update: "
 					+ mode_ref_lf_delta_update);
+			//System.exit(0);
 			if (mode_ref_lf_delta_update > 0) {
 				for (int i = 0; i < MAX_REF_LF_DELTAS; i++) {
 
@@ -263,7 +267,8 @@ public class VP8Frame {
 				}
 			}
 		}
-		logger.log(Level.INFO, "offset: " + offset);
+		filter_type = (filterLevel == 0) ? 0 : (simpleFilter>0) ? 1 : 2;
+		logger.log(Level.INFO, "filter_type: " + filter_type);
 
 		setupTokenDecoder(bc, frame, first_partition_length_in_bytes,
 				offset);
@@ -395,7 +400,7 @@ public class VP8Frame {
 	}
 		
 	public int getFilterType() {
-		return filterType;
+		return simpleFilter;
 	}
 	public int getFilterLevel() {
 		return filterLevel;
@@ -637,7 +642,18 @@ public class VP8Frame {
 				
 				if ((segmentation_enabled >0) &&( update_mb_segmentation_map > 0)) {
 					int value = bc.treed_read(Globals.mb_segment_tree, this.mb_segment_tree_probs);
-					}
+					mb.setSegmentId(value);
+				}
+				
+				if(mode_ref_lf_delta_enabled > 0) {
+					int level = filterLevel;
+					level = level + ref_lf_deltas[0];
+					level = (level < 0) ? 0 : (level > 63) ? 63 : level;
+					mb.setFilterLevel(level);
+				}
+				else
+					//	logger.log(Level.SEVERE, "TODO:");
+					throw new IllegalArgumentException("TODO");
 				
 				int mb_skip_coeff = 0;
 				if (mb_no_coeff_skip > 0)
@@ -668,7 +684,13 @@ public class VP8Frame {
 
 						}
 					}
-
+					if(mode_ref_lf_delta_enabled > 0) {
+						int level = mb.getFilterLevel();
+						level = level + this.mode_lf_deltas[0];
+						level = (level < 0) ? 0 : (level > 63) ? 63 : level;
+						mb.setFilterLevel(level);
+						//System.exit(0);
+					}
 				} else {
 					int BMode;
 
