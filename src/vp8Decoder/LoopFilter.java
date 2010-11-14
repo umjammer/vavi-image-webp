@@ -18,8 +18,14 @@ package vp8Decoder;
 
 public class LoopFilter {
 	public static void loopFilter(VP8Frame frame) {
-		loopFilterY(frame);
-		loopFilterUV(frame);
+
+		if(frame.getFilterType()==2) {
+			loopFilterUV(frame);
+			loopFilterY(frame);
+		}
+		else if(frame.getFilterType()==1) { 
+			loopFilterSimple(frame);
+		}
 	}
 	public static void loopFilterUV(VP8Frame frame) {
 		/*System.out.println("loop filter");
@@ -71,9 +77,13 @@ public class LoopFilter {
 				int mbedge_limit = ((loop_filter_level + 2) * 2) + interior_limit;
 				/* Luma and Chroma use the same inter-subblock edge limit */
 				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
-				//System.out.println("mbedge_limit: "+mbedge_limit);
-				//System.out.println("sub_bedge_limit: "+sub_bedge_limit);
-				//left
+				/*if(frame.getFilterType()==2)
+					System.out.println("complex");
+					else if(frame.getFilterType()==1)
+					System.out.println("simple");
+					else
+						System.out.println("disabled");
+					//System.exit(0);*/
 				if(x>0) {
 					MacroBlock lmb = frame.getMacroBlock(x-1, y);
 					for(int b=0; b<2; b++) {
@@ -255,6 +265,127 @@ public class LoopFilter {
 							//System.out.println("sbtop");
 							Segment seg = getSegV(bsb, tsb, c);
 							subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+							setSegV(bsb, tsb, seg, c);
+						}
+					}
+				}
+			}
+	}
+	
+	public static void loopFilterSimple(VP8Frame frame) {
+		/*System.out.println("loop filter");
+		System.out.println("filterLevel: "+frame.getFilterLevel());
+		System.out.println("filterType: "+frame.getFilterType());
+
+		System.out.println(frame.getMacroBlockRows());
+		System.out.println(frame.getMacroBlockCols());*/
+		for(int y=0; y<frame.getMacroBlockRows(); y++)
+			for(int x=0; x<frame.getMacroBlockCols(); x++)
+			{
+				//System.out.println("x: "+x+" y: "+y);
+				MacroBlock rmb = frame.getMacroBlock(x, y);
+				MacroBlock bmb = frame.getMacroBlock(x, y);
+				int sharpnessLevel = frame.getSharpnessLevel();
+				int loop_filter_level = rmb.getFilterLevel();
+				int interior_limit = rmb.getFilterLevel();
+
+				/*if( sharpnessLevel>0)
+				{
+				    interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
+				    if( interior_limit > 9 - sharpnessLevel)
+				        interior_limit = 9 - sharpnessLevel;
+				}
+				if( interior_limit==0)
+				    interior_limit = 1;
+
+
+				
+				int hev_threshold = 0;
+				if( frame.getFrameType()==0)          
+				{
+				     if( loop_filter_level >= 40)
+				         hev_threshold = 2;
+				     else if( loop_filter_level >= 15)
+				         hev_threshold = 1;
+				}
+				else                                 
+				     if( loop_filter_level >= 40)
+				         hev_threshold = 3;
+				     else if( loop_filter_level >= 20)
+				         hev_threshold = 2;
+				     else if( loop_filter_level >= 15)
+				         hev_threshold = 1;
+				}*/
+				 //int limit = 2 * loop_filter_level + interior_limit;
+				
+
+				//System.out.println("hev_threshold: "+hev_threshold);
+				
+				/* Luma and Chroma use the same inter-macroblock edge limit */
+				int mbedge_limit = ((loop_filter_level + 2) * 2) + interior_limit;
+				/* Luma and Chroma use the same inter-subblock edge limit */
+				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
+				//System.out.println("mbedge_limit: "+mbedge_limit);
+				//System.out.println("sub_bedge_limit: "+sub_bedge_limit);
+				
+				
+
+				//left
+				if(x>0) {
+					MacroBlock lmb = frame.getMacroBlock(x-1, y);
+					for(int b=0; b<4; b++) {
+						SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, 0, b);
+						SubBlock lsb = lmb.getSubBlock(SubBlock.PLANE.Y1, 3, b);
+						for(int a=0; a<4; a++) {
+							Segment seg = getSegH(rsb, lsb, a);
+							//MBfilter(hev_threshold, interior_limit, mbedge_limit, seg);
+							//System.out.println(mbedge_limit);
+							simple_segment(mbedge_limit, seg);
+							setSegH(rsb, lsb, seg, a);
+						}
+					}
+				}
+				//sb left
+				for(int a=1; a<4;a++) {
+					for(int b=0; b<4; b++) {
+						SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a-1, b);
+						SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a, b);
+						for(int c=0; c<4; c++) {
+							//System.out.println("sbleft a:"+a+" b:"+b+" c:"+c);
+							Segment seg = getSegH(rsb, lsb, c);
+							simple_segment(sub_bedge_limit, seg);
+							//System.out.println(sub_bedge_limit);
+							//subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+							setSegH(rsb, lsb, seg, c);
+						}
+					}
+				}
+				//top
+				if(y>0) {
+					MacroBlock tmb = frame.getMacroBlock(x, y-1);
+					for(int b=0; b<4; b++) {
+						SubBlock tsb = tmb.getSubBlock(SubBlock.PLANE.Y1, b, 3);
+						SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, 0);
+						for(int a=0; a<4; a++) {
+							Segment seg = getSegV(bsb, tsb, a);
+							simple_segment(mbedge_limit, seg);
+							//System.out.println(mbedge_limit);
+							//MBfilter(hev_threshold, interior_limit, mbedge_limit, seg);
+							setSegV(bsb, tsb, seg, a);
+						}
+					}
+				}
+				//sb top
+				for(int a=1; a<4;a++) {
+					for(int b=0; b<4; b++) {
+						SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a-1);
+						SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a);
+						for(int c=0; c<4; c++) {
+							//System.out.println("sbtop");
+							Segment seg = getSegV(bsb, tsb, c);
+							simple_segment(sub_bedge_limit, seg);
+							//System.out.println(sub_bedge_limit);
+							//subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
 							setSegV(bsb, tsb, seg, c);
 						}
 					}

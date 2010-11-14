@@ -229,7 +229,7 @@ public class VP8Frame {
 			//throw new IllegalArgumentException("bad input: segmentation_enabled");
 		}
 		simpleFilter = bc.read_bit();
-		logger.log(Level.INFO, "filter_type: " + simpleFilter);
+		logger.log(Level.INFO, "simpleFilter: " + simpleFilter);
 		filterLevel = bc.read_literal(6);
 		
 		logger.log(Level.INFO, "filter_level: " + filterLevel);
@@ -400,7 +400,7 @@ public class VP8Frame {
 	}
 		
 	public int getFilterType() {
-		return simpleFilter;
+		return filter_type;
 	}
 	public int getFilterLevel() {
 		return filterLevel;
