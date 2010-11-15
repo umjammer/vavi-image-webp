@@ -69,7 +69,6 @@ public class SubBlock {
 		return v;
 	}
 	public void decodeSubBlock(BoolDecoder bc2, int[][][][] coef_probs, int ilc, int type, boolean withY2) {
-
 		SubBlock sb = this;
 		int startAt = 0;
 		if (withY2)
@@ -98,6 +97,7 @@ public class SubBlock {
 				skip = true;
 
 			int tokens[] = sb.getTokens();
+
 			if (v != Globals.dct_eob)
 				tokens[Globals.default_zig_zag1d[c + startAt]] = dv;
 			c++;
@@ -138,12 +138,21 @@ public class SubBlock {
 
 		int[] adjustedValues = new int[16];
 		for (int i = 0; i < 16; i++) {
-			int QValue = Globals.ac_qlookup[frame.getQIndex()];
+			int QValue;
+			if(plane==PLANE.U || plane==PLANE.V) {
+				QValue = frame.getSegmentQuants().getSegQuants()[0].getUvac_delta_q();
+				if (i == 0) 
+					QValue = frame.getSegmentQuants().getSegQuants()[0].getUvdc_delta_q();
+			}
+			else {
+			 QValue = frame.getSegmentQuants().getSegQuants()[0].getY1ac_delta_q();
+			//int QValue = Globals.ac_qlookup[frame.getQIndex()];
 			if (i == 0) 
-				QValue = Globals.dc_qlookup[frame.getQIndex()];
+				QValue = frame.getSegmentQuants().getSegQuants()[0].getY1dc_delta_q();
+				//QValue = Globals.dc_qlookup[frame.getQIndex()];
+			}
 
 			int inputValue = sb.getTokens()[i];
-
 			adjustedValues[i] = inputValue * QValue;
 			
 		}
@@ -151,8 +160,8 @@ public class SubBlock {
 		if(Dc!=null)
 			adjustedValues[0]=Dc;
 
+
 		int[][] diff = IDCT.idct4x4llm_c(adjustedValues);
-		
 		sb.setDiff(diff);
 
 	}

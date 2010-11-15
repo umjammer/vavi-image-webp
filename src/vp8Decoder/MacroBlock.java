@@ -611,11 +611,11 @@ public class MacroBlock {
 	public void dequantMacroBlock(VP8Frame frame) {
 		MacroBlock mb=this;
 		if (mb.getYMode() != Globals.B_PRED) {
-
-
 			SubBlock sb = mb.getY2SubBlock();
-			int acQValue = (Globals.ac_qlookup[frame.getQIndex()]*155)/100;
-			int dcQValue = (Globals.dc_qlookup[frame.getQIndex()]*2);
+			//int acQValue = (Globals.ac_qlookup[frame.getQIndex()]*155)/100;
+			//int dcQValue = (Globals.dc_qlookup[frame.getQIndex()]*2);
+			int acQValue = frame.getSegmentQuants().getSegQuants()[0].getY2ac_delta_q();
+			int dcQValue = frame.getSegmentQuants().getSegQuants()[0].getY2dc_delta_q();
 
 			int input[] = new int[16];
 			input[0]=sb.getTokens()[0]*dcQValue;
@@ -644,7 +644,6 @@ public class MacroBlock {
 			mb.recon_mb();
 			
 		} else {
-
 			for (int j = 0; j < 4; j++) {
 				for (int i = 0; i < 4; i++) {
 					SubBlock sb = mb.getYSubBlock(i, j);

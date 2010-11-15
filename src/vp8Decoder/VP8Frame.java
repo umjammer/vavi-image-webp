@@ -31,7 +31,7 @@ public class VP8Frame {
     private int[] frame;
 
 	private int[][][][] coefProbs;
-	private int qIndex;
+	//private int qIndex;
 	private int mb_no_coeff_skip;
 	private int macroBlockRows;
 	private int macroBlockCols;
@@ -73,24 +73,7 @@ public class VP8Frame {
 	}
 
 	
-	private static DeltaQ get_delta_q(BoolDecoder bc, int prev) {
-		DeltaQ ret = new DeltaQ();
-		ret.v = 0;
-		ret.update = false;
 
-		if (bc.read_bit() > 0) {
-			ret.v = bc.read_literal(4);
-
-			if (bc.read_bit() > 0)
-				ret.v = -ret.v;
-		}
-
-		/* Trigger a quantizer update if the delta-q value has changed */
-		if (ret.v != prev)
-			ret.update = true;
-
-		return ret;
-	}
 	private boolean debug=false;
 	private int width;
 	private int height;
@@ -103,6 +86,7 @@ public class VP8Frame {
 	private int mode_ref_lf_delta_enabled;
 	private int[] ref_lf_deltas = new int[MAX_REF_LF_DELTAS];
 	private int[] mode_lf_deltas = new int[MAX_MODE_LF_DELTAS];
+	private SegmentQuants segmentQuants;
 	public boolean decodeFrame(boolean debug) {
 		
 		this.debug=debug;
@@ -273,7 +257,7 @@ public class VP8Frame {
 		setupTokenDecoder(bc, frame, first_partition_length_in_bytes,
 				offset);
 
-		int Qindex = bc.read_literal(7);
+		/*int Qindex = bc.read_literal(7);
 		logger.log(Level.INFO, "Q: " + Qindex);
 		qIndex = Qindex;
 		boolean q_update = false;
@@ -322,7 +306,10 @@ public class VP8Frame {
 		if(uvac_delta_q>0) {
 			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+uvac_delta_q);
 			//throw new IllegalArgumentException("bad input: delta_q");
-		}
+		}*/
+		
+		segmentQuants = new SegmentQuants();
+		segmentQuants.parse(bc);
 
 		// Determine if the golden frame or ARF buffer should be updated and
 		// how.
@@ -551,7 +538,7 @@ public class VP8Frame {
 	}
 
 	public int getQIndex() {
-		return qIndex;
+		return segmentQuants.getqIndex();
 	}
 
 	public BoolDecoder getTokenBoolDecoder() {
@@ -787,5 +774,8 @@ public class VP8Frame {
 	}
 	public int getHeight() {
 		return height;
+	}
+	public SegmentQuants getSegmentQuants() {
+		return segmentQuants;
 	}
 }
