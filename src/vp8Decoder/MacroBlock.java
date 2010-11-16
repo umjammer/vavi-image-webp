@@ -31,6 +31,11 @@ public class MacroBlock {
 	private int segmentId;
 	private int filter_level;
 	private int uv_filter_level;
+	private boolean skip_inner_lf;
+
+	public boolean isSkip_inner_lf() {
+		return skip_inner_lf;
+	}
 	public int getYMode() {
 		return yMode;
 	}
@@ -589,7 +594,6 @@ public class MacroBlock {
 	
 	public void decodeMacroBlock(VP8Frame frame) {
 		MacroBlock mb = this;
-
 		if (mb.getMb_skip_coeff() > 0) {
 		} else if (mb.getYMode() != Globals.B_PRED) {
 			decodeMacroBlockTokens(frame, true);
@@ -599,13 +603,14 @@ public class MacroBlock {
 	}
 	
 	private void decodeMacroBlockTokens(VP8Frame frame, boolean withY2) {
-		//MacroBlock mb = this;
+		skip_inner_lf = false;
 		if (withY2) {
-			decodePlaneTokens(frame, 1, SubBlock.PLANE.Y2, false);
+			skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 1, SubBlock.PLANE.Y2, false);
 		}
-		decodePlaneTokens(frame, 4, SubBlock.PLANE.Y1, withY2);
-		decodePlaneTokens(frame, 2, SubBlock.PLANE.U, false);
-		decodePlaneTokens(frame, 2, SubBlock.PLANE.V, false);
+		skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 4, SubBlock.PLANE.Y1, withY2);
+		skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 2, SubBlock.PLANE.U, false);
+		skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 2, SubBlock.PLANE.V, false);
+		skip_inner_lf = !skip_inner_lf;
 	}
 	
 	public void dequantMacroBlock(VP8Frame frame) {
@@ -670,9 +675,10 @@ public class MacroBlock {
 		}
 	}
 	
-	private void decodePlaneTokens(VP8Frame frame, int dimentions,
+	private boolean decodePlaneTokens(VP8Frame frame, int dimentions,
 			SubBlock.PLANE plane, boolean withY2) {
 		MacroBlock mb = this;
+		boolean r=false;
 		for (int y = 0; y < dimentions; y++) {
 			for (int x = 0; x < dimentions; x++) {
 				int L = 0;
@@ -696,8 +702,10 @@ public class MacroBlock {
 				lc += A;
 				sb.decodeSubBlock(frame.getTokenBoolDecoder(), frame.getCoefProbs(), lc, SubBlock.planeToType(plane, withY2),
 						withY2);
+				r= r | sb.hasNoZeroToken();
 			}
 		}
+		return r;
 	}
 	public void drawDebug() {
 		for(int j=0; j<4; j++) 

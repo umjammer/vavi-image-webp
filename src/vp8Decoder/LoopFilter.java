@@ -104,19 +104,21 @@ public class LoopFilter {
 				}
 				//sb left
 				//System.out.println("sb left");
-				for(int a=1; a<2;a++) {
-					for(int b=0; b<2; b++) {
-						SubBlock lsbU = rmb.getSubBlock(SubBlock.PLANE.U, a-1, b);
-						SubBlock rsbU = rmb.getSubBlock(SubBlock.PLANE.U, a, b);
-						SubBlock lsbV = rmb.getSubBlock(SubBlock.PLANE.V, a-1, b);
-						SubBlock rsbV = rmb.getSubBlock(SubBlock.PLANE.V, a, b);
-						for(int c=0; c<4; c++) {
-							Segment seg = getSegH(rsbU, lsbU, c);
-							subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
-							setSegH(rsbU, lsbU, seg, c);
-							seg = getSegH(rsbV, lsbV, c);
-							subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
-							setSegH(rsbV, lsbV, seg, c);
+				if(!rmb.isSkip_inner_lf()) {
+					for(int a=1; a<2;a++) {
+						for(int b=0; b<2; b++) {
+							SubBlock lsbU = rmb.getSubBlock(SubBlock.PLANE.U, a-1, b);
+							SubBlock rsbU = rmb.getSubBlock(SubBlock.PLANE.U, a, b);
+							SubBlock lsbV = rmb.getSubBlock(SubBlock.PLANE.V, a-1, b);
+							SubBlock rsbV = rmb.getSubBlock(SubBlock.PLANE.V, a, b);
+							for(int c=0; c<4; c++) {
+								Segment seg = getSegH(rsbU, lsbU, c);
+								subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+								setSegH(rsbU, lsbU, seg, c);
+								seg = getSegH(rsbV, lsbV, c);
+								subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+								setSegH(rsbV, lsbV, seg, c);
+							}
 						}
 					}
 				}
@@ -141,19 +143,21 @@ public class LoopFilter {
 				}
 				//sb top
 				//System.out.println("sb top");
-				for(int a=1; a<2;a++) {
-					for(int b=0; b<2; b++) {
-						SubBlock tsbU = bmb.getSubBlock(SubBlock.PLANE.U, b, a-1);
-						SubBlock bsbU = bmb.getSubBlock(SubBlock.PLANE.U, b, a);
-						SubBlock tsbV = bmb.getSubBlock(SubBlock.PLANE.V, b, a-1);
-						SubBlock bsbV = bmb.getSubBlock(SubBlock.PLANE.V, b, a);
-						for(int c=0; c<4; c++) {
-							Segment seg = getSegV(bsbU, tsbU, c);
-							subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
-							setSegV(bsbU, tsbU, seg, c);
-							seg = getSegV(bsbV, tsbV, c);
-							subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
-							setSegV(bsbV, tsbV, seg, c);
+				if(!rmb.isSkip_inner_lf()) {
+					for(int a=1; a<2;a++) {
+						for(int b=0; b<2; b++) {
+							SubBlock tsbU = bmb.getSubBlock(SubBlock.PLANE.U, b, a-1);
+							SubBlock bsbU = bmb.getSubBlock(SubBlock.PLANE.U, b, a);
+							SubBlock tsbV = bmb.getSubBlock(SubBlock.PLANE.V, b, a-1);
+							SubBlock bsbV = bmb.getSubBlock(SubBlock.PLANE.V, b, a);
+							for(int c=0; c<4; c++) {
+								Segment seg = getSegV(bsbU, tsbU, c);
+								subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+								setSegV(bsbU, tsbU, seg, c);
+								seg = getSegV(bsbV, tsbV, c);
+								subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+								setSegV(bsbV, tsbV, seg, c);
+							}
 						}
 					}
 				}
@@ -231,15 +235,17 @@ public class LoopFilter {
 					}
 				}
 				//sb left
-				for(int a=1; a<4;a++) {
-					for(int b=0; b<4; b++) {
-						SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a-1, b);
-						SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a, b);
-						for(int c=0; c<4; c++) {
-							//System.out.println("sbleft a:"+a+" b:"+b+" c:"+c);
-							Segment seg = getSegH(rsb, lsb, c);
-							subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
-							setSegH(rsb, lsb, seg, c);
+				if(!rmb.isSkip_inner_lf()) {
+					for(int a=1; a<4;a++) {
+						for(int b=0; b<4; b++) {
+							SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a-1, b);
+							SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a, b);
+							for(int c=0; c<4; c++) {
+								//System.out.println("sbleft a:"+a+" b:"+b+" c:"+c);
+								Segment seg = getSegH(rsb, lsb, c);
+								subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+								setSegH(rsb, lsb, seg, c);
+							}
 						}
 					}
 				}
@@ -257,15 +263,17 @@ public class LoopFilter {
 					}
 				}
 				//sb top
-				for(int a=1; a<4;a++) {
-					for(int b=0; b<4; b++) {
-						SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a-1);
-						SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a);
-						for(int c=0; c<4; c++) {
-							//System.out.println("sbtop");
-							Segment seg = getSegV(bsb, tsb, c);
-							subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
-							setSegV(bsb, tsb, seg, c);
+				if(!rmb.isSkip_inner_lf()) {
+					for(int a=1; a<4;a++) {
+						for(int b=0; b<4; b++) {
+							SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a-1);
+							SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a);
+							for(int c=0; c<4; c++) {
+								//System.out.println("sbtop");
+								Segment seg = getSegV(bsb, tsb, c);
+								subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
+								setSegV(bsb, tsb, seg, c);
+							}
 						}
 					}
 				}
