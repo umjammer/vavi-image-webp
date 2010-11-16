@@ -595,6 +595,8 @@ public class MacroBlock {
 	public void decodeMacroBlock(VP8Frame frame) {
 		MacroBlock mb = this;
 		if (mb.getMb_skip_coeff() > 0) {
+			if(mb.getYMode()!=Globals.B_PRED)
+				mb.skip_inner_lf=true;
 		} else if (mb.getYMode() != Globals.B_PRED) {
 			decodeMacroBlockTokens(frame, true);
 		} else {
