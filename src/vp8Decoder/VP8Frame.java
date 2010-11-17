@@ -90,7 +90,7 @@ public class VP8Frame {
 	public boolean decodeFrame(boolean debug) {
 		
 		this.debug=debug;
-
+		segmentQuants = new SegmentQuants();
 		int c, offset = 0;
 		c = frame[offset++];
 		logger.log(Level.INFO, "frame.length: " + frame.length);
@@ -173,30 +173,27 @@ public class VP8Frame {
 			logger.log(Level.INFO, "update_mb_segmentaton_data: "+update_mb_segmentaton_data);
 			if(update_mb_segmentaton_data > 0 ) {
 				
-				if(update_mb_segmentaton_data > 0) {
 					mb_segement_abs_delta = bc.read_bit();
 		            /* For each segmentation feature (Quant and loop filter level) */
-		            for (int i = 0; i < Globals.MB_LVL_MAX; i++)
-		            {
-		                for (int j = 0; j < Globals.MAX_MB_SEGMENTS; j++)
-		                {
-	                    	//System.out.print("["+i+"]["+j+"]: ");
-		                    /* Frame level data */
-		                    if (bc.read_bit() > 0)
-		                    {
-		                    	int value = bc.read_literal(Globals.vp8_mb_feature_data_bits[i]);
-		                    	if(bc.read_bit()>0)
-		                    		value=-value;
-		                    	
-		                     //   xd->segment_feature_data[i][j] = (signed char)vp8_read_literal(bc, mb_feature_data_bits[i]);
-	//
-		                    //    if (vp8_read_bit(bc))
-		                    //        xd->segment_feature_data[i][j] = -xd->segment_feature_data[i][j];
-		                    }
-		                   //     xd->segment_feature_data[i][j] = 0;
+		            for (int i = 0; i < Globals.MAX_MB_SEGMENTS; i++) {
+	                	int value =0;
+		                if (bc.read_bit() > 0) {
+		                	value = bc.read_literal(Globals.vp8_mb_feature_data_bits[0]);
+	                		if(bc.read_bit()>0)
+	                		value=-value;
 		                }
+		                this.segmentQuants.getSegQuants()[i].setQindex(value);
 		            }
-				}
+		            for (int i = 0; i < Globals.MAX_MB_SEGMENTS; i++) {
+	                	int value = 0;
+	                    if (bc.read_bit() > 0) {
+	                    	value = bc.read_literal(Globals.vp8_mb_feature_data_bits[1]);
+	                    	if(bc.read_bit()>0)
+	                    		value=-value;
+	                    }
+	                    this.segmentQuants.getSegQuants()[i].setFilterStrength(value);
+		            }
+
 					if(update_mb_segmentation_map > 0) {
 						mb_segment_tree_probs = new int[Globals.MB_FEATURE_TREE_PROBS];
 						for (int i = 0; i < Globals.MB_FEATURE_TREE_PROBS; i++) {
@@ -308,8 +305,8 @@ public class VP8Frame {
 			//throw new IllegalArgumentException("bad input: delta_q");
 		}*/
 		
-		segmentQuants = new SegmentQuants();
-		segmentQuants.parse(bc);
+
+		segmentQuants.parse(bc, segmentation_enabled==1, mb_segement_abs_delta==1);
 
 		// Determine if the golden frame or ARF buffer should be updated and
 		// how.
@@ -663,7 +660,6 @@ public class VP8Frame {
 							SubBlock A = getAboveSubBlock(sb, SubBlock.PLANE.Y1);
 
 							SubBlock L = getLeftSubBlock(sb, SubBlock.PLANE.Y1);
-
 
 							int mode = readSubBlockMode(bc, A.getMode(), L.getMode());
 

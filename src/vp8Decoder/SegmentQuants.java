@@ -13,10 +13,8 @@ public class SegmentQuants {
 			segQuants[x]=new SegmentQuant();
 	}
 
-	public void parse(BoolDecoder bc) {
+	public void parse(BoolDecoder bc, boolean segmentation_enabled, boolean mb_segement_abs_delta) {
 		qIndex = bc.read_literal(7);
-		//logger.log(Level.INFO, "Q: " + Qindex);
-
 		boolean q_update = false;
 		DeltaQ v = get_delta_q(bc, 0);
 		int y1dc_delta_q = v.v;
@@ -35,12 +33,19 @@ public class SegmentQuants {
 		q_update = q_update || v.update;
 
 		for(SegmentQuant s : segQuants) {
-			s.setQindex(qIndex);
+			if(!segmentation_enabled) {	
+				s.setQindex(qIndex);
+			}
+			else if(!mb_segement_abs_delta) {
+				s.setQindex(s.getQindex()+qIndex);
+			}
+
 			s.setY1dc_delta_q(y1dc_delta_q);
 			s.setY2dc_delta_q(y2dc_delta_q);
 			s.setY2ac_delta_q(y2ac_delta_q);
 			s.setUvdc_delta_q(uvdc_delta_q);
 			s.setUvac_delta_q(uvac_delta_q);
+
 		}
 	}
 	

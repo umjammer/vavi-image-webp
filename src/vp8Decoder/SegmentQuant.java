@@ -8,6 +8,7 @@ public class SegmentQuant {
 	private int y2ac;
 	private int uvdc;
 	private int uvac;
+	private int filterStrength;
 	public int getQindex() {
 		return Qindex;
 	}
@@ -63,5 +64,8 @@ public class SegmentQuant {
 		if(r<0)
 			r=0;
 		return r;
+	}
+	public void setFilterStrength(int value) {
+		this.filterStrength=value;
 	}
 }
