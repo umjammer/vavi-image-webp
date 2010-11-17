@@ -266,7 +266,7 @@ public class SubBlock {
 		int al;
 		if(!leftSb.isDest() && !aboveSb.isDest()) {
 			
-			al = AL.getPredict(sb.getMode(), true)[3][3];
+			al = AL.getPredict(sb.getMode(), false)[3][3];
 		}
 		else if(!aboveSb.isDest()){
 			
