@@ -15,6 +15,7 @@
 */
 package vp8Decoder;
 
+import java.io.IOException;
 import java.util.logging.Level;
 
 public class SegmentQuants {
@@ -28,7 +29,7 @@ public class SegmentQuants {
 			segQuants[x]=new SegmentQuant();
 	}
 
-	public void parse(BoolDecoder bc, boolean segmentation_enabled, boolean mb_segement_abs_delta) {
+	public void parse(BoolDecoder bc, boolean segmentation_enabled, boolean mb_segement_abs_delta) throws IOException {
 		qIndex = bc.read_literal(7);
 		boolean q_update = false;
 		DeltaQ v = get_delta_q(bc, 0);
@@ -70,7 +71,7 @@ public class SegmentQuants {
 		}
 	}*/
 	
-	private static DeltaQ get_delta_q(BoolDecoder bc, int prev) {
+	private static DeltaQ get_delta_q(BoolDecoder bc, int prev) throws IOException {
 		DeltaQ ret = new DeltaQ();
 		ret.v = 0;
 		ret.update = false;

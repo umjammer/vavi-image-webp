@@ -19,6 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
+
 import vp8Decoder.VP8Decoder;
 
 
@@ -28,8 +31,9 @@ public class dwebp {
 	private static int IVF_FILE_HDR_SZ = (32);
 
 
-	private static int[] getFrame(FileInputStream in) throws IOException  {
+	private static ImageInputStream getFrame(FileInputStream in) throws IOException  {
 		int[] frame;
+		ImageInputStream iis = ImageIO.createImageInputStream(in);
 		int c;
 		System.out.print(""+toHex(in.read()));
 		System.out.print(""+toHex(in.read()));
@@ -43,8 +47,9 @@ public class dwebp {
 
 		frame = new int[frameSize];
 		for(int x=0; x<frameSize; x++)
-			frame[x]=in.read();
-		return frame;
+			;//frame[x]=in.read();
+		//in.reset();
+		return iis;
 	}
 	public static void main(String[] args) {
 		FileInputStream in = null;
@@ -62,7 +67,7 @@ public class dwebp {
 			
 			System.out.println("RIFF");
 			readFileHeader(in);
-			int[] frameData;
+			ImageInputStream frameData;
 			
 			VP8Decoder f = new VP8Decoder();
 

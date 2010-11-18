@@ -25,7 +25,7 @@ public class IVF {
 			while(true) {
 				frameData = getFrame(in);
 
-					f.decodeFrame(frameData, false);
+					//f.decodeFrame(frameData, false);
 				x++;
 			}
 	

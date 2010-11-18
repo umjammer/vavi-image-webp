@@ -180,14 +180,19 @@ public class WebPImageReader extends ImageReader {
 		logger.log(Level.INFO, "VP8 IMAGE DATA SIZE: "+frameSize);
 		
 		int[] frame = new int[frameSize];
-		for(int x=0; x<frameSize; x++)
+		/*for(int x=0; x<frameSize; x++)
 			try {
 				frame[x]=stream.read();
 			} catch (IOException e) {
 				throw new IIOException("Error reading frame", e);
-		}
+		}*/
 		decoder = new VP8Decoder();
-		decoder.decodeFrame(frame, false);
+		try {
+			decoder.decodeFrame(stream, false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		this.width = decoder.getWidth();
 		this.height = decoder.getHeight();
 		

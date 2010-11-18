@@ -15,6 +15,8 @@
 */
 package vp8Decoder;
 
+import java.io.IOException;
+
 
 
 public class MacroBlock {
@@ -594,7 +596,7 @@ public class MacroBlock {
 		return uvMode;
 	}
 	
-	public void decodeMacroBlock(VP8Frame frame) {
+	public void decodeMacroBlock(VP8Frame frame) throws IOException {
 		MacroBlock mb = this;
 		if (mb.getMb_skip_coeff() > 0) {
 			if(mb.getYMode()!=Globals.B_PRED)
@@ -606,7 +608,7 @@ public class MacroBlock {
 		}
 	}
 	
-	private void decodeMacroBlockTokens(VP8Frame frame, boolean withY2) {
+	private void decodeMacroBlockTokens(VP8Frame frame, boolean withY2) throws IOException {
 		skip_inner_lf = false;
 		if (withY2) {
 			skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 1, SubBlock.PLANE.Y2, false);
@@ -680,7 +682,7 @@ public class MacroBlock {
 	}
 	
 	private boolean decodePlaneTokens(VP8Frame frame, int dimentions,
-			SubBlock.PLANE plane, boolean withY2) {
+			SubBlock.PLANE plane, boolean withY2) throws IOException {
 		MacroBlock mb = this;
 		boolean r=false;
 		for (int y = 0; y < dimentions; y++) {

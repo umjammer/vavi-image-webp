@@ -15,9 +15,12 @@
 */
 package vp8Decoder;
 
+import java.io.IOException;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.stream.ImageInputStream;
 
 public class VP8Frame {
 	private static int MAX_REF_LF_DELTAS = 4;
@@ -28,7 +31,7 @@ public class VP8Frame {
 	private static int MAX_ENTROPY_TOKENS = 12;
 	
 
-    private int[] frame;
+    private ImageInputStream frame;
 
 	private int[][][][] coefProbs;
 	//private int qIndex;
@@ -51,11 +54,13 @@ public class VP8Frame {
 
 	private int frameType;
 	private Logger logger;
+	private long offset;
 	public int getFrameType() {
 		return frameType;
 	}
-	public VP8Frame(int[] frame, int[][][][] coef_probs) {
-		this.frame = frame;
+	public VP8Frame(ImageInputStream stream, int[][][][] coef_probs) throws IOException {
+		this.frame = stream;
+		offset = frame.getStreamPosition();
 		this.coefProbs=coef_probs;
 		tokenBoolDecoders = new Vector<BoolDecoder>();
 		//coef_probs = Tree.get_default_coef_probs();
@@ -87,13 +92,13 @@ public class VP8Frame {
 	private int[] ref_lf_deltas = new int[MAX_REF_LF_DELTAS];
 	private int[] mode_lf_deltas = new int[MAX_MODE_LF_DELTAS];
 	private SegmentQuants segmentQuants;
-	public boolean decodeFrame(boolean debug) {
+	public boolean decodeFrame(boolean debug) throws IOException {
 		
 		this.debug=debug;
 		segmentQuants = new SegmentQuants();
-		int c, offset = 0;
-		c = frame[offset++];
-		logger.log(Level.INFO, "frame.length: " + frame.length);
+		int c;
+		frame.seek(offset++); c=frame.readUnsignedByte();
+		logger.log(Level.INFO, "frame.length: " + frame.length());
 		frameType = getBitAsInt(c, 0);
 		logger.log(Level.INFO, "Frame type: " + frameType);
 		if(frameType!=0)
@@ -109,31 +114,31 @@ public class VP8Frame {
 		first_partition_length_in_bytes = getBitAsInt(c, 5) << 0;
 		first_partition_length_in_bytes += getBitAsInt(c, 6) << 1;
 		first_partition_length_in_bytes += getBitAsInt(c, 7) << 2;
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		first_partition_length_in_bytes += c << 3;
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		first_partition_length_in_bytes += c << 11;
 		logger.log(Level.INFO, "first_partition_length_in_bytes: "
 				+ first_partition_length_in_bytes);
 
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		logger.log(Level.INFO, "StartCode: " + c);
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		logger.log(Level.INFO, " " + c);
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		logger.log(Level.INFO, " " + c);
 
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		int hBytes = c;
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		hBytes += c << 8;
 		width = (hBytes & 0x3fff);
 		logger.log(Level.INFO, "width: " + width);
 		logger.log(Level.INFO, "hScale: " + (hBytes >> 14));
 
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		int vBytes = c;
-		c = frame[offset++];
+		frame.seek(offset++); c=frame.readUnsignedByte();
 		vBytes += c << 8;
 		height = (vBytes & 0x3fff);
 		logger.log(Level.INFO, "height: " + height);
@@ -251,8 +256,9 @@ public class VP8Frame {
 		filter_type = (filterLevel == 0) ? 0 : (simpleFilter>0) ? 1 : 2;
 		logger.log(Level.INFO, "filter_type: " + filter_type);
 
-		setupTokenDecoder(bc, frame, first_partition_length_in_bytes,
+		setupTokenDecoder(bc, first_partition_length_in_bytes,
 				offset);
+		bc.seek();
 
 		/*int Qindex = bc.read_literal(7);
 		logger.log(Level.INFO, "Q: " + Qindex);
@@ -356,8 +362,9 @@ public class VP8Frame {
 		for (int mb_row = 0; mb_row < macroBlockRows; mb_row++) {
 
 			if (num_part > 1) {
-
+				
 				tokenBoolDecoder = tokenBoolDecoders.elementAt(ibc);
+				tokenBoolDecoder.seek();
 
 				decodeMacroBlockRow(mb_row);
 
@@ -389,7 +396,7 @@ public class VP8Frame {
 	public int getFilterLevel() {
 		return filterLevel;
 	}
-	private void decodeMacroBlockRow(int mbRow) {
+	private void decodeMacroBlockRow(int mbRow) throws IOException {
 		for (int mb_col = 0; mb_col < macroBlockCols; mb_col++) {
 			//if(mbRow==27 && mb_col==1) {
 				//System.exit(0);
@@ -538,7 +545,8 @@ public class VP8Frame {
 		return segmentQuants.getqIndex();
 	}
 
-	public BoolDecoder getTokenBoolDecoder() {
+	public BoolDecoder getTokenBoolDecoder() throws IOException {
+		tokenBoolDecoder.seek();
 		return tokenBoolDecoder;
 	}
 
@@ -604,7 +612,7 @@ public class VP8Frame {
 		return r;
 	}
 
-	private void readModes(BoolDecoder bc) {
+	private void readModes(BoolDecoder bc) throws IOException {
 		int mb_row = -1;
 		int prob_skip_false = 0;
 		
@@ -711,31 +719,31 @@ public class VP8Frame {
 		}
 	}
 	
-	private int readSubBlockMode(BoolDecoder bc, int A, int L) {
+	private int readSubBlockMode(BoolDecoder bc, int A, int L) throws IOException {
 		int i = bc.treed_read(Globals.bmode_tree, Globals.kf_bmode_prob[A][L]);
 		return i;
 	}
 	
-	private int readUvMode(BoolDecoder bc) {
+	private int readUvMode(BoolDecoder bc) throws IOException {
 		int i = bc.treed_read(Globals.uv_mode_tree, Globals.kf_uv_mode_prob);
 		return i;
 	}
 	
-	private int readYMode(BoolDecoder bc) {
+	private int readYMode(BoolDecoder bc) throws IOException {
 		int i = bc.treed_read(Globals.vp8_kf_ymode_tree, Globals.kf_ymode_prob);
 		return i;
 	}
-	private int readPartitionSize(int[] data, int offset) {
-		int size =data[offset+0] + (data[offset+1] << 8) + (data[offset+2] << 16);
+	private int readPartitionSize(long l) throws IOException {
+		frame.seek(l);
+		int size =frame.readUnsignedByte() + (frame.readUnsignedByte() << 8) + (frame.readUnsignedByte() << 16);
 		return size;
 		
 	}
-	private void setupTokenDecoder(BoolDecoder bc, int[] data, int first_partition_length_in_bytes, int offset) {
+	private void setupTokenDecoder(BoolDecoder bc, int first_partition_length_in_bytes, long offset) throws IOException {
 
-
-		int partitionSize = 0;
-		int partitionsStart = offset+first_partition_length_in_bytes;
-		int partition = partitionsStart;
+		long partitionSize = 0;
+		long partitionsStart = offset+first_partition_length_in_bytes;
+		long partition = partitionsStart;
 		multiTokenPartition = bc.read_literal(2);
 		logger.log(Level.INFO, "multi_token_partition: "
 				+ multiTokenPartition);
@@ -751,9 +759,10 @@ public class VP8Frame {
 			 */
 			if (i < num_part - 1) {
 
-				partitionSize = readPartitionSize(data,partitionsStart+(i*3));
+				partitionSize = readPartitionSize(partitionsStart+(i*3));
+				bc.seek();
 			} else {
-				partitionSize = data.length - partition;
+				partitionSize = frame.length() - partition;
 			}
 
 			tokenBoolDecoders.add(new BoolDecoder(frame, partition));

@@ -19,6 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.imageio.stream.ImageInputStream;
+
 public class VP8Decoder {
 	private int[][][][] coefProbs;
 	private int frameCount=0;
@@ -26,9 +28,9 @@ public class VP8Decoder {
 	public VP8Decoder() {
 		coefProbs = Globals.get_default_coef_probs();
 	}
-	public void decodeFrame(int[] frameData, boolean debug) {
+	public void decodeFrame(ImageInputStream stream, boolean debug) throws IOException {
 		coefProbs = Globals.get_default_coef_probs();
-		f = new VP8Frame(frameData, coefProbs);
+		f = new VP8Frame(stream, coefProbs);
 		if(f.decodeFrame(debug)) {
 			if(f.getFilterType()>0)
 				f.loopFilter();

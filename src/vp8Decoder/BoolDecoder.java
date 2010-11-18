@@ -15,29 +15,19 @@
 */
 package vp8Decoder;
 
+import java.io.IOException;
+
+import javax.imageio.stream.ImageInputStream;
+
 public class BoolDecoder {
-	private int offset;            /* pointer to next compressed data byte */
+	private long offset;            /* pointer to next compressed data byte */
     private int range;                 /* always identical to encoder's range */
     private int value;                 /* contains at least 24 significant bits */
     int        bit_count;          /* # of bits shifted out of value, at most 7 */
-    int[] data;
-	public static void main(String[] args) {
-		int[] data = new int[3];
-		data[0]=112;
-		data[1]=0;
-		data[2]=0;
-		BoolDecoder d = new BoolDecoder(data, 0);
-		d.read_bool(128);
-		d.read_bool(128);
-		d.read_bool(128);
-		d.read_bool(128);
-		d.read_bool(128);
-		d.read_bool(128);
-		d.read_bool(128);
-		d.read_bool(128);
-	}
+    ImageInputStream data;
+
 	
-	BoolDecoder(int[] frame, int offset) {
+	BoolDecoder(ImageInputStream frame, long offset) throws IOException {
 		this.data=frame;
 		this.offset=offset;
 		init_bool_decoder();
@@ -45,20 +35,22 @@ public class BoolDecoder {
 	public String toString() {
 		return "bc: "+value;
 	}
-	private void init_bool_decoder() {
+	private void init_bool_decoder() throws IOException {
 
 		value = 0;                    /* value = first 16 input bits */
-
-
 		
-		value = (data[offset]) << 8;
+		data.seek(offset);
+		value = data.readUnsignedByte() << 8;
+		//value = (data[offset]) << 8;
 	    offset++;
 
 		range = 255;                       /* initial range is full */
 		bit_count = 0;                      /* have not yet shifted out any bits */
 	}
-	
-	public int read_bool(int probability) {
+	public void seek() throws IOException {
+		data.seek(offset);
+	}
+	public int read_bool(int probability) throws IOException {
 
 		    int bit = 0;
 		    int split;
@@ -85,7 +77,9 @@ public class BoolDecoder {
 
 		        if (count <= 0)
 		        {
-		            value |= data[offset] << (-count);
+		        	//data.seek(offset);
+		        	value |= data.readUnsignedByte() << (-count);
+		            //value |= data[offset] << (-count);
 		            offset++;
 		            count += 8 ;
 		        }
@@ -126,7 +120,7 @@ public class BoolDecoder {
 	  /* Convenience function reads a "literal", that is, a "num_bits" wide
     unsigned value whose bits come high- to low-order, with each bit
     encoded at probability 128 (i.e., 1/2). */
-	public int read_literal( int num_bits)
+	public int read_literal( int num_bits) throws IOException
 	{
 		int v = 0;
 		while( num_bits-->0)
@@ -134,14 +128,14 @@ public class BoolDecoder {
 		return v;
 	}
 
-	public int read_bit() {
+	public int read_bit() throws IOException {
 		return read_bool(128);
 	}
 	
 	int treed_read(
 			int t[],		/* tree specification */
 			int p[]		/* corresponding interior node probabilities */
-			      ) {
+			      ) throws IOException {
 		int i = 0; /* begin at root */
 		
 		/* Descend tree until leaf is reached */
@@ -153,7 +147,7 @@ public class BoolDecoder {
 	int treed_read_skip(
 			int t[],		/* tree specification */
 			int p[],		/* corresponding interior node probabilities */
-			int skip_branches) {
+			int skip_branches) throws IOException {
 		int i = skip_branches*2; /* begin at root */
 		
 		/* Descend tree until leaf is reached */

@@ -15,6 +15,8 @@
 */
 package vp8Decoder;
 
+import java.io.IOException;
+
 
 public class SubBlock {
 	public static enum PLANE{Y1, Y2, U, V};
@@ -59,7 +61,7 @@ public class SubBlock {
 		for(int z=0; z<16; z++)
 			tokens[z]=0;
 	}
-	private int DCTextra(BoolDecoder bc2, int p[]) {
+	private int DCTextra(BoolDecoder bc2, int p[]) throws IOException {
 		int v = 0;
 		int offset = 0;
 		do {
@@ -68,7 +70,7 @@ public class SubBlock {
 		} while (p[offset] > 0);
 		return v;
 	}
-	public void decodeSubBlock(BoolDecoder bc2, int[][][][] coef_probs, int ilc, int type, boolean withY2) {
+	public void decodeSubBlock(BoolDecoder bc2, int[][][][] coef_probs, int ilc, int type, boolean withY2) throws IOException {
 		SubBlock sb = this;
 		int startAt = 0;
 		if (withY2)
@@ -104,7 +106,7 @@ public class SubBlock {
 		}
 
 	}
-	private int decodeToken(BoolDecoder bc2, int v) {
+	private int decodeToken(BoolDecoder bc2, int v) throws IOException {
 		int r = v;
 
 		if (v == Globals.dct_cat1) {
