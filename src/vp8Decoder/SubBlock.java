@@ -51,6 +51,7 @@ public class SubBlock {
 	private int[][] diff;
 	private int[][] dest;
 	private MacroBlock macroBlock;
+	private boolean hasNoZeroToken;
 	public SubBlock(MacroBlock macroBlock, SubBlock above, SubBlock left, SubBlock.PLANE plane){
 		this.macroBlock=macroBlock;
 		this.plane=plane;
@@ -104,7 +105,10 @@ public class SubBlock {
 				tokens[Globals.default_zig_zag1d[c + startAt]] = dv;
 			c++;
 		}
-
+		hasNoZeroToken = false;
+		for(int x=0; x<16; x++)
+			if(tokens[x]!=0)
+				hasNoZeroToken = true;
 	}
 	private int decodeToken(BoolDecoder bc2, int v) throws IOException {
 		int r = v;
@@ -235,16 +239,12 @@ public class SubBlock {
 			return r;
 		}
 	}
-	public int[] getTokens() {
+	int[] getTokens() {
 		return tokens;
 	}
+	
 	public boolean hasNoZeroToken() {
-
-			for(int x=0; x<16; x++)
-				if(tokens[x]!=0)
-					return true;
-
-		return false;
+		return hasNoZeroToken;
 	}
 	public void predict(VP8Frame frame) {
 		SubBlock sb = this;
@@ -508,7 +508,9 @@ public class SubBlock {
 		}
 		
 		sb.setDest(dest);
-
+		sb.diff=null;
+		sb.predict=null;
+		sb.tokens=null;
 	}
 	
 	public void setDest(int[][] dest) {
