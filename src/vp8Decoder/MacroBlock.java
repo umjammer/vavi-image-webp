@@ -400,9 +400,11 @@ public class MacroBlock {
 						for(int c=0; c<4; c++) {
 
 							int upred =  leftUSb[b].getDest()[3][a] + aboveUSb[d].getDest()[c][3] - alu;
+							upred = Globals.clamp(upred, 255);
 							uSubBlocks[d][b].setPixel(c, a, upred);
 							
 							int vpred =  leftVSb[b].getDest()[3][a] + aboveVSb[d].getDest()[c][3] - alv;
+							vpred = Globals.clamp(vpred, 255);
 							vSubBlocks[d][b].setPixel(c, a, vpred);
 
 						}
@@ -552,7 +554,7 @@ public class MacroBlock {
 
 							int pred =  leftYSb[b].getDest()[3][a] + aboveYSb[d].getDest()[c][3] - al;
 
-							ySubBlocks[d][b].setPixel(c, a, pred);
+							ySubBlocks[d][b].setPixel(c, a, Globals.clamp(pred, 255));
 
 						}
 					}

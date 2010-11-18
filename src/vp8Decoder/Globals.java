@@ -677,4 +677,14 @@ public class Globals {
 		return r;
 	}
 
+	//clamp between 0 and value
+	public static int clamp(int input, int value) {
+		int r=input;
+		if(r>value)
+			r=value;
+		if(r<0)
+			r=0;
+		return r;
+	}
+
 }
