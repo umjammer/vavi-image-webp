@@ -207,7 +207,7 @@ public class SubBlock {
 		else {
 			int rv=127;
 			
-			if((intra_bmode == Globals.B_DC_PRED || intra_bmode == Globals.B_VE_PRED || intra_bmode == Globals.B_HE_PRED|| intra_bmode == Globals.B_VR_PRED || intra_bmode == Globals.B_RD_PRED || intra_bmode == Globals.B_HD_PRED)&& left)
+			if((intra_bmode == Globals.B_TM_PRED || intra_bmode == Globals.B_DC_PRED || intra_bmode == Globals.B_VE_PRED || intra_bmode == Globals.B_HE_PRED|| intra_bmode == Globals.B_VR_PRED || intra_bmode == Globals.B_RD_PRED || intra_bmode == Globals.B_HD_PRED)&& left)
 
 				rv=129;
 			int r[][]=new int[4][4];
