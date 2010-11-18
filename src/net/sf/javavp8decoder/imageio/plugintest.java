@@ -18,7 +18,9 @@ package net.sf.javavp8decoder.imageio;
 
 
 
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.ScrollPane;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -28,9 +30,13 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class plugintest extends JFrame {
 	private BufferedImage bi;
+	private ScrollPane sp;
+	private JPanel jp;
+
 	plugintest() {
 
 		//File f = new File("random.jpg");
@@ -45,14 +51,30 @@ public class plugintest extends JFrame {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
+		class ImagePanel extends JPanel {
+			private BufferedImage bi;
+			public ImagePanel(BufferedImage bi) {
+				this.bi = bi;
+			}
+			public void paintComponent(Graphics g) {
+				  super.paintComponent(g);
+				  g.drawImage(bi, 0, 0, null);
+				}
 
+		};
+		jp = new ImagePanel(bi);
+		jp.setPreferredSize(new Dimension(bi.getWidth(), bi.getHeight()));
+		
+		sp = new ScrollPane();
+		sp.add(jp);
+		this.add(sp);
 
 		this.setVisible(true);
 		this.setSize(1000, 1000);
 	}
 	public void paint(Graphics g) {
 		//System.out.println(bi.getWidth());
-		g.drawImage(bi, 100,100, null);
+		//g.drawImage(bi, 100,100, null);
 	}
 	public static void main(String[] args) {
 		IIORegistry r = javax.imageio.spi.IIORegistry.getDefaultInstance();
