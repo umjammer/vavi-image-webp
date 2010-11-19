@@ -68,6 +68,7 @@ public class VP8Frame {
 		logger = Logger.getAnonymousLogger();
 	}
 	public VP8Frame(ImageInputStream stream) throws IOException {
+		this.frame = stream;
 		offset = frame.getStreamPosition();
 		this.coefProbs=Globals.get_default_coef_probs();
 		tokenBoolDecoders = new Vector<BoolDecoder>();
