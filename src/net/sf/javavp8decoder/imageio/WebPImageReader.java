@@ -36,24 +36,26 @@ import javax.imageio.IIOException;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
 import vp8Decoder.VP8Decoder;
+import vp8Decoder.VP8Frame;
 
-public class WebPImageReader extends ImageReader {
+public class WebPImageReader extends ImageReader implements IIOReadProgressListener {
 
 	ImageInputStream stream = null;
 	int width, height;
 	int colorType;
-	
+
 	// Constants enumerating the values of colorType
 	static final int COLOR_TYPE_GRAY = 0;
 	static final int COLOR_TYPE_RGB = 1;
 
 	boolean gotHeader = false;
-	private VP8Decoder decoder;
+	private VP8Frame decoder;
 	Logger logger;
 
 	public WebPImageReader(ImageReaderSpi originatingProvider) {
@@ -122,7 +124,6 @@ public class WebPImageReader extends ImageReader {
 			throw new IllegalStateException("No input stream");
 		}
 
-		// Read `myformat\n' from the stream
 		byte[] signature = new byte[4];
 		try {
 			stream.readFully(signature);
@@ -186,9 +187,12 @@ public class WebPImageReader extends ImageReader {
 			} catch (IOException e) {
 				throw new IIOException("Error reading frame", e);
 		}*/
-		decoder = new VP8Decoder();
+
 		try {
-			decoder.decodeFrame(stream, false);
+			decoder = new VP8Frame(stream);
+			decoder.addIIOReadProgressListener(this);
+			decoder.decodeFrame(false);
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -332,9 +336,9 @@ public class WebPImageReader extends ImageReader {
 		//	                                  null);
 		//}
 
-		int [][]YBuffer = decoder.getFrame().getYBuffer();
-		int [][]UBuffer = decoder.getFrame().getUBuffer();
-		int [][]VBuffer = decoder.getFrame().getVBuffer();
+		int [][]YBuffer = decoder.getYBuffer();
+		int [][]UBuffer = decoder.getUBuffer();
+		int [][]VBuffer = decoder.getVBuffer();
 		for(int x = 0; x< decoder.getWidth(); x++) {
 			for(int y = 0; y< decoder.getHeight(); y++) {
 				int c[] = new int[3];
@@ -354,6 +358,7 @@ public class WebPImageReader extends ImageReader {
 				}
 				imRas.setPixel(x, y, c);
 			}
+			processImageProgress(50+((100.0F*x/decoder.getWidth())/2));
 		}
 		//for (int srcY = 0; srcY < height; srcY++) {
 			
@@ -404,6 +409,19 @@ public class WebPImageReader extends ImageReader {
 			                       e);
 		}*/
 	}
+	
+	public void imageProgress(ImageReader source, float percentageDone) {
+		processImageProgress(percentageDone/2);
+	}
+
+	public void imageComplete(ImageReader source) {}
+	public void imageStarted(ImageReader source, int imageIndex) {}
+	public void readAborted(ImageReader source) {}
+	public void sequenceComplete(ImageReader source) {}
+	public void sequenceStarted(ImageReader source, int minIndex) {}
+	public void thumbnailComplete(ImageReader source) {}
+	public void thumbnailProgress(ImageReader source, float percentageDone) {}
+	public void thumbnailStarted(ImageReader source, int imageIndex, int thumbnailIndex) {}
 }
 
 

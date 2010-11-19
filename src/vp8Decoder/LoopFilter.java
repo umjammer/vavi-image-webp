@@ -18,14 +18,16 @@ package vp8Decoder;
 
 public class LoopFilter {
 	public static void loopFilter(VP8Frame frame) {
-
+		frame.fireLFProgressUpdate(0);
 		if(frame.getFilterType()==2) {
 			loopFilterUV(frame);
+			frame.fireLFProgressUpdate(50);
 			loopFilterY(frame);
 		}
 		else if(frame.getFilterType()==1) { 
 			loopFilterSimple(frame);
 		}
+		frame.fireLFProgressUpdate(100);
 	}
 	public static void loopFilterUV(VP8Frame frame) {
 		/*System.out.println("loop filter");
@@ -34,7 +36,8 @@ public class LoopFilter {
 
 		System.out.println(frame.getMacroBlockRows());
 		System.out.println(frame.getMacroBlockCols());*/
-		for(int y=0; y<frame.getMacroBlockRows(); y++)
+		for(int y=0; y<frame.getMacroBlockRows(); y++) {
+			frame.fireLFProgressUpdate((100.0f*((float)(y+1)/(float)(frame.getMacroBlockRows())))/2);
 			for(int x=0; x<frame.getMacroBlockCols(); x++)
 			{
 				MacroBlock rmb = frame.getMacroBlock(x, y);
@@ -162,6 +165,7 @@ public class LoopFilter {
 					}
 				}
 			}
+		}
 	}
 	public static void loopFilterY(VP8Frame frame) {
 		/*System.out.println("loop filter");
@@ -170,7 +174,8 @@ public class LoopFilter {
 
 		System.out.println(frame.getMacroBlockRows());
 		System.out.println(frame.getMacroBlockCols());*/
-		for(int y=0; y<frame.getMacroBlockRows(); y++)
+		for(int y=0; y<frame.getMacroBlockRows(); y++) {
+			frame.fireLFProgressUpdate(50+(100.0f*((float)(y+1)/(float)(frame.getMacroBlockRows())))/2);
 			for(int x=0; x<frame.getMacroBlockCols(); x++)
 			{
 				//System.out.println("x: "+x+" y: "+y);
@@ -278,6 +283,7 @@ public class LoopFilter {
 					}
 				}
 			}
+		}
 	}
 	
 	public static void loopFilterSimple(VP8Frame frame) {
@@ -287,7 +293,8 @@ public class LoopFilter {
 
 		System.out.println(frame.getMacroBlockRows());
 		System.out.println(frame.getMacroBlockCols());*/
-		for(int y=0; y<frame.getMacroBlockRows(); y++)
+		for(int y=0; y<frame.getMacroBlockRows(); y++) {
+			frame.fireLFProgressUpdate((100.0f*((float)(y+1)/(float)(frame.getMacroBlockRows()))));
 			for(int x=0; x<frame.getMacroBlockCols(); x++)
 			{
 				//System.out.println("x: "+x+" y: "+y);
@@ -404,6 +411,7 @@ public class LoopFilter {
 					}
 				}
 			}
+		}
 	}
 	
 	private static void setSegV(SubBlock bsb, SubBlock tsb, Segment seg, int a) {

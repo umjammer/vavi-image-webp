@@ -32,8 +32,8 @@ public class VP8Decoder {
 		coefProbs = Globals.get_default_coef_probs();
 		f = new VP8Frame(stream, coefProbs);
 		if(f.decodeFrame(debug)) {
-			if(f.getFilterType()>0)
-				f.loopFilter();
+			//if(f.getFilterType()>0)
+			//	f.loopFilter();
 			//writeYV12File(f, ""+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());
 			//f.loopFilter();
 			//writeYV12File(""+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());

@@ -16,10 +16,12 @@
 package vp8Decoder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.stream.ImageInputStream;
 
 public class VP8Frame {
@@ -63,7 +65,12 @@ public class VP8Frame {
 		offset = frame.getStreamPosition();
 		this.coefProbs=coef_probs;
 		tokenBoolDecoders = new Vector<BoolDecoder>();
-		//coef_probs = Tree.get_default_coef_probs();
+		logger = Logger.getAnonymousLogger();
+	}
+	public VP8Frame(ImageInputStream stream) throws IOException {
+		offset = frame.getStreamPosition();
+		this.coefProbs=Globals.get_default_coef_probs();
+		tokenBoolDecoders = new Vector<BoolDecoder>();
 		logger = Logger.getAnonymousLogger();
 	}
 	private void createMacroBlocks() {
@@ -92,6 +99,7 @@ public class VP8Frame {
 	private int[] ref_lf_deltas = new int[MAX_REF_LF_DELTAS];
 	private int[] mode_lf_deltas = new int[MAX_MODE_LF_DELTAS];
 	private SegmentQuants segmentQuants;
+	private ArrayList<IIOReadProgressListener> _listeners = new ArrayList<IIOReadProgressListener>();
 	public boolean decodeFrame(boolean debug) throws IOException {
 		
 		this.debug=debug;
@@ -374,11 +382,14 @@ public class VP8Frame {
 			}
 			else
 				decodeMacroBlockRow(mb_row);
+			fireProgressUpdate(mb_row);
 
 		}
 
 		if(debug)
 			drawDebug();
+		if(this.getFilterType()>0)
+			this.loopFilter();
 		return true;
 	}
 	
@@ -409,7 +420,6 @@ public class VP8Frame {
 			mb.dequantMacroBlock(this);
 
 		}
-
 	}
 
 	public SubBlock getAboveRightSubBlock(SubBlock sb, SubBlock.PLANE plane) {
@@ -782,5 +792,23 @@ public class VP8Frame {
 	}
 	public SegmentQuants getSegmentQuants() {
 		return segmentQuants;
+	}
+	public void addIIOReadProgressListener(IIOReadProgressListener listener) {
+		_listeners.add(listener);
+	}
+	public void removeIIOReadProgressListener(IIOReadProgressListener listener) {
+		_listeners.remove(listener);
+	}
+	private void fireProgressUpdate(int mb_row) {
+        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
+        while( listeners.hasNext() ) {
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100.0f*((float)(mb_row+1)/(float)getMacroBlockRows()))/2);
+        }
+	}
+	public void fireLFProgressUpdate(float p) {
+        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
+        while( listeners.hasNext() ) {
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, 50+(p/2));
+        }
 	}
 }
