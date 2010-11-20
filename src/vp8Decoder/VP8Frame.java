@@ -826,6 +826,61 @@ public class VP8Frame {
 		useBufferedImage(bi);
 		return bi;
 	}
+	
+	public BufferedImage getDebugImageDiff() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy, u, v;
+				yy = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDiff()[x%4][y%4];
+				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
+				v = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
+			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
+			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
+			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		return bi;
+	}
+	
+	public BufferedImage getDebugImagePredict() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy, u, v;
+				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getPredict()[x%4][y%4];
+				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
+				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
+			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
+			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
+			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		return bi;
+	}
+	
 	public void useBufferedImage(BufferedImage dst) {
 	    WritableRaster imRas = dst.getWritableTile(0, 0);
 
