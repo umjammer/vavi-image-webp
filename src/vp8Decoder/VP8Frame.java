@@ -15,6 +15,8 @@
 */
 package vp8Decoder;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -86,8 +88,6 @@ public class VP8Frame {
     	}
 		
 	}
-
-	
 
 	private boolean debug=false;
 	private int width;
@@ -805,13 +805,52 @@ public class VP8Frame {
 	private void fireProgressUpdate(int mb_row) {
         java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
         while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100.0f*((float)(mb_row+1)/(float)getMacroBlockRows()))/2);
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100.0f*((float)(mb_row+1)/(float)getMacroBlockRows()))/3);
         }
 	}
 	public void fireLFProgressUpdate(float p) {
         java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
         while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, 50+(p/2));
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, 33.3f+(p/3));
         }
+	}
+	public void fireRGBProgressUpdate(float p) {
+        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
+        while( listeners.hasNext() ) {
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, 66.6f+(p/3));
+        }
+	}
+	
+	public BufferedImage getBufferedImage() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+		useBufferedImage(bi);
+		return bi;
+	}
+	public void useBufferedImage(BufferedImage dst) {
+	    WritableRaster imRas = dst.getWritableTile(0, 0);
+		int [][]YBuffer = getYBuffer();
+		int [][]UBuffer = getUBuffer();
+		int [][]VBuffer = getVBuffer();
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy, u, v;
+				yy = YBuffer[x][y];
+				u = UBuffer[x/2][y/2];
+				v = VBuffer[x/2][y/2];
+	
+			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
+			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
+			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(((100.0F*x/getWidth())));
+		}
 	}
 }

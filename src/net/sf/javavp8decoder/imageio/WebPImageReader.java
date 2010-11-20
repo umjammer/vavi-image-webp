@@ -291,78 +291,9 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 		BufferedImage dst = getDestination(param,
 		                                   getImageTypes(0),
 		                                   width, height);
-		// Enure band settings from param are compatible with images
-		int inputBands = 3;//(colorType == COLOR_TYPE_RGB) ? 3 : 1;
+		decoder.useBufferedImage(dst);
+		//decoder.getBufferedImage();
 		
-		checkReadParamBandSettings(param, inputBands,
-		                           dst.getSampleModel().getNumBands());
-
-		int[] bandOffsets = new int[inputBands];
-		for (int i = 0; i < inputBands; i++) {
-			bandOffsets[i] = i;
-		}
-		int bytesPerRow = width*inputBands;
-		DataBufferByte rowDB = new DataBufferByte(bytesPerRow);
-		WritableRaster rowRas =
-			Raster.createInterleavedRaster(rowDB,
-			                               width, 1, bytesPerRow,
-			                               inputBands, bandOffsets,
-			                               new Point(0, 0));
-		byte[] rowBuf = rowDB.getData();
-
-		// Create an int[] that can a single pixel
-		int[] pixel = rowRas.getPixel(0, 0, (int[])null);
-
-		WritableRaster imRas = dst.getWritableTile(0, 0);
-		int dstMinX = imRas.getMinX();
-		int dstMaxX = dstMinX + imRas.getWidth() - 1;
-		int dstMinY = imRas.getMinY();
-		int dstMaxY = dstMinY + imRas.getHeight() - 1;
-
-		// Create a child raster exposing only the desired source bands
-		if (sourceBands != null) {
-			rowRas = rowRas.createWritableChild(0, 0,
-			                                    width, 1,
-			                                    0, 0,
-			                                    sourceBands);
-		}
-
-		// Create a child raster exposing only the desired dest bands
-		//if (destinationBands != null) {
-		//	imRas = imRas.createWritableChild(0, 0,
-		//	                                  imRas.getWidth(),
-		//	                                  imRas.getHeight(),
-		//	                                  0, 0,
-		//	                                  null);
-		//}
-
-		int [][]YBuffer = decoder.getYBuffer();
-		int [][]UBuffer = decoder.getUBuffer();
-		int [][]VBuffer = decoder.getVBuffer();
-		for(int x = 0; x< decoder.getWidth(); x++) {
-			for(int y = 0; y< decoder.getHeight(); y++) {
-				int c[] = new int[3];
-				int yy, u, v;
-				yy = YBuffer[x][y];
-				u = UBuffer[x/2][y/2];
-				v = VBuffer[x/2][y/2];
-	
-			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
-			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
-			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			processImageProgress(50+((100.0F*x/decoder.getWidth())/2));
-		}
-		//for (int srcY = 0; srcY < height; srcY++) {
-			
-		//}
 		super.processImageComplete();
 		return dst;
 	}
@@ -411,7 +342,7 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 	}
 	
 	public void imageProgress(ImageReader source, float percentageDone) {
-		processImageProgress(percentageDone/2);
+		processImageProgress(percentageDone);
 	}
 
 	public void imageComplete(ImageReader source) {}
