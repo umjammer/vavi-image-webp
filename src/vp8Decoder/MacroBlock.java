@@ -34,6 +34,7 @@ public class MacroBlock {
 	private int filter_level;
 	private int uv_filter_level;
 	private boolean skip_inner_lf;
+	private boolean keepDebugInfo = false;
 
 	public boolean isSkip_inner_lf() {
 		return skip_inner_lf;
@@ -50,9 +51,10 @@ public class MacroBlock {
 	public void setMb_skip_coeff(int mbSkipCoeff) {
 		mb_skip_coeff = mbSkipCoeff;
 	}
-	MacroBlock(int x, int y) {
+	MacroBlock(int x, int y, boolean keepDebugInfo) {
 		this.x=x-1;
 		this.y=y-1;
+		this.keepDebugInfo=keepDebugInfo;
 
 		ySubBlocks=new SubBlock[4][4];
 		uSubBlocks=new SubBlock[2][2];
@@ -97,6 +99,9 @@ public class MacroBlock {
 		}
 		y2SubBlock = new SubBlock(this, null, null, SubBlock.PLANE.Y2);
 
+	}
+	public boolean isKeepDebugInfo() {
+		return keepDebugInfo;
 	}
 	public int getX() {
 		return x;

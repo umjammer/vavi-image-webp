@@ -223,6 +223,11 @@ public class SubBlock {
 			return r;
 		}
 	}
+	public int[][] getPredict() {
+		if(predict!=null)
+			return predict;
+		return null;
+	}
 	
 	public int[][] getMacroBlockPredict(int intra_mode) {
 		if(dest!=null)
@@ -508,9 +513,11 @@ public class SubBlock {
 		}
 		
 		sb.setDest(dest);
-		sb.diff=null;
-		sb.predict=null;
-		sb.tokens=null;
+		if(!this.getMacroBlock().isKeepDebugInfo()) {
+			sb.diff=null;
+			sb.predict=null;
+			sb.tokens=null;
+		}
 	}
 	
 	public void setDest(int[][] dest) {

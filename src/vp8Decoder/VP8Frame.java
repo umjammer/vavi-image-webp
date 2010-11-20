@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.stream.ImageInputStream;
 
+import vp8Decoder.SubBlock.PLANE;
+
 public class VP8Frame {
 	private static int MAX_REF_LF_DELTAS = 4;
 	private static int MAX_MODE_LF_DELTAS = 4;
@@ -78,7 +80,7 @@ public class VP8Frame {
     	macroBlocks = new MacroBlock[macroBlockCols+2][macroBlockRows+2];
     	for(int x=0; x<macroBlockCols+2; x++) {
     		for(int y=0; y<macroBlockRows+2; y++) {
-    			macroBlocks[x][y] = new MacroBlock(x, y);
+    			macroBlocks[x][y] = new MacroBlock(x, y, debug);
  
     		}
     	}
@@ -387,8 +389,8 @@ public class VP8Frame {
 
 		}
 
-		if(debug)
-			drawDebug();
+		//if(debug)
+		//	drawDebug();
 		if(this.getFilterType()>0)
 			this.loopFilter();
 		return true;
