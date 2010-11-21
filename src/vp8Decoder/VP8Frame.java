@@ -103,6 +103,8 @@ public class VP8Frame {
 	private int[] mode_lf_deltas = new int[MAX_MODE_LF_DELTAS];
 	private SegmentQuants segmentQuants;
 	private ArrayList<IIOReadProgressListener> _listeners = new ArrayList<IIOReadProgressListener>();
+	private int buffersToCreate=1;
+	private int bufferCount;
 	public boolean decodeFrame(boolean debug) throws IOException {
 		
 		this.debug=debug;
@@ -802,33 +804,39 @@ public class VP8Frame {
 	public void removeIIOReadProgressListener(IIOReadProgressListener listener) {
 		_listeners.remove(listener);
 	}
-
+	
+	public void setBuffersToCreate (int count) {
+		this.buffersToCreate = 3+count;
+		this.bufferCount=0;
+	}
 	private void fireProgressUpdate(int mb_row) {
         java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
         while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100.0f*((float)(mb_row+1)/(float)getMacroBlockRows()))/3);
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100.0f*((float)(mb_row+1)/(float)getMacroBlockRows()))/buffersToCreate);
         }
 	}
 	public void fireLFProgressUpdate(float p) {
         java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
         while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, 33.3f+(p/3));
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100/buffersToCreate)+(p/buffersToCreate));
         }
 	}
 	public void fireRGBProgressUpdate(float p) {
         java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
         while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, 66.6f+(p/3));
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, ((bufferCount+4)*(100/buffersToCreate))+(p/buffersToCreate));
         }
 	}
 	
 	public BufferedImage getBufferedImage() {
 		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
 		useBufferedImage(bi);
+		bufferCount++;
 		return bi;
 	}
 	
 	public BufferedImage getDebugImageDiff() {
+
 		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
 	    WritableRaster imRas = bi.getWritableTile(0, 0);
 		for(int x = 0; x< getWidth(); x++) {
@@ -852,6 +860,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -879,6 +888,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	public BufferedImage getDebugImageYBuffer() {
@@ -903,6 +913,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -928,6 +939,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -953,6 +965,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -1023,6 +1036,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -1048,6 +1062,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -1058,7 +1073,7 @@ public class VP8Frame {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
 				int yy, u, v;
-				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
+				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
 				c[0] = u;
 			 	c[1] = u;
 			 	c[2] = u;
@@ -1073,6 +1088,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -1098,6 +1114,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -1108,7 +1125,7 @@ public class VP8Frame {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
 				int yy, u, v;
-				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
+				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
 				c[0] = u;
 			 	c[1] = u;
 			 	c[2] = u;
@@ -1123,6 +1140,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 	
@@ -1148,6 +1166,7 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
+		bufferCount++;
 		return bi;
 	}
 }
