@@ -15,12 +15,17 @@
 */
 package net.sf.javavp8decoder.imageio;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -61,6 +66,8 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileFilter;
 
+import vp8Decoder.Globals;
+import vp8Decoder.SubBlock;
 import vp8Decoder.VP8Frame;
 
 public class VP8Inspector extends JFrame implements MouseMotionListener, MouseListener, MouseWheelListener, ActionListener{
@@ -74,12 +81,13 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 	private JPanel jp;
 	private JCheckBox mBCheckBox = new JCheckBox("MB");
 	private JCheckBox sBCheckBox = new JCheckBox("SB");
+	private JCheckBox colorCodeCheckBox = new JCheckBox("Colour Code");
 	private JRadioButton rgbButton = new JRadioButton("RGB");
 	private JRadioButton yButton = new JRadioButton("Y");
 	private JRadioButton uButton = new JRadioButton("U");
 	private JRadioButton vButton = new JRadioButton("V");
 	private JRadioButton destButton = new JRadioButton("Dest");
-	private JRadioButton diffButton = new JRadioButton("Diff");
+	private JRadioButton residualButton = new JRadioButton("Residual");
 	private JRadioButton predictButton = new JRadioButton("Predict");
 	JProgressBar progressBar;
 	JToolBar toolBar;
@@ -91,14 +99,14 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 	private final JFileChooser fc = new JFileChooser();
 	private VP8Frame frame;
 	private BufferedImage bi;
-	private BufferedImage diff;
+	private BufferedImage residual;
 	private BufferedImage predict;
 	private BufferedImage yb;
 	private BufferedImage ub;
 	private BufferedImage vb;
-	private BufferedImage ydiff;
-	private BufferedImage udiff;
-	private BufferedImage vdiff;
+	private BufferedImage yResidual;
+	private BufferedImage uResidual;
+	private BufferedImage vResidual;
 	private BufferedImage ypred;
 	private BufferedImage upred;
 	private BufferedImage vpred;
@@ -110,11 +118,13 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 		toolBar = new JToolBar();
 		mBCheckBox.addActionListener(this);
 		sBCheckBox.addActionListener(this);
+		colorCodeCheckBox.addActionListener(this);
 		toolBar.add(fileOpenButton);
 		fileOpenButton.addActionListener(this);
 		toolBar.addSeparator();
 		toolBar.add(mBCheckBox);
 		toolBar.add(sBCheckBox);
+		toolBar.add(colorCodeCheckBox);
 		toolBar.addSeparator();
 		ButtonGroup bgPlane = new ButtonGroup();
 		ButtonGroup bgBuffer = new ButtonGroup();
@@ -123,14 +133,14 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 		bgPlane.add(uButton);
 		bgPlane.add(vButton);
 		bgBuffer.add(destButton);
-		bgBuffer.add(diffButton);
+		bgBuffer.add(residualButton);
 		bgBuffer.add(predictButton);
 		rgbButton.addActionListener(this);
 		yButton.addActionListener(this);
 		uButton.addActionListener(this);
 		vButton.addActionListener(this);
 		destButton.addActionListener(this);
-		diffButton.addActionListener(this);
+		residualButton.addActionListener(this);
 		predictButton.addActionListener(this);
 		toolBar.add(rgbButton);
 		toolBar.add(yButton);
@@ -138,7 +148,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 		toolBar.add(vButton);
 		toolBar.addSeparator();
 		toolBar.add(destButton);
-		toolBar.add(diffButton);
+		toolBar.add(residualButton);
 		toolBar.add(predictButton);
 		rgbButton.setSelected(true);
 		destButton.setSelected(true);
@@ -191,14 +201,14 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 	    frame.setBuffersToCreate(12);
 	    frame.decodeFrame(true);
 	    bi = frame.getBufferedImage();
-	    diff = frame.getDebugImageDiff();
+	    residual = frame.getDebugImageDiff();
 	    predict = frame.getDebugImagePredict();
 	    yb = frame.getDebugImageYBuffer();
 	    ub = frame.getDebugImageUBuffer();
 	    vb = frame.getDebugImageVBuffer();
-	    ydiff = frame.getDebugImageYDiffBuffer();
-	    udiff = frame.getDebugImageUDiffBuffer();
-	    vdiff = frame.getDebugImageVDiffBuffer();
+	    yResidual = frame.getDebugImageYDiffBuffer();
+	    uResidual = frame.getDebugImageUDiffBuffer();
+	    vResidual = frame.getDebugImageVDiffBuffer();
 	    ypred = frame.getDebugImageYPredBuffer();
 	    upred = frame.getDebugImageUPredBuffer();
 	    vpred = frame.getDebugImageVPredBuffer();
@@ -222,32 +232,33 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 						 */
 						private static final long serialVersionUID = 1L;
 						private BufferedImage bi;
-						private BufferedImage diff;
+						private BufferedImage residual;
 						private BufferedImage predict;
 						private BufferedImage yb;
 						private BufferedImage ub;
 						private BufferedImage vb;
-						private BufferedImage yDiff;
-						private BufferedImage uDiff;
-						private BufferedImage vDiff;
+						private BufferedImage yResidual;
+						private BufferedImage uResidual;
+						private BufferedImage vResidual;
 						private BufferedImage yPred;
 						private BufferedImage uPred;
 						private BufferedImage vPred;
-						public ImagePanel(BufferedImage bi, BufferedImage yb, BufferedImage ub, BufferedImage vb, BufferedImage diff, BufferedImage predict, 
-								BufferedImage yDiff, BufferedImage uDiff, BufferedImage vDiff, 
+						public ImagePanel(BufferedImage bi, BufferedImage yb, BufferedImage ub, BufferedImage vb, BufferedImage residual, BufferedImage predict, 
+								BufferedImage yResidual, BufferedImage uResidual, BufferedImage vResidual, 
 								BufferedImage yPred, BufferedImage uPred, BufferedImage vPred ) {
 							this.bi = bi;
 							this.yb = yb;
 							this.ub = ub;
 							this.vb = vb;
-							this.diff = diff;
+							this.residual = residual;
 							this.predict = predict;
-							this.yDiff = yDiff;
-							this.uDiff = uDiff;
-							this.vDiff = vDiff;
+							this.yResidual = yResidual;
+							this.uResidual = uResidual;
+							this.vResidual = vResidual;
 							this.yPred = yPred;
 							this.uPred = uPred;
 							this.vPred = vPred;
+
 							
 						}
 
@@ -256,26 +267,26 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 							BufferedImage bi=this.bi;
 							if(rgbButton.isSelected() && destButton.isSelected())
 								bi=this.bi;
-							if(rgbButton.isSelected() && diffButton.isSelected())
-								bi=this.diff;
+							if(rgbButton.isSelected() && residualButton.isSelected())
+								bi=this.residual;
 							if(rgbButton.isSelected() && predictButton.isSelected())
 								bi=this.predict;
 							if(yButton.isSelected() && destButton.isSelected())
 								bi=this.yb;
-							if(yButton.isSelected() && diffButton.isSelected())
-								bi=this.yDiff;
+							if(yButton.isSelected() && residualButton.isSelected())
+								bi=this.yResidual;
 							if(yButton.isSelected() && predictButton.isSelected())
 								bi=this.yPred;
 							if(uButton.isSelected() && destButton.isSelected())
 								bi=this.ub;
-							if(uButton.isSelected() && diffButton.isSelected())
-								bi=this.uDiff;
+							if(uButton.isSelected() && residualButton.isSelected())
+								bi=this.uResidual;
 							if(uButton.isSelected() && predictButton.isSelected())
 								bi=this.uPred;
 							if(vButton.isSelected() && destButton.isSelected())
 								bi=this.vb;
-							if(vButton.isSelected() && diffButton.isSelected())
-								bi=this.vDiff;
+							if(vButton.isSelected() && residualButton.isSelected())
+								bi=this.vResidual;
 							if(vButton.isSelected() && predictButton.isSelected())
 								bi=this.vPred;
 
@@ -295,6 +306,83 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 									for(int y=16; y<bi.getWidth(); y+=16)
 										g.drawLine((int) (y*scale), 0, (int) (y*scale), (int) (bi.getHeight()*scale));
 								}
+								if(colorCodeCheckBox.isSelected() && scale>0.1f) {
+									Graphics2D g2 = (Graphics2D)g;
+									Stroke s = g2.getStroke();
+
+									for(int y=0; y<bi.getHeight(); y+=16)
+										for(int x=0; x<bi.getWidth(); x+=16) {
+											Rectangle r = jp.getVisibleRect();
+											if(r.contains((x+8)*scale, (y+8)*scale)) {
+												int mbx=x/16;
+												int mby=y/16;
+												int mode = frame.getMacroBlock(mbx, mby).getUvMode();
+												if(yButton.isSelected() || rgbButton.isSelected()){
+													mode = frame.getMacroBlock(mbx, mby).getYMode();	
+												}
+												
+												switch(mode) {
+												case Globals.DC_PRED:
+													g.setColor(new Color(0, 0, 255, 50));
+													break;
+												case Globals.V_PRED:
+													g.setColor(new Color(255, 0, 0, 50));
+													break;
+												case Globals.H_PRED:
+													g.setColor(new Color(0, 255, 255, 50));
+													break;
+												case Globals.TM_PRED:
+													g.setColor(new Color(255, 0, 255, 50));
+													break;
+												case Globals.B_PRED:
+													g.setColor(new Color(255, 255, 255, 50));
+													break;
+												}
+												if(mode!=Globals.B_PRED) 
+													g2.fillOval((int)(x*scale)+(int)(16*scale)/4, (int)(y*scale)+(int)(16*scale)/4, (int) (16*scale)/2, (int) (16*scale)/2);
+												else if(scale>0.9f){
+													for(int sby=0; sby<4; sby++) {
+														for(int sbx=0; sbx<4; sbx++) {
+															switch(frame.getMacroBlock(mbx, mby).getSubBlock(SubBlock.PLANE.Y1, sbx, sby).getMode()) {
+															case Globals.B_DC_PRED:
+																g.setColor(new Color(0, 0, 255, 150));
+																break;
+															case Globals.B_TM_PRED:
+																g.setColor(new Color(255, 0, 255, 150));
+																break;
+															case Globals.B_VE_PRED:
+																g.setColor(new Color(255, 255, 127, 150));
+																break;
+															case Globals.B_HE_PRED:
+																g.setColor(new Color(255, 0, 255, 150));
+																break;
+															case Globals.B_LD_PRED:
+																g.setColor(new Color(0, 255, 255, 150));
+																break;
+															case Globals.B_RD_PRED:
+																g.setColor(new Color(255, 255, 0, 150));
+																break;
+															case Globals.B_VR_PRED:
+																g.setColor(new Color(255, 127, 255, 150));
+																break;
+															case Globals.B_VL_PRED:
+																g.setColor(new Color(127, 255, 127, 150));
+																break;
+															case Globals.B_HD_PRED:
+																g.setColor(new Color(127, 127, 255, 150));
+																break;
+															case Globals.B_HU_PRED:
+																g.setColor(new Color(127,255, 255, 150));
+																break;
+															}
+															g.fillOval((int)(x*scale)+(int)((sbx*4)*scale)+(int) (4*scale)/4, (int)(y*scale)+(int)((sby*4)*scale)+(int) (4*scale)/4, (int) (4*scale)/2, (int) (4*scale)/2);
+														}
+													}
+												}
+											}
+										}
+									}
+							
 								if(this.getMousePosition()!=null) {
 									g.setColor(Color.RED);
 									g.drawRect((int) (((this.getMousePosition().x)-(this.getMousePosition().x)%(16*scale))), (int) (((this.getMousePosition().y)-(this.getMousePosition().y)%(16*scale))), (int)(16*scale), (int)(16*scale));
@@ -308,7 +396,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 					progressBar.setVisible(false);
 					progressBar.setValue(0);
 					setTitle("VP8Inspector - "+f.getName());
-					jp = new ImagePanel(bi, yb, ub, vb, diff, predict, ydiff, udiff, vdiff, ypred, upred, vpred);
+					jp = new ImagePanel(bi, yb, ub, vb, residual, predict, yResidual, uResidual, vResidual, ypred, upred, vpred);
 					jp.setPreferredSize(new Dimension(bi.getWidth(), bi.getHeight()));
 					setPreferredSize(new Dimension(bi.getWidth(), bi.getHeight()));
 					//pack();
@@ -375,6 +463,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 	public void mouseReleased(MouseEvent arg0) {
 		prevP=null;
 		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		jp.repaint();
 	}
 
 	private float scale = 1.0f;
@@ -392,7 +481,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 	
 	public void actionPerformed(ActionEvent e) {
 
-		if((e.getSource()==mBCheckBox || e.getSource()==sBCheckBox) &&jp!=null)
+		if((e.getSource()==mBCheckBox || e.getSource()==sBCheckBox || e.getSource()==colorCodeCheckBox) &&jp!=null)
 			jp.repaint();
 		if(e.getSource()==fileOpenMenu || e.getSource()==fileOpenButton && !progressBar.isVisible()) {
 
@@ -416,7 +505,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 
 	        }
 		}
-		if(e.getSource()==rgbButton || e.getSource()==destButton ||e.getSource()==diffButton || e.getSource()==predictButton ||
+		if(e.getSource()==rgbButton || e.getSource()==destButton ||e.getSource()==residualButton || e.getSource()==predictButton ||
 				e.getSource()==yButton || e.getSource()==uButton || e.getSource()==vButton) {
 
 			if(frame!=null) {
@@ -433,7 +522,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 			int mbx = (((int)(p.x/scale))/16);
 			int mby = (((int)(p.y/scale))/16);
 			int sbx=(((int)(p.x/scale))/4)%4;
-			int sby=0;
+			int sby=(((int)(p.y/scale))/4)%4;
 			infoText.setText(infoText.getText()+"\nMacroBlock: "+mbx+", "+mby);
 			infoText.setText(infoText.getText()+"\n"+frame.getMacroBlockDebugString(mbx, mby, sbx, sby));
 			infoText.setText(infoText.getText()+"\nPixel: "+(int)(p.x/scale)+", "+(int)(p.y/scale));
