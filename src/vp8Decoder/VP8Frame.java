@@ -880,6 +880,30 @@ public class VP8Frame {
 		}
 		return bi;
 	}
+	public BufferedImage getDebugImageYBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy;
+				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDest()[x%4][y%4];
+			 	c[0] = yy;
+			 	c[1] = yy;
+			 	c[2] = yy;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		return bi;
+	}
 	
 	public void useBufferedImage(BufferedImage dst) {
 	    WritableRaster imRas = dst.getWritableTile(0, 0);
@@ -923,5 +947,53 @@ public class VP8Frame {
 			}
 		}
 		return r;
+	}
+	public BufferedImage getDebugImageUBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy, u, v;
+				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
+				c[0] = u;
+			 	c[1] = u;
+			 	c[2] = u;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		return bi;
+	}
+	public BufferedImage getDebugImageVBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy, u, v;
+				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
+				c[0] = v;
+			 	c[1] = v;
+			 	c[2] = v;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		return bi;
 	}
 }
