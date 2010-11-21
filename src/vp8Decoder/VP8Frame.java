@@ -906,4 +906,22 @@ public class VP8Frame {
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
 	}
+	public String getMacroBlockDebugString(int mbx, int mby, int sbx, int sby) {
+		String r = new String();
+		if(mbx<this.macroBlockCols && mby<this.getMacroBlockRows()) {
+			MacroBlock mb = getMacroBlock(mbx, mby);
+			r=r+mb.getDebugString();
+			if(sbx<4 && sby<4) {
+				SubBlock sb = mb.getSubBlock(SubBlock.PLANE.Y1, sbx, sby);
+				r=r+"\n SubBlock "+sbx+", "+sby+"\n  "+sb.getDebugString();
+				sb = mb.getSubBlock(SubBlock.PLANE.Y2, sbx, sby);
+				r=r+"\n SubBlock "+sbx+", "+sby+"\n  "+sb.getDebugString();
+				sb = mb.getSubBlock(SubBlock.PLANE.U, sbx/2, sby/2);
+				r=r+"\n SubBlock "+sbx/2+", "+sby/2+"\n  "+sb.getDebugString();
+				sb = mb.getSubBlock(SubBlock.PLANE.V, sbx/2, sby/2);
+				r=r+"\n SubBlock "+sbx/2+", "+sby/2+"\n  "+sb.getDebugString();
+			}
+		}
+		return r;
+	}
 }

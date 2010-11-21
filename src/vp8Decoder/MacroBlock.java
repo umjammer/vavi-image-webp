@@ -754,4 +754,15 @@ public class MacroBlock {
 	public int getUVFilterLevel() {
 		return this.uv_filter_level;
 	}
+	public String getDebugString() {
+		String r = new String();
+		r=r+" YMode: "+Globals.getModeAsString(yMode);
+		r=r+"\n UVMode: "+Globals.getModeAsString(uvMode);
+		r=r+"\n SegmentID: "+segmentId;
+		r=r+"\n Filter Level: "+filter_level;
+		r=r+"\n UV Filter Level: "+uv_filter_level;
+		r=r+"\n Skip Coeff: "+mb_skip_coeff;
+
+		return r;
+	}
 }

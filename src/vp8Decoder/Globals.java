@@ -23,6 +23,21 @@ public class Globals {
 	public static final int TM_PRED=	3; /* propagate second differences a la "true motion" */
 	public static final int B_PRED=		4;  /* each Y subblock is independently predicted */
 	
+	public static String getModeAsString(int mode) {
+		switch(mode) {
+		case DC_PRED:
+			return "DC_PRED";
+		case V_PRED:
+			return "V_PRED";
+		case H_PRED:
+			return "H_PRED";
+		case TM_PRED:
+			return "TM_PRED";
+		case B_PRED:
+			return "B_PRED";
+		}
+		return "not found";
+	}
 	
 	/*intra_bmode*/
 	public static final int B_DC_PRED=0; /* predict DC using row above and column to the left */
@@ -36,6 +51,32 @@ public class Globals {
 	public static final int B_HD_PRED=8; /* ESE (horizontal down) "" */
 	public static final int B_HU_PRED=9; /* ENE (horizontal up) "" */
 	
+	public static String getSubBlockModeAsString(int mode) {
+		switch(mode) {
+		case B_DC_PRED:
+			return "B_DC_PRED";
+		case B_TM_PRED:
+			return "B_TM_PRED";
+		case B_VE_PRED:
+			return "B_VE_PRED";
+		case B_HE_PRED:
+			return "B_HE_PRED";
+		case B_LD_PRED:
+			return "B_LD_PRED";
+		case B_RD_PRED:
+			return "B_RD_PRED";
+		case B_VR_PRED:
+			return "B_VR_PRED";
+		case B_VL_PRED:
+			return "B_VL_PRED";
+		case B_HD_PRED:
+			return "B_HD_PRED";
+		case B_HU_PRED:
+			return "B_HU_PRED";
+		}
+		return "not found";
+	}
+
 	public static final int MAX_MB_SEGMENTS=4;
 	public static final int MB_LVL_MAX=2;
 	public static int [] vp8_mb_feature_data_bits = {7, 6};

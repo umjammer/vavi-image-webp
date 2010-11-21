@@ -226,7 +226,7 @@ public class SubBlock {
 	public int[][] getPredict() {
 		if(predict!=null)
 			return predict;
-		return null;
+		return getPredict(Globals.B_DC_PRED, false);
 	}
 	
 	public int[][] getMacroBlockPredict(int intra_mode) {
@@ -591,6 +591,13 @@ public class SubBlock {
 		}
 
 }
+	public String getDebugString() {
+		String r=new String();
+		r=r+"  "+plane;
+		if(getMacroBlock().getYMode()==Globals.B_PRED && plane==SubBlock.PLANE.Y1)
+			r=r+"\n  "+Globals.getSubBlockModeAsString(mode);
+		return r;
+	}
 
 
 }
