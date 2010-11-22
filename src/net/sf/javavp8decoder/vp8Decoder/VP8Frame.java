@@ -20,8 +20,7 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.stream.ImageInputStream;
@@ -80,14 +79,14 @@ public class VP8Frame {
 		offset = frame.getStreamPosition();
 		this.coefProbs=Globals.getDefaultCoefProbs();
 		tokenBoolDecoders = new Vector<BoolDecoder>();
-		logger = Logger.getAnonymousLogger();
+		logger = new Logger();
 	}
 	public VP8Frame(ImageInputStream stream, int[][][][] coefProbs) throws IOException {
 		this.frame = stream;
 		offset = frame.getStreamPosition();
 		this.coefProbs=coefProbs;
 		tokenBoolDecoders = new Vector<BoolDecoder>();
-		logger = Logger.getAnonymousLogger();
+		logger = new Logger();
 	}
 	public void addIIOReadProgressListener(IIOReadProgressListener listener) {
 		_listeners.add(listener);
@@ -105,20 +104,21 @@ public class VP8Frame {
 	public boolean decodeFrame(boolean debug) throws IOException {
 		
 		this.debug=debug;
+		logger.setEnabled(debug);
 		segmentQuants = new SegmentQuants();
 		int c;
 		frame.seek(offset++); c=frame.readUnsignedByte();
-		logger.log(Level.INFO, "frame.length: " + frame.length());
+		logger.log("frame.length: " + frame.length());
 		frameType = getBitAsInt(c, 0);
-		logger.log(Level.INFO, "Frame type: " + frameType);
+		logger.log("Frame type: " + frameType);
 		if(frameType!=0)
 			return false;
 		int versionNumber = getBitAsInt(c, 1) << 1;
 
 		versionNumber += getBitAsInt(c, 2) << 1;
 		versionNumber += getBitAsInt(c, 3);
-		logger.log(Level.INFO, "Version Number: " + versionNumber);
-		logger.log(Level.INFO, "show_frame: " + getBit(c, 4));
+		logger.log("Version Number: " + versionNumber);
+		logger.log("show_frame: " + getBit(c, 4));
 
 		int firstPartitionLengthInBytes;
 		firstPartitionLengthInBytes = getBitAsInt(c, 5) << 0;
@@ -128,31 +128,31 @@ public class VP8Frame {
 		firstPartitionLengthInBytes += c << 3;
 		frame.seek(offset++); c=frame.readUnsignedByte();
 		firstPartitionLengthInBytes += c << 11;
-		logger.log(Level.INFO, "first_partition_length_in_bytes: "
+		logger.log("first_partition_length_in_bytes: "
 				+ firstPartitionLengthInBytes);
 
 		frame.seek(offset++); c=frame.readUnsignedByte();
-		logger.log(Level.INFO, "StartCode: " + c);
+		logger.log("StartCode: " + c);
 		frame.seek(offset++); c=frame.readUnsignedByte();
-		logger.log(Level.INFO, " " + c);
+		logger.log(" " + c);
 		frame.seek(offset++); c=frame.readUnsignedByte();
-		logger.log(Level.INFO, " " + c);
+		logger.log(" " + c);
 
 		frame.seek(offset++); c=frame.readUnsignedByte();
 		int hBytes = c;
 		frame.seek(offset++); c=frame.readUnsignedByte();
 		hBytes += c << 8;
 		width = (hBytes & 0x3fff);
-		logger.log(Level.INFO, "width: " + width);
-		logger.log(Level.INFO, "hScale: " + (hBytes >> 14));
+		logger.log( "width: " + width);
+		logger.log("hScale: " + (hBytes >> 14));
 
 		frame.seek(offset++); c=frame.readUnsignedByte();
 		int vBytes = c;
 		frame.seek(offset++); c=frame.readUnsignedByte();
 		vBytes += c << 8;
 		height = (vBytes & 0x3fff);
-		logger.log(Level.INFO, "height: " + height);
-		logger.log(Level.INFO, "vScale: " + (vBytes >> 14));
+		logger.log("height: " + height);
+		logger.log("vScale: " + (vBytes >> 14));
 		int tWidth = width;
 		int tHeight = height;
 		if ((tWidth & 0xf) != 0)
@@ -162,8 +162,8 @@ public class VP8Frame {
 			tHeight += 16 - (tHeight & 0xf);
 		macroBlockRows=tHeight >> 4;
 		macroBlockCols=tWidth >> 4;
-		logger.log(Level.INFO, "macroBlockCols: "+macroBlockCols);
-		logger.log(Level.INFO, "macroBlockRows: "+macroBlockRows);
+		logger.log("macroBlockCols: "+macroBlockCols);
+		logger.log("macroBlockRows: "+macroBlockRows);
 
 		createMacroBlocks();
 
@@ -171,21 +171,21 @@ public class VP8Frame {
 
 		if (frameType == 0) {
 			int clr_type = bc.readBit();
-			logger.log(Level.INFO, "clr_type: " + clr_type);
-			logger.log(Level.INFO, ""+bc);
+			logger.log("clr_type: " + clr_type);
+			logger.log(""+bc);
 
 			int clamp_type = bc.readBit();
-			logger.log(Level.INFO, "clamp_type: " + clamp_type);
+			logger.log("clamp_type: " + clamp_type);
 
 		}
 		segmentationIsEnabled = bc.readBit();
-		logger.log(Level.INFO, "segmentation_enabled: " + segmentationIsEnabled);
+		logger.log("segmentation_enabled: " + segmentationIsEnabled);
 		if (segmentationIsEnabled > 0) {
-			logger.log(Level.SEVERE, "TODO");
+			logger.error("TODO");
 			updateMacroBlockSegmentationMap = bc.readBit();
 			updateMacroBlockSegmentatonData = bc.readBit();
-			logger.log(Level.INFO, "update_mb_segmentaton_map: "+updateMacroBlockSegmentationMap);
-			logger.log(Level.INFO, "update_mb_segmentaton_data: "+updateMacroBlockSegmentatonData);
+			logger.log("update_mb_segmentaton_map: "+updateMacroBlockSegmentationMap);
+			logger.log("update_mb_segmentaton_data: "+updateMacroBlockSegmentatonData);
 			if(updateMacroBlockSegmentatonData > 0 ) {
 				
 					macroBlockSegementAbsoluteDelta = bc.readBit();
@@ -224,19 +224,19 @@ public class VP8Frame {
 			}
 		}
 		simpleFilter = bc.readBit();
-		logger.log(Level.INFO, "simpleFilter: " + simpleFilter);
+		logger.log("simpleFilter: " + simpleFilter);
 		filterLevel = bc.readLiteral(6);
 		
-		logger.log(Level.INFO, "filter_level: " + filterLevel);
+		logger.log("filter_level: " + filterLevel);
 		sharpnessLevel = bc.readLiteral(3);
-		logger.log(Level.INFO, "sharpness_level: " + sharpnessLevel);
+		logger.log("sharpness_level: " + sharpnessLevel);
 		modeRefLoopFilterDeltaEnabled = bc.readBit();
-		logger.log(Level.INFO, "mode_ref_lf_delta_enabled: "
+		logger.log("mode_ref_lf_delta_enabled: "
 				+ modeRefLoopFilterDeltaEnabled);
 		if (modeRefLoopFilterDeltaEnabled > 0) {
 			// Do the deltas need to be updated
 			modeRefLoopFilterDeltaUpdate = bc.readBit();
-			logger.log(Level.INFO, "mode_ref_lf_delta_update: "
+			logger.log("mode_ref_lf_delta_update: "
 					+ modeRefLoopFilterDeltaUpdate);
 			if (modeRefLoopFilterDeltaUpdate > 0) {
 				for (int i = 0; i < MAX_REF_LF_DELTAS; i++) {
@@ -245,7 +245,7 @@ public class VP8Frame {
 						refLoopFilterDeltas[i] = bc.readLiteral(6);
 						if (bc.readBit() > 0) // Apply sign
 							refLoopFilterDeltas[i] = refLoopFilterDeltas[i] * -1;
-						logger.log(Level.INFO, "ref_lf_deltas[i]: "
+						logger.log("ref_lf_deltas[i]: "
 								+ refLoopFilterDeltas[i]);
 					}
 				}
@@ -255,14 +255,14 @@ public class VP8Frame {
 						modeLoopFilterDeltas[i] = bc.readLiteral(6);
 						if (bc.readBit() > 0) // Apply sign
 							modeLoopFilterDeltas[i] = modeLoopFilterDeltas[i] * -1;
-						logger.log(Level.INFO, "mode_lf_deltas[i]: "
+						logger.log("mode_lf_deltas[i]: "
 								+ modeLoopFilterDeltas[i]);
 					}
 				}
 			}
 		}
 		filterType = (filterLevel == 0) ? 0 : (simpleFilter>0) ? 1 : 2;
-		logger.log(Level.INFO, "filter_type: " + filterType);
+		logger.log("filter_type: " + filterType);
 
 		setupTokenDecoder(bc, firstPartitionLengthInBytes,
 				offset);
@@ -275,11 +275,11 @@ public class VP8Frame {
 		// For all non key frames the GF and ARF refresh flags and sign bias
 		// flags must be set explicitly.
 		if (frameType != 0) {
-			logger.log(Level.SEVERE, "TODO:");
+			logger.error( "TODO:");
 			throw new IllegalArgumentException("bad input: not intra");
 		}
 		refreshEntropyProbs = bc.readBit();
-		logger.log(Level.INFO, "refresh_entropy_probs: " + refreshEntropyProbs);
+		logger.log("refresh_entropy_probs: " + refreshEntropyProbs);
 		if (refreshEntropyProbs > 0) {
 
 		}
@@ -288,7 +288,7 @@ public class VP8Frame {
 			refreshLastFrame = 1;
 		else
 			refreshLastFrame = bc.readBit();
-		logger.log(Level.INFO, "refresh_last_frame: " + refreshLastFrame);
+		logger.log("refresh_last_frame: " + refreshLastFrame);
 
 		for (int i = 0; i < BLOCK_TYPES; i++)
 			for (int j = 0; j < COEF_BANDS; j++)
@@ -303,12 +303,12 @@ public class VP8Frame {
 
 		// Read the mb_no_coeff_skip flag
 		macroBlockNoCoeffSkip = (int) bc.readBit();
-		logger.log(Level.INFO, "mb_no_coeff_skip: " + macroBlockNoCoeffSkip);
+		logger.log("mb_no_coeff_skip: " + macroBlockNoCoeffSkip);
 
 		if (frameType == 0) {
 			readModes(bc);
 		} else {
-			logger.log(Level.SEVERE, "TODO:");
+			logger.error("TODO:");
 			throw new IllegalArgumentException("bad input: not intra");
 		}
 
@@ -422,7 +422,7 @@ public class VP8Frame {
 			}
 		}
 		else {
-			logger.log(Level.SEVERE, "TODO: ");
+			logger.error("TODO: ");
 			throw new IllegalArgumentException("bad input: getAboveRightSubBlock()");
 		}
 	}
@@ -1044,10 +1044,10 @@ public class VP8Frame {
 		long partitionsStart = offset+first_partition_length_in_bytes;
 		long partition = partitionsStart;
 		multiTokenPartition = bc.readLiteral(2);
-		logger.log(Level.INFO, "multi_token_partition: "
+		logger.log("multi_token_partition: "
 				+ multiTokenPartition);
 		int num_part = 1 << multiTokenPartition;
-		logger.log(Level.INFO, "num_part: " + num_part);
+		logger.log("num_part: " + num_part);
 		if (num_part > 1) {
 			partition += 3 * (num_part - 1);
 		}
