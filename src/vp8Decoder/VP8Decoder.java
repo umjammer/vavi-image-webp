@@ -26,10 +26,10 @@ public class VP8Decoder {
 	private int frameCount=0;
 	VP8Frame f;
 	public VP8Decoder() {
-		coefProbs = Globals.get_default_coef_probs();
+		coefProbs = Globals.getDefaultCoefProbs();
 	}
 	public void decodeFrame(ImageInputStream stream, boolean debug) throws IOException {
-		coefProbs = Globals.get_default_coef_probs();
+		coefProbs = Globals.getDefaultCoefProbs();
 		f = new VP8Frame(stream, coefProbs);
 		if(f.decodeFrame(debug)) {
 			//if(f.getFilterType()>0)

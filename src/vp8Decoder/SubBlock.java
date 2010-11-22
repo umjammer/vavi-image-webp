@@ -66,7 +66,7 @@ public class SubBlock {
 		int v = 0;
 		int offset = 0;
 		do {
-			v += v + bc2.read_bool(p[offset]);
+			v += v + bc2.readBool(p[offset]);
 			offset++;
 		} while (p[offset] > 0);
 		return v;
@@ -85,9 +85,9 @@ public class SubBlock {
 		while (!(v == Globals.dct_eob) && c + startAt < 16) {
 			
 			if (!skip)
-				v = bc2.treed_read(Globals.coef_tree, coef_probs[type][Globals.coef_bands[c + startAt]][lc]);
+				v = bc2.readTree(Globals.vp8CoefTree, coef_probs[type][Globals.vp8CoefBands[c + startAt]][lc]);
 			else
-				v = bc2.treed_read_skip(Globals.coef_tree,	coef_probs[type][Globals.coef_bands[c + startAt]][lc], 1);
+				v = bc2.readTreeSkip(Globals.vp8CoefTree,	coef_probs[type][Globals.vp8CoefBands[c + startAt]][lc], 1);
 
 			int dv = decodeToken(bc2, v);
 			lc = 0;
@@ -102,7 +102,7 @@ public class SubBlock {
 			int tokens[] = sb.getTokens();
 
 			if (v != Globals.dct_eob)
-				tokens[Globals.default_zig_zag1d[c + startAt]] = dv;
+				tokens[Globals.vp8defaultZigZag1d[c + startAt]] = dv;
 			c++;
 		}
 		hasNoZeroToken = false;
@@ -132,7 +132,7 @@ public class SubBlock {
 			r = 67 + DCTextra(bc2, Globals.Pcat6);
 		}
 		if (v != Globals.DCT_0 && v != Globals.dct_eob) {
-			if (bc2.read_bit() > 0)
+			if (bc2.readBit() > 0)
 				r = -r;
 		}
 
@@ -151,10 +151,10 @@ public class SubBlock {
 					QValue = frame.getSegmentQuants().getSegQuants()[0].getUvdc_delta_q();
 			}
 			else {
-			 QValue = frame.getSegmentQuants().getSegQuants()[0].getY1ac_delta_q();
+			 QValue = frame.getSegmentQuants().getSegQuants()[0].getY1ac();
 			//int QValue = Globals.ac_qlookup[frame.getQIndex()];
 			if (i == 0) 
-				QValue = frame.getSegmentQuants().getSegQuants()[0].getY1dc_delta_q();
+				QValue = frame.getSegmentQuants().getSegQuants()[0].getY1dc();
 				//QValue = Globals.dc_qlookup[frame.getQIndex()];
 			}
 
@@ -167,7 +167,7 @@ public class SubBlock {
 			adjustedValues[0]=Dc;
 
 
-		int[][] diff = IDCT.idct4x4llm_c(adjustedValues);
+		int[][] diff = IDCT.idct4x4llm(adjustedValues);
 		sb.setDiff(diff);
 
 	}

@@ -26,18 +26,18 @@ public class MacroBlock {
 	SubBlock[][] vSubBlocks;
 	SubBlock y2SubBlock;
 	private int x, y;
-	private int mb_skip_coeff;
+	private int skipCoeff;
 	private int yMode;
 
 	private int uvMode;
 	private int segmentId;
-	private int filter_level;
-	private int uv_filter_level;
-	private boolean skip_inner_lf;
+	private int filterLevel;
+	private int uVFilterLevel;
+	private boolean skipInnerLoopFilter;
 	private boolean keepDebugInfo = false;
 
 	public boolean isSkip_inner_lf() {
-		return skip_inner_lf;
+		return skipInnerLoopFilter;
 	}
 	public int getYMode() {
 		return yMode;
@@ -45,11 +45,11 @@ public class MacroBlock {
 	public void setYMode(int yMode) {
 		this.yMode = yMode;
 	}
-	public int getMb_skip_coeff() {
-		return mb_skip_coeff;
+	public int getSkipCoeff() {
+		return skipCoeff;
 	}
-	public void setMb_skip_coeff(int mbSkipCoeff) {
-		mb_skip_coeff = mbSkipCoeff;
+	public void setSkipCoeff(int mbSkipCoeff) {
+		skipCoeff = mbSkipCoeff;
 	}
 	MacroBlock(int x, int y, boolean keepDebugInfo) {
 		this.x=x-1;
@@ -603,9 +603,9 @@ public class MacroBlock {
 	
 	public void decodeMacroBlock(VP8Frame frame) throws IOException {
 		MacroBlock mb = this;
-		if (mb.getMb_skip_coeff() > 0) {
+		if (mb.getSkipCoeff() > 0) {
 			if(mb.getYMode()!=Globals.B_PRED)
-				mb.skip_inner_lf=true;
+				mb.skipInnerLoopFilter=true;
 		} else if (mb.getYMode() != Globals.B_PRED) {
 			decodeMacroBlockTokens(frame, true);
 		} else {
@@ -614,14 +614,14 @@ public class MacroBlock {
 	}
 	
 	private void decodeMacroBlockTokens(VP8Frame frame, boolean withY2) throws IOException {
-		skip_inner_lf = false;
+		skipInnerLoopFilter = false;
 		if (withY2) {
-			skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 1, SubBlock.PLANE.Y2, false);
+			skipInnerLoopFilter =skipInnerLoopFilter | decodePlaneTokens(frame, 1, SubBlock.PLANE.Y2, false);
 		}
-		skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 4, SubBlock.PLANE.Y1, withY2);
-		skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 2, SubBlock.PLANE.U, false);
-		skip_inner_lf =skip_inner_lf | decodePlaneTokens(frame, 2, SubBlock.PLANE.V, false);
-		skip_inner_lf = !skip_inner_lf;
+		skipInnerLoopFilter =skipInnerLoopFilter | decodePlaneTokens(frame, 4, SubBlock.PLANE.Y1, withY2);
+		skipInnerLoopFilter =skipInnerLoopFilter | decodePlaneTokens(frame, 2, SubBlock.PLANE.U, false);
+		skipInnerLoopFilter =skipInnerLoopFilter | decodePlaneTokens(frame, 2, SubBlock.PLANE.V, false);
+		skipInnerLoopFilter = !skipInnerLoopFilter;
 	}
 	
 	public void dequantMacroBlock(VP8Frame frame) {
@@ -631,7 +631,7 @@ public class MacroBlock {
 			//int acQValue = (Globals.ac_qlookup[frame.getQIndex()]*155)/100;
 			//int dcQValue = (Globals.dc_qlookup[frame.getQIndex()]*2);
 			int acQValue = frame.getSegmentQuants().getSegQuants()[0].getY2ac_delta_q();
-			int dcQValue = frame.getSegmentQuants().getSegQuants()[0].getY2dc_delta_q();
+			int dcQValue = frame.getSegmentQuants().getSegQuants()[0].getY2dc();
 
 			int input[] = new int[16];
 			input[0]=sb.getTokens()[0]*dcQValue;
@@ -742,26 +742,26 @@ public class MacroBlock {
 		this.segmentId=value;
 	}
 	public void setFilterLevel(int value) {
-		this.filter_level=value;
+		this.filterLevel=value;
 	}
 	public void setUVFilterLevel(int value) {
-		this.uv_filter_level=value;
+		this.uVFilterLevel=value;
 	}
 	
 	public int getFilterLevel() {
-		return this.filter_level;
+		return this.filterLevel;
 	}
 	public int getUVFilterLevel() {
-		return this.uv_filter_level;
+		return this.uVFilterLevel;
 	}
 	public String getDebugString() {
 		String r = new String();
 		r=r+" YMode: "+Globals.getModeAsString(yMode);
 		r=r+"\n UVMode: "+Globals.getModeAsString(uvMode);
 		r=r+"\n SegmentID: "+segmentId;
-		r=r+"\n Filter Level: "+filter_level;
-		r=r+"\n UV Filter Level: "+uv_filter_level;
-		r=r+"\n Skip Coeff: "+mb_skip_coeff;
+		r=r+"\n Filter Level: "+filterLevel;
+		r=r+"\n UV Filter Level: "+uVFilterLevel;
+		r=r+"\n Skip Coeff: "+skipCoeff;
 
 		return r;
 	}

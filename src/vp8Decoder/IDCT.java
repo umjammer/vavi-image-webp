@@ -68,7 +68,7 @@ public class IDCT {
 	/* IDCT implementation */
 	private static final int cospi8sqrt2minus1 = 20091;
 	private static final int sinpi8sqrt2 = 35468;
-	public static int[][] idct4x4llm_c(int input[]) {
+	public static int[][] idct4x4llm(int input[]) {
 
 
 		int i;

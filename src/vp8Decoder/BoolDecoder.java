@@ -30,12 +30,12 @@ public class BoolDecoder {
 	BoolDecoder(ImageInputStream frame, long offset) throws IOException {
 		this.data=frame;
 		this.offset=offset;
-		init_bool_decoder();
+		initBoolDecoder();
 	}
 	public String toString() {
 		return "bc: "+value;
 	}
-	private void init_bool_decoder() throws IOException {
+	private void initBoolDecoder() throws IOException {
 
 		value = 0;                    /* value = first 16 input bits */
 		
@@ -50,7 +50,7 @@ public class BoolDecoder {
 	public void seek() throws IOException {
 		data.seek(offset);
 	}
-	public int read_bool(int probability) throws IOException {
+	public int readBool(int probability) throws IOException {
 
 		    int bit = 0;
 		    int split;
@@ -70,7 +70,7 @@ public class BoolDecoder {
 
 		    {
 		        int count = this.bit_count;
-		        int shift = Globals.vp8dx_bitreader_norm[range];
+		        int shift = Globals.vp8dxBitreaderNorm[range];
 		        range <<= shift;
 		        value <<= shift;
 		        count -= shift;
@@ -120,38 +120,38 @@ public class BoolDecoder {
 	  /* Convenience function reads a "literal", that is, a "num_bits" wide
     unsigned value whose bits come high- to low-order, with each bit
     encoded at probability 128 (i.e., 1/2). */
-	public int read_literal( int num_bits) throws IOException
+	public int readLiteral( int num_bits) throws IOException
 	{
 		int v = 0;
 		while( num_bits-->0)
-			v = (v << 1) + read_bool(128);
+			v = (v << 1) + readBool(128);
 		return v;
 	}
 
-	public int read_bit() throws IOException {
-		return read_bool(128);
+	public int readBit() throws IOException {
+		return readBool(128);
 	}
 	
-	int treed_read(
+	int readTree(
 			int t[],		/* tree specification */
 			int p[]		/* corresponding interior node probabilities */
 			      ) throws IOException {
 		int i = 0; /* begin at root */
 		
 		/* Descend tree until leaf is reached */
-		while( ( i = t[ i + read_bool(p[i>>1]) ] ) > 0) {}
+		while( ( i = t[ i + readBool(p[i>>1]) ] ) > 0) {}
 		return -i;      /* return value is negation of nonpositive index */
 
 	}
 
-	int treed_read_skip(
+	int readTreeSkip(
 			int t[],		/* tree specification */
 			int p[],		/* corresponding interior node probabilities */
 			int skip_branches) throws IOException {
 		int i = skip_branches*2; /* begin at root */
 		
 		/* Descend tree until leaf is reached */
-		while( ( i = t[ i + read_bool(p[i>>1]) ] ) > 0) {}
+		while( ( i = t[ i + readBool(p[i>>1]) ] ) > 0) {}
 		return -i;      /* return value is negation of nonpositive index */
 
 	}

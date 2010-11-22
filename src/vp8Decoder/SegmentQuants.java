@@ -30,7 +30,7 @@ public class SegmentQuants {
 	}
 
 	public void parse(BoolDecoder bc, boolean segmentation_enabled, boolean mb_segement_abs_delta) throws IOException {
-		qIndex = bc.read_literal(7);
+		qIndex = bc.readLiteral(7);
 		boolean q_update = false;
 		DeltaQ v = get_delta_q(bc, 0);
 		int y1dc_delta_q = v.v;
@@ -56,8 +56,8 @@ public class SegmentQuants {
 				s.setQindex(s.getQindex()+qIndex);
 			}
 
-			s.setY1dc_delta_q(y1dc_delta_q);
-			s.setY2dc_delta_q(y2dc_delta_q);
+			s.setY1dc(y1dc_delta_q);
+			s.setY2dc(y2dc_delta_q);
 			s.setY2ac_delta_q(y2ac_delta_q);
 			s.setUvdc_delta_q(uvdc_delta_q);
 			s.setUvac_delta_q(uvac_delta_q);
@@ -76,10 +76,10 @@ public class SegmentQuants {
 		ret.v = 0;
 		ret.update = false;
 
-		if (bc.read_bit() > 0) {
-			ret.v = bc.read_literal(4);
+		if (bc.readBit() > 0) {
+			ret.v = bc.readLiteral(4);
 
-			if (bc.read_bit() > 0)
+			if (bc.readBit() > 0)
 				ret.v = -ret.v;
 		}
 

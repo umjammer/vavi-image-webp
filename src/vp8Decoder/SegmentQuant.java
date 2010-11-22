@@ -31,24 +31,24 @@ public class SegmentQuant {
 		Qindex = qindex;
 	}
 	
-	public int getY1dc_delta_q() {
+	public int getY1dc() {
 		return y1dc;
 	}
-	public void setY1dc_delta_q(int y1dc_delta_q) {
-		this.y1dc = Globals.dc_qlookup[clip(Qindex+y1dc_delta_q, 127)];
-		this.setY1ac_delta_q();
+	public void setY1dc(int y1dc) {
+		this.y1dc = Globals.vp8DcQLookup[clip(Qindex+y1dc, 127)];
+		this.setY1ac();
 	}
-	public int getY1ac_delta_q() {
+	public int getY1ac() {
 		return y1ac;
 	}
-	public void setY1ac_delta_q() {
-		this.y1ac = Globals.ac_qlookup[clip(Qindex, 127)];
+	public void setY1ac() {
+		this.y1ac = Globals.vp8AcQLookup[clip(Qindex, 127)];
 	}
-	public int getY2dc_delta_q() {
+	public int getY2dc() {
 		return y2dc;
 	}
-	public void setY2dc_delta_q(int y2dc_delta_q) {
-		this.y2dc = Globals.dc_qlookup[clip(Qindex+y2dc_delta_q, 127)]*2;
+	public void setY2dc(int y2dc_delta_q) {
+		this.y2dc = Globals.vp8DcQLookup[clip(Qindex+y2dc_delta_q, 127)]*2;
 	}
 
 
@@ -56,20 +56,20 @@ public class SegmentQuant {
 		return y2ac;
 	}
 	public void setY2ac_delta_q(int y2ac_delta_q) {
-		this.y2ac = Globals.ac_qlookup[clip(Qindex+y2ac_delta_q, 127)]* 155 / 100;
+		this.y2ac = Globals.vp8AcQLookup[clip(Qindex+y2ac_delta_q, 127)]* 155 / 100;
 		if (this.y2ac < 8) this.y2ac = 8;
 	}
 	public int getUvdc_delta_q() {
 		return uvdc;
 	}
 	public void setUvdc_delta_q(int uvdc_delta_q) {
-		this.uvdc = Globals.dc_qlookup[clip(Qindex+uvdc_delta_q, 127)];
+		this.uvdc = Globals.vp8DcQLookup[clip(Qindex+uvdc_delta_q, 127)];
 	}
 	public int getUvac_delta_q() {
 		return uvac;
 	}
 	public void setUvac_delta_q(int uvac_delta_q) {
-		this.uvac = Globals.ac_qlookup[clip(Qindex+uvac_delta_q, 127)];
+		this.uvac = Globals.vp8AcQLookup[clip(Qindex+uvac_delta_q, 127)];
 	}
 	
 	private int clip(int val, int max) {
