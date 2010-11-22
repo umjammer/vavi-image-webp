@@ -20,7 +20,6 @@ package net.sf.javavp8decoder.imageio;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.ScrollPane;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -31,6 +30,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 public class plugintest extends JFrame {
 	/**
@@ -38,7 +38,7 @@ public class plugintest extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	private BufferedImage bi;
-	private ScrollPane sp;
+	private JScrollPane sp;
 	private JPanel jp;
 
 	plugintest() {
@@ -73,17 +73,15 @@ public class plugintest extends JFrame {
 		jp = new ImagePanel(bi);
 		jp.setPreferredSize(new Dimension(bi.getWidth(), bi.getHeight()));
 		
-		sp = new ScrollPane();
+		sp = new JScrollPane();
 		sp.add(jp);
+		sp.setViewportView(jp);
 		this.add(sp);
 
 		this.setVisible(true);
 		this.setSize(1000, 1000);
 	}
-	public void paint(Graphics g) {
-		//System.out.println(bi.getWidth());
-		//g.drawImage(bi, 100,100, null);
-	}
+
 	public static void main(String[] args) {
 		IIORegistry r = javax.imageio.spi.IIORegistry.getDefaultInstance();
 		WebPImageReaderSpi s = new WebPImageReaderSpi();
