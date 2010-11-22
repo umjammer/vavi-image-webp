@@ -59,9 +59,10 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileFilter;
 
-import vp8Decoder.Globals;
-import vp8Decoder.SubBlock;
-import vp8Decoder.VP8Frame;
+import net.sf.javavp8decoder.vp8Decoder.Globals;
+import net.sf.javavp8decoder.vp8Decoder.SubBlock;
+import net.sf.javavp8decoder.vp8Decoder.VP8Frame;
+
 
 public class VP8Inspector extends JFrame implements MouseMotionListener, MouseListener, MouseWheelListener, ActionListener{
 	/**

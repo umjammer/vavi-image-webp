@@ -33,7 +33,8 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
-import vp8Decoder.VP8Frame;
+import net.sf.javavp8decoder.vp8Decoder.VP8Frame;
+
 
 public class WebPImageReader extends ImageReader implements IIOReadProgressListener {
 

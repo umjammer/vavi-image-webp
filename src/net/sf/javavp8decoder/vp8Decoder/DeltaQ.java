@@ -13,14 +13,10 @@
     You should have received a copy of the GNU General Public License
     along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
 */
-package vp8Decoder;
 
-public class Segment {
-	int P0, P1, P2, P3;
-	int Q0, Q1, Q2, Q3;
-	
-	public String toString() {
-		return ""+Globals.toHex(P3)+" "+Globals.toHex(P2)+" "+Globals.toHex(P1)+" "+Globals.toHex(P0)+" "+
-				Globals.toHex(Q0)+" "+Globals.toHex(Q1)+" "+Globals.toHex(Q2)+" "+Globals.toHex(Q3);
-	}
+package net.sf.javavp8decoder.vp8Decoder;
+
+public class DeltaQ {
+	public int v=0;
+	public boolean update=false;
 }

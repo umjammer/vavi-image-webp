@@ -13,13 +13,14 @@
     You should have received a copy of the GNU General Public License
     along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
 */
-package vp8Decoder;
+package net.sf.javavp8decoder.vp8Decoder;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.imageio.stream.ImageInputStream;
+
 
 public class VP8Decoder {
 	private int[][][][] coefProbs;

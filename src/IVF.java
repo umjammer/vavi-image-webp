@@ -2,7 +2,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import vp8Decoder.VP8Decoder;
+import net.sf.javavp8decoder.vp8Decoder.VP8Decoder;
+
 
 
 

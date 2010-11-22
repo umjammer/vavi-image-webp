@@ -22,7 +22,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
-import vp8Decoder.VP8Decoder;
+import net.sf.javavp8decoder.vp8Decoder.VP8Decoder;
+
 
 
 

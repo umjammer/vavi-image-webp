@@ -13,7 +13,7 @@
     You should have received a copy of the GNU General Public License
     along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
 */
-package vp8Decoder;
+package net.sf.javavp8decoder.vp8Decoder;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -25,6 +25,9 @@ import java.util.logging.Logger;
 
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.stream.ImageInputStream;
+
+import net.sf.javavp8decoder.vp8Decoder.BoolDecoder;
+
 
 public class VP8Frame {
 	private static int MAX_REF_LF_DELTAS = 4;
