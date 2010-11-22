@@ -13,7 +13,7 @@
     You should have received a copy of the GNU General Public License
     along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.javavp8decoder.imageio;
+package net.sf.javavp8decoder.tools;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -28,6 +28,8 @@ import javax.imageio.spi.IIORegistry;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import net.sf.javavp8decoder.imageio.WebPImageReaderSpi;
 
 public class plugintest extends JFrame {
 	/**
