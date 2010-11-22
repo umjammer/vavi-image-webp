@@ -57,6 +57,8 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 
 import net.sf.javavp8decoder.vp8Decoder.Globals;
@@ -124,6 +126,18 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 
 	public static void main(String[] args) {
 		VP8Inspector app;
+		try {
+			// Set System L&F
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (UnsupportedLookAndFeelException e) {
+			// handle exception
+		} catch (ClassNotFoundException e) {
+			// handle exception
+		} catch (InstantiationException e) {
+			// handle exception
+		} catch (IllegalAccessException e) {
+			// handle exception
+		}
 		app = new VP8Inspector();
 		app.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
