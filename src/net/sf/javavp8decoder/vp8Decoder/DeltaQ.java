@@ -12,11 +12,11 @@
 
     You should have received a copy of the GNU General Public License
     along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package net.sf.javavp8decoder.vp8Decoder;
 
 public class DeltaQ {
-	public int v=0;
-	public boolean update=false;
+	public boolean update = false;
+	public int v = 0;
 }

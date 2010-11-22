@@ -12,9 +12,8 @@
 
     You should have received a copy of the GNU General Public License
     along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package net.sf.javavp8decoder.imageio;
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,23 +29,45 @@ import org.w3c.dom.Node;
 
 public class WebPMetadata extends IIOMetadata {
 
-	static final boolean standardMetadataFormatSupported = false;
-	static final String nativeMetadataFormatName =
-		"net.sf.javavp8decoder.imageio.WebPMetadata_0.1";
-	static final String nativeMetadataFormatClassName =
-		"net.sf.javavp8decoder.imageio.WebPMetadata";
-	static final String[] extraMetadataFormatNames = null;
 	static final String[] extraMetadataFormatClassNames = null;
-    
+	static final String[] extraMetadataFormatNames = null;
+	static final String nativeMetadataFormatClassName = "net.sf.javavp8decoder.imageio.WebPMetadata";
+	static final String nativeMetadataFormatName = "net.sf.javavp8decoder.imageio.WebPMetadata_0.1";
+	static final boolean standardMetadataFormatSupported = false;
+
 	// Keyword/value pairs
 	List<String> keywords = new ArrayList<String>();
 	List<String> values = new ArrayList<String>();
+
 	public WebPMetadata() {
-		super(standardMetadataFormatSupported,
-		      nativeMetadataFormatName,
-		      nativeMetadataFormatClassName,
-		      extraMetadataFormatNames,
-		      extraMetadataFormatClassNames);
+		super(standardMetadataFormatSupported, nativeMetadataFormatName,
+				nativeMetadataFormatClassName, extraMetadataFormatNames,
+				extraMetadataFormatClassNames);
+	}
+
+	private void fatal(Node node, String reason) throws IIOInvalidTreeException {
+		throw new IIOInvalidTreeException(reason, node);
+	}
+
+	public Node getAsTree(String formatName) {
+		if (!formatName.equals(nativeMetadataFormatName)) {
+			throw new IllegalArgumentException("Bad format name!");
+		}
+
+		// Create a root node
+		IIOMetadataNode root = new IIOMetadataNode(nativeMetadataFormatName);
+
+		// Add a child to the root node for each keyword/value pair
+		Iterator<String> keywordIter = keywords.iterator();
+		Iterator<String> valueIter = values.iterator();
+		while (keywordIter.hasNext()) {
+			IIOMetadataNode node = new IIOMetadataNode("KeywordValuePair");
+			node.setAttribute("keyword", (String) keywordIter.next());
+			node.setAttribute("value", (String) valueIter.next());
+			root.appendChild(node);
+		}
+
+		return root;
 	}
 
 	public IIOMetadataFormat getMetadataFormat(String formatName) {
@@ -56,71 +77,43 @@ public class WebPMetadata extends IIOMetadata {
 		return WebPMetadataFormat.getDefaultInstance();
 	}
 
-	public Node getAsTree(String formatName) {
+	public boolean isReadOnly() {
+		return false;
+	}
+
+	public void mergeTree(String formatName, Node root)
+			throws IIOInvalidTreeException {
 		if (!formatName.equals(nativeMetadataFormatName)) {
 			throw new IllegalArgumentException("Bad format name!");
 		}
 
-		// Create a root node
-		IIOMetadataNode root =
-			new IIOMetadataNode(nativeMetadataFormatName);
-
-		// Add a child to the root node for each keyword/value pair
-		Iterator<String> keywordIter = keywords.iterator();
-		Iterator<String> valueIter = values.iterator();
-		while (keywordIter.hasNext()) {
-			IIOMetadataNode node =
-				new IIOMetadataNode("KeywordValuePair");
-			node.setAttribute("keyword", (String)keywordIter.next());
-			node.setAttribute("value", (String)valueIter.next());
-			root.appendChild(node);
+		Node node = root;
+		if (!node.getNodeName().equals(nativeMetadataFormatName)) {
+			fatal(node, "Root must be " + nativeMetadataFormatName);
 		}
+		node = node.getFirstChild();
+		while (node != null) {
+			if (!node.getNodeName().equals("KeywordValuePair")) {
+				fatal(node, "Node name not KeywordValuePair!");
+			}
+			NamedNodeMap attributes = node.getAttributes();
+			Node keywordNode = attributes.getNamedItem("keyword");
+			Node valueNode = attributes.getNamedItem("value");
+			if (keywordNode == null || valueNode == null) {
+				fatal(node, "Keyword or value missing!");
+			}
 
-		return root;
-	}
+			// Store keyword and value
+			keywords.add((String) keywordNode.getNodeValue());
+			values.add((String) valueNode.getNodeValue());
 
-	public boolean isReadOnly() {
-	    return false;
+			// Move to the next sibling
+			node = node.getNextSibling();
+		}
 	}
 
 	public void reset() {
-	    this.keywords = new ArrayList<String>();
-	    this.values = new ArrayList<String>();
+		this.keywords = new ArrayList<String>();
+		this.values = new ArrayList<String>();
 	}
-
-	public void mergeTree(String formatName, Node root)
-	throws IIOInvalidTreeException {
-	if (!formatName.equals(nativeMetadataFormatName)) {
-		throw new IllegalArgumentException("Bad format name!");
-	}
-
-	Node node = root;
-	if (!node.getNodeName().equals(nativeMetadataFormatName)) {
-		fatal(node, "Root must be " + nativeMetadataFormatName);
-	}
-	node = node.getFirstChild();
-	while (node != null) {
-		if (!node.getNodeName().equals("KeywordValuePair")) {
-			fatal(node, "Node name not KeywordValuePair!");
-		}
-		NamedNodeMap attributes = node.getAttributes();
-		Node keywordNode = attributes.getNamedItem("keyword");
-		Node valueNode = attributes.getNamedItem("value");
-		if (keywordNode == null || valueNode == null) {
-			fatal(node, "Keyword or value missing!");
-		}
-
-		// Store keyword and value
-		keywords.add((String)keywordNode.getNodeValue());
-		values.add((String)valueNode.getNodeValue());
-
-		// Move to the next sibling
-		node = node.getNextSibling();
-	}
-}
-
-private void fatal(Node node, String reason)
-	throws IIOInvalidTreeException {
-	throw new IIOInvalidTreeException(reason, node);
-}
 }

@@ -26,43 +26,61 @@ import java.util.logging.Logger;
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.stream.ImageInputStream;
 
-import net.sf.javavp8decoder.vp8Decoder.BoolDecoder;
-
 
 public class VP8Frame {
-	private static int MAX_REF_LF_DELTAS = 4;
-	private static int MAX_MODE_LF_DELTAS = 4;
 	private static int BLOCK_TYPES = 4;
 	private static int COEF_BANDS = 8;
-	private static int PREV_COEF_CONTEXTS = 3;
 	private static int MAX_ENTROPY_TOKENS = 12;
+	private static int MAX_MODE_LF_DELTAS = 4;
+	private static int MAX_REF_LF_DELTAS = 4;
+	private static int PREV_COEF_CONTEXTS = 3;
 	
 
-    private ImageInputStream frame;
+    private ArrayList<IIOReadProgressListener> _listeners = new ArrayList<IIOReadProgressListener>();
 
+	private int bufferCount;
+	private int buffersToCreate=1;
 	private int[][][][] coefProbs;
+	private boolean debug=false;
+	private int filterLevel;
+
+	private int filterType;
+
+	private ImageInputStream frame;
+	private int frameType;
+	private int height;
+	private Logger logger;
+	private int macroBlockCols;
 	private int macroBlockNoCoeffSkip;
 	private int macroBlockRows;
-	private int macroBlockCols;
+
+	private MacroBlock[][] macroBlocks;
+	private int macroBlockSegementAbsoluteDelta;
+	private int[] macroBlockSegmentTreeProbs;
+	private int[] modeLoopFilterDeltas = new int[MAX_MODE_LF_DELTAS];
+	private int modeRefLoopFilterDeltaEnabled;
+	private int modeRefLoopFilterDeltaUpdate;
 	private int multiTokenPartition = 0;
 
+	private long offset;
+	private int[] refLoopFilterDeltas = new int[MAX_REF_LF_DELTAS];
+	private int refreshEntropyProbs;
+	private int refreshLastFrame;
 	private int segmentationIsEnabled;
-
+	private SegmentQuants segmentQuants;
+	private int sharpnessLevel;
+	private int simpleFilter;
 	private BoolDecoder tokenBoolDecoder;
 	private Vector<BoolDecoder> tokenBoolDecoders;
-	private MacroBlock[][] macroBlocks;
-	private int filterLevel;
-	private int simpleFilter;
-	private int sharpnessLevel;
-	public int getSharpnessLevel() {
-		return sharpnessLevel;
-	}
-
-	private int frameType;
-	private Logger logger;
-	private long offset;
-	public int getFrameType() {
-		return frameType;
+	private int updateMacroBlockSegmentationMap;
+	private int updateMacroBlockSegmentatonData;
+	private int width;
+	public VP8Frame(ImageInputStream stream) throws IOException {
+		this.frame = stream;
+		offset = frame.getStreamPosition();
+		this.coefProbs=Globals.getDefaultCoefProbs();
+		tokenBoolDecoders = new Vector<BoolDecoder>();
+		logger = Logger.getAnonymousLogger();
 	}
 	public VP8Frame(ImageInputStream stream, int[][][][] coefProbs) throws IOException {
 		this.frame = stream;
@@ -71,12 +89,8 @@ public class VP8Frame {
 		tokenBoolDecoders = new Vector<BoolDecoder>();
 		logger = Logger.getAnonymousLogger();
 	}
-	public VP8Frame(ImageInputStream stream) throws IOException {
-		this.frame = stream;
-		offset = frame.getStreamPosition();
-		this.coefProbs=Globals.getDefaultCoefProbs();
-		tokenBoolDecoders = new Vector<BoolDecoder>();
-		logger = Logger.getAnonymousLogger();
+	public void addIIOReadProgressListener(IIOReadProgressListener listener) {
+		_listeners.add(listener);
 	}
 	private void createMacroBlocks() {
     	macroBlocks = new MacroBlock[macroBlockCols+2][macroBlockRows+2];
@@ -88,25 +102,6 @@ public class VP8Frame {
     	}
 		
 	}
-
-	private boolean debug=false;
-	private int width;
-	private int height;
-	private int macroBlockSegementAbsoluteDelta;
-	private int[] macroBlockSegmentTreeProbs;
-	private int updateMacroBlockSegmentationMap;
-	private int updateMacroBlockSegmentatonData;
-	private int filterType;
-	private int modeRefLoopFilterDeltaEnabled;
-	private int[] refLoopFilterDeltas = new int[MAX_REF_LF_DELTAS];
-	private int[] modeLoopFilterDeltas = new int[MAX_MODE_LF_DELTAS];
-	private SegmentQuants segmentQuants;
-	private ArrayList<IIOReadProgressListener> _listeners = new ArrayList<IIOReadProgressListener>();
-	private int buffersToCreate=1;
-	private int bufferCount;
-	private int modeRefLoopFilterDeltaUpdate;
-	private int refreshEntropyProbs;
-	private int refreshLastFrame;
 	public boolean decodeFrame(boolean debug) throws IOException {
 		
 		this.debug=debug;
@@ -343,13 +338,6 @@ public class VP8Frame {
 			this.loopFilter();
 		return true;
 	}
-	
-	public int getFilterType() {
-		return filterType;
-	}
-	public int getFilterLevel() {
-		return filterLevel;
-	}
 	private void decodeMacroBlockRow(int mbRow) throws IOException {
 		for (int mbCol = 0; mbCol < macroBlockCols; mbCol++) {
 
@@ -360,6 +348,25 @@ public class VP8Frame {
 			mb.dequantMacroBlock(this);
 
 		}
+	}
+	
+	public void fireLFProgressUpdate(float p) {
+        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
+        while( listeners.hasNext() ) {
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100/buffersToCreate)+(p/buffersToCreate));
+        }
+	}
+	private void fireProgressUpdate(int mb_row) {
+        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
+        while( listeners.hasNext() ) {
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100.0f*((float)(mb_row+1)/(float)getMacroBlockRows()))/buffersToCreate);
+        }
+	}
+	public void fireRGBProgressUpdate(float p) {
+        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
+        while( listeners.hasNext() ) {
+            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, ((bufferCount+4)*(100/buffersToCreate))+(p/buffersToCreate));
+        }
 	}
 
 	public SubBlock getAboveRightSubBlock(SubBlock sb, SubBlock.PLANE plane) {
@@ -453,12 +460,322 @@ public class VP8Frame {
 		return 0;
 	}
 
-	public int[][][][] getCoefProbs() {
-		return coefProbs;
+	public BufferedImage getBufferedImage() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+		useBufferedImage(bi);
+		bufferCount++;
+		return bi;
 	}
 
 
 
+	public int[][][][] getCoefProbs() {
+		return coefProbs;
+	}
+
+	public BufferedImage getDebugImageDiff() {
+
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy, u, v;
+				yy = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDiff()[x%4][y%4];
+				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
+				v = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
+			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
+			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
+			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+
+	public BufferedImage getDebugImagePredict() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy, u, v;
+				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getPredict()[x%4][y%4];
+				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
+				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
+			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
+			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
+			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+
+	public BufferedImage getDebugImageUBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int u;
+				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
+				c[0] = u;
+			 	c[1] = u;
+			 	c[2] = u;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+
+	public BufferedImage getDebugImageUDiffBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int u;
+				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
+				c[0] = u;
+			 	c[1] = u;
+			 	c[2] = u;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+
+	public BufferedImage getDebugImageUPredBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int u;
+				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
+				c[0] = u;
+			 	c[1] = u;
+			 	c[2] = u;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+
+	public BufferedImage getDebugImageVBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int v;
+				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
+				c[0] = v;
+			 	c[1] = v;
+			 	c[2] = v;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+
+	public BufferedImage getDebugImageVDiffBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int v;
+				v = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
+				c[0] = v;
+			 	c[1] = v;
+			 	c[2] = v;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+	public BufferedImage getDebugImageVPredBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int v;
+				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
+				c[0] = v;
+			 	c[1] = v;
+			 	c[2] = v;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+
+	public BufferedImage getDebugImageYBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy;
+				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDest()[x%4][y%4];
+			 	c[0] = yy;
+			 	c[1] = yy;
+			 	c[2] = yy;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+	
+	public BufferedImage getDebugImageYDiffBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy;
+				yy = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDiff()[x%4][y%4];
+			 	c[0] = yy;
+			 	c[1] = yy;
+			 	c[2] = yy;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+	
+	public BufferedImage getDebugImageYPredBuffer() {
+		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+	    WritableRaster imRas = bi.getWritableTile(0, 0);
+		for(int x = 0; x< getWidth(); x++) {
+			for(int y = 0; y< getHeight(); y++) {
+				int c[] = new int[3];
+				int yy;
+				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getPredict()[x%4][y%4];
+			 	c[0] = yy;
+			 	c[1] = yy;
+			 	c[2] = yy;
+
+				for(int z=0; z<3; z++) {
+					if(c[z]<0)
+						c[z]=0;
+					if(c[z]>255)
+						c[z]=255;
+				}
+				imRas.setPixel(x, y, c);
+			}
+			fireRGBProgressUpdate(100.0F*x/getWidth());
+		}
+		bufferCount++;
+		return bi;
+	}
+	
+	public int getFilterLevel() {
+		return filterLevel;
+	}
+	public int getFilterType() {
+		return filterType;
+	}
+	public int getFrameType() {
+		return frameType;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
 	public SubBlock getLeftSubBlock(SubBlock sb, SubBlock.PLANE plane) {
 		SubBlock r = sb.getLeft();
 		if(r==null) {
@@ -476,28 +793,48 @@ public class VP8Frame {
 
 		return r;
 	}
-
 	public MacroBlock getMacroBlock(int mbCol, int mbRow) {
 		return macroBlocks[mbCol+1][mbRow+1];
 	}
-
 	public int getMacroBlockCols() {
 		return macroBlockCols;
 	}
-
+	public String getMacroBlockDebugString(int mbx, int mby, int sbx, int sby) {
+		String r = new String();
+		if(mbx<this.macroBlockCols && mby<this.getMacroBlockRows()) {
+			MacroBlock mb = getMacroBlock(mbx, mby);
+			r=r+mb.getDebugString();
+			if(sbx<4 && sby<4) {
+				SubBlock sb = mb.getSubBlock(SubBlock.PLANE.Y1, sbx, sby);
+				r=r+"\n SubBlock "+sbx+", "+sby+"\n  "+sb.getDebugString();
+				sb = mb.getSubBlock(SubBlock.PLANE.Y2, sbx, sby);
+				r=r+"\n SubBlock "+sbx+", "+sby+"\n  "+sb.getDebugString();
+				sb = mb.getSubBlock(SubBlock.PLANE.U, sbx/2, sby/2);
+				r=r+"\n SubBlock "+sbx/2+", "+sby/2+"\n  "+sb.getDebugString();
+				sb = mb.getSubBlock(SubBlock.PLANE.V, sbx/2, sby/2);
+				r=r+"\n SubBlock "+sbx/2+", "+sby/2+"\n  "+sb.getDebugString();
+			}
+		}
+		return r;
+	}
 	public int getMacroBlockRows() {
 		return macroBlockRows;
 	}
-
+	
 	public int getQIndex() {
 		return segmentQuants.getqIndex();
 	}
-
+	public SegmentQuants getSegmentQuants() {
+		return segmentQuants;
+	}
+	public int getSharpnessLevel() {
+		return sharpnessLevel;
+	}
 	public BoolDecoder getTokenBoolDecoder() throws IOException {
 		tokenBoolDecoder.seek();
 		return tokenBoolDecoder;
 	}
-
+	
 	public int[][] getUBuffer() {
 		int r[][]= new int [macroBlockCols*8][macroBlockRows*8];
 		for(int y=0; y<macroBlockRows; y++) {
@@ -518,7 +855,7 @@ public class VP8Frame {
 		}
 		return r;
 	}
-
+	
 	public int[][] getVBuffer() {
 		int r[][]= new int [macroBlockCols*8][macroBlockRows*8];
 		for(int y=0; y<macroBlockRows; y++) {
@@ -538,6 +875,10 @@ public class VP8Frame {
 			}
 		}
 		return r;
+	}
+	
+	public int getWidth() {
+		return width;
 	}
 	public int[][] getYBuffer() {
 		int r[][]= new int [macroBlockCols*16][macroBlockRows*16];
@@ -559,7 +900,11 @@ public class VP8Frame {
 		}
 		return r;
 	}
-
+	
+	public void loopFilter() {
+		LoopFilter.loopFilter(this);
+	}
+	
 	private void readModes(BoolDecoder bc) throws IOException {
 		int mb_row = -1;
 		int prob_skip_false = 0;
@@ -662,11 +1007,18 @@ public class VP8Frame {
 		}
 	}
 	
+	
+	
+	private int readPartitionSize(long l) throws IOException {
+		frame.seek(l);
+		int size =frame.readUnsignedByte() + (frame.readUnsignedByte() << 8) + (frame.readUnsignedByte() << 16);
+		return size;
+		
+	}
 	private int readSubBlockMode(BoolDecoder bc, int A, int L) throws IOException {
 		int i = bc.readTree(Globals.vp8SubBlockModeTree, Globals.vp8KeyFrameSubBlockModeProb[A][L]);
 		return i;
 	}
-	
 	private int readUvMode(BoolDecoder bc) throws IOException {
 		int i = bc.readTree(Globals.vp8UVModeTree, Globals.vp8KeyFrameUVModeProb);
 		return i;
@@ -676,12 +1028,16 @@ public class VP8Frame {
 		int i = bc.readTree(Globals.vp8KeyFrameYModeTree, Globals.vp8KeyFrameYModeProb);
 		return i;
 	}
-	private int readPartitionSize(long l) throws IOException {
-		frame.seek(l);
-		int size =frame.readUnsignedByte() + (frame.readUnsignedByte() << 8) + (frame.readUnsignedByte() << 16);
-		return size;
-		
+	
+	public void removeIIOReadProgressListener(IIOReadProgressListener listener) {
+		_listeners.remove(listener);
 	}
+	
+	public void setBuffersToCreate (int count) {
+		this.buffersToCreate = 3+count;
+		this.bufferCount=0;
+	}
+	
 	private void setupTokenDecoder(BoolDecoder bc, int first_partition_length_in_bytes, long offset) throws IOException {
 
 		long partitionSize = 0;
@@ -714,191 +1070,6 @@ public class VP8Frame {
 		tokenBoolDecoder = tokenBoolDecoders.elementAt(0);
 	}
 	
-	public void loopFilter() {
-		LoopFilter.loopFilter(this);
-	}
-	public int getWidth() {
-		return width;
-	}
-	public int getHeight() {
-		return height;
-	}
-	public SegmentQuants getSegmentQuants() {
-		return segmentQuants;
-	}
-	public void addIIOReadProgressListener(IIOReadProgressListener listener) {
-		_listeners.add(listener);
-	}
-	public void removeIIOReadProgressListener(IIOReadProgressListener listener) {
-		_listeners.remove(listener);
-	}
-	
-	public void setBuffersToCreate (int count) {
-		this.buffersToCreate = 3+count;
-		this.bufferCount=0;
-	}
-	private void fireProgressUpdate(int mb_row) {
-        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
-        while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100.0f*((float)(mb_row+1)/(float)getMacroBlockRows()))/buffersToCreate);
-        }
-	}
-	public void fireLFProgressUpdate(float p) {
-        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
-        while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, (100/buffersToCreate)+(p/buffersToCreate));
-        }
-	}
-	public void fireRGBProgressUpdate(float p) {
-        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
-        while( listeners.hasNext() ) {
-            ( (IIOReadProgressListener)listeners.next() ).imageProgress( null, ((bufferCount+4)*(100/buffersToCreate))+(p/buffersToCreate));
-        }
-	}
-	
-	public BufferedImage getBufferedImage() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-		useBufferedImage(bi);
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageDiff() {
-
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int yy, u, v;
-				yy = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDiff()[x%4][y%4];
-				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
-				v = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
-			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
-			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
-			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImagePredict() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int yy, u, v;
-				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getPredict()[x%4][y%4];
-				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
-				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
-			 	c[0] = (int)( 1.164*(yy-16)+1.596*(v-128) );
-			 	c[1] = (int)( 1.164*(yy-16)-0.813*(v-128)-0.391*(u-128) );
-			 	c[2] = (int)( 1.164*(yy-16)+2.018*(u-128) );
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	public BufferedImage getDebugImageYBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int yy;
-				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDest()[x%4][y%4];
-			 	c[0] = yy;
-			 	c[1] = yy;
-			 	c[2] = yy;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageYDiffBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int yy;
-				yy = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getDiff()[x%4][y%4];
-			 	c[0] = yy;
-			 	c[1] = yy;
-			 	c[2] = yy;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageYPredBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int yy;
-				yy = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.Y1, (x%16)/4, (y%16)/4).getPredict()[x%4][y%4];
-			 	c[0] = yy;
-			 	c[1] = yy;
-			 	c[2] = yy;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	
-	
 	public void useBufferedImage(BufferedImage dst) {
 	    WritableRaster imRas = dst.getWritableTile(0, 0);
 
@@ -923,178 +1094,5 @@ public class VP8Frame {
 			}
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
-	}
-	public String getMacroBlockDebugString(int mbx, int mby, int sbx, int sby) {
-		String r = new String();
-		if(mbx<this.macroBlockCols && mby<this.getMacroBlockRows()) {
-			MacroBlock mb = getMacroBlock(mbx, mby);
-			r=r+mb.getDebugString();
-			if(sbx<4 && sby<4) {
-				SubBlock sb = mb.getSubBlock(SubBlock.PLANE.Y1, sbx, sby);
-				r=r+"\n SubBlock "+sbx+", "+sby+"\n  "+sb.getDebugString();
-				sb = mb.getSubBlock(SubBlock.PLANE.Y2, sbx, sby);
-				r=r+"\n SubBlock "+sbx+", "+sby+"\n  "+sb.getDebugString();
-				sb = mb.getSubBlock(SubBlock.PLANE.U, sbx/2, sby/2);
-				r=r+"\n SubBlock "+sbx/2+", "+sby/2+"\n  "+sb.getDebugString();
-				sb = mb.getSubBlock(SubBlock.PLANE.V, sbx/2, sby/2);
-				r=r+"\n SubBlock "+sbx/2+", "+sby/2+"\n  "+sb.getDebugString();
-			}
-		}
-		return r;
-	}
-	public BufferedImage getDebugImageUBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int u;
-				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
-				c[0] = u;
-			 	c[1] = u;
-			 	c[2] = u;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageVBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int v;
-				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
-				c[0] = v;
-			 	c[1] = v;
-			 	c[2] = v;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageUDiffBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int u;
-				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
-				c[0] = u;
-			 	c[1] = u;
-			 	c[2] = u;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageVDiffBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int v;
-				v = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
-				c[0] = v;
-			 	c[1] = v;
-			 	c[2] = v;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageUPredBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int u;
-				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
-				c[0] = u;
-			 	c[1] = u;
-			 	c[2] = u;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
-	}
-	
-	public BufferedImage getDebugImageVPredBuffer() {
-		BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-	    WritableRaster imRas = bi.getWritableTile(0, 0);
-		for(int x = 0; x< getWidth(); x++) {
-			for(int y = 0; y< getHeight(); y++) {
-				int c[] = new int[3];
-				int v;
-				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
-				c[0] = v;
-			 	c[1] = v;
-			 	c[2] = v;
-
-				for(int z=0; z<3; z++) {
-					if(c[z]<0)
-						c[z]=0;
-					if(c[z]>255)
-						c[z]=255;
-				}
-				imRas.setPixel(x, y, c);
-			}
-			fireRGBProgressUpdate(100.0F*x/getWidth());
-		}
-		bufferCount++;
-		return bi;
 	}
 }
