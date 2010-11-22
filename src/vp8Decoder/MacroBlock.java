@@ -628,8 +628,6 @@ public class MacroBlock {
 		MacroBlock mb=this;
 		if (mb.getYMode() != Globals.B_PRED) {
 			SubBlock sb = mb.getY2SubBlock();
-			//int acQValue = (Globals.ac_qlookup[frame.getQIndex()]*155)/100;
-			//int dcQValue = (Globals.dc_qlookup[frame.getQIndex()]*2);
 			int acQValue = frame.getSegmentQuants().getSegQuants()[0].getY2ac_delta_q();
 			int dcQValue = frame.getSegmentQuants().getSegQuants()[0].getY2dc();
 
@@ -726,17 +724,6 @@ public class MacroBlock {
 			sb = ySubBlocks[0][j];
 			sb.drawDebugV();
 		}
-		
-		/*for(int j=0; j<2; j++) 
-			for(int i=0; i<2; i++) {
-			SubBlock sb = uSubBlocks[0][j];
-			sb.drawDebugH();
-		}
-		for(int j=0; j<2; j++) 
-			for(int i=0; i<2; i++) {
-			SubBlock sb = vSubBlocks[0][j];
-			sb.drawDebugH();
-		}*/
 	}
 	public void setSegmentId(int value) {
 		this.segmentId=value;

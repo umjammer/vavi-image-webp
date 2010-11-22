@@ -152,10 +152,8 @@ public class SubBlock {
 			}
 			else {
 			 QValue = frame.getSegmentQuants().getSegQuants()[0].getY1ac();
-			//int QValue = Globals.ac_qlookup[frame.getQIndex()];
 			if (i == 0) 
 				QValue = frame.getSegmentQuants().getSegQuants()[0].getY1dc();
-				//QValue = Globals.dc_qlookup[frame.getQIndex()];
 			}
 
 			int inputValue = sb.getTokens()[i];
@@ -325,8 +323,6 @@ public class SubBlock {
 					p[c][r] = pred;
 				}
 			}
-			//sb.setPredict(p);
-			//System.exit(0);
 			break;
 		case Globals.B_VE_PRED:
 			//System.out.println("B_VE_PRED");
@@ -554,10 +550,6 @@ public class SubBlock {
 	}
 	public void drawDebugV() {
 		if(dest!=null) {
-			//dest[0][0]=128;
-			//dest[1][0]=128;
-			//dest[2][0]=128;
-			//dest[3][0]=128;
 			dest[0][0]=0;
 			dest[0][1]=0;
 			dest[0][2]=0;
@@ -571,10 +563,6 @@ public class SubBlock {
 				dest[1][0]=0;
 				dest[2][0]=0;
 				dest[3][0]=0;
-				//dest[0][0]=128;
-				//dest[0][1]=128;
-				//dest[0][2]=128;
-				//dest[0][3]=128;
 			}
 
 	}

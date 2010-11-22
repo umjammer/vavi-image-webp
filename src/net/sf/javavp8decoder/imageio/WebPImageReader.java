@@ -15,22 +15,14 @@
 */
 package net.sf.javavp8decoder.imageio;
 
-
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageReadParam;
@@ -41,7 +33,6 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
-import vp8Decoder.VP8Decoder;
 import vp8Decoder.VP8Frame;
 
 public class WebPImageReader extends ImageReader implements IIOReadProgressListener {
@@ -61,13 +52,8 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 	public WebPImageReader(ImageReaderSpi originatingProvider) {
 		super(originatingProvider);
 		logger = Logger.getAnonymousLogger();
-	    //SimpleFormatter formatter = new SimpleFormatter();
-	    
-
 		logger.setLevel(Level.ALL);
 		logger.log(Level.INFO, "WebPImageReader");
-
-
 	}
 
 	
@@ -180,14 +166,6 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 		}
 		logger.log(Level.INFO, "VP8 IMAGE DATA SIZE: "+frameSize);
 		
-		int[] frame = new int[frameSize];
-		/*for(int x=0; x<frameSize; x++)
-			try {
-				frame[x]=stream.read();
-			} catch (IOException e) {
-				throw new IIOException("Error reading frame", e);
-		}*/
-
 		try {
 			decoder = new VP8Frame(stream);
 			decoder.addIIOReadProgressListener(this);
@@ -227,7 +205,7 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 		return height;
 	}
 
-	public Iterator getImageTypes(int imageIndex)
+	public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex)
 	throws IIOException {
 		logger.log(Level.INFO, "getImageTypes");
 		checkIndex(imageIndex);
@@ -235,15 +213,8 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 	
 		ImageTypeSpecifier imageType = null;
 		int datatype = DataBuffer.TYPE_BYTE;
-		java.util.List l = new ArrayList();
-		//switch (colorType) {
-		//case COLOR_TYPE_GRAY:
-		//	imageType = ImageTypeSpecifier.createGrayscale(8,
-		//	                                               datatype,
-		//	                                               false);
-		//	break;
-	
-		//case COLOR_TYPE_RGB:
+		java.util.List<ImageTypeSpecifier> l = new ArrayList<ImageTypeSpecifier>();
+
 			ColorSpace rgb =
 				ColorSpace.getInstance(ColorSpace.CS_sRGB);
 			int[] bandOffsets = new int[3];
@@ -256,8 +227,7 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 				                                     datatype,
 				                                     false,
 				                                     false);
-		//	break;				
-	//}
+
 	l.add(imageType);
 	return l.iterator();
 }
@@ -269,23 +239,8 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 		super.processImageStarted(0);
 		logger.log(Level.INFO, "read");
 		readMetadata(); // Stream is positioned at start of image data
-		// Compute initial source region, clip against destination later
-		Rectangle sourceRegion = getSourceRegion(param, width, height);
-			
-		// Set everything to default values
-		int sourceXSubsampling = 1;
-		int sourceYSubsampling = 1;
-		int[] sourceBands = null;
-		int[] destinationBands = null;
-		Point destinationOffset = new Point(0, 0);
-
 		// Get values from the ImageReadParam, if any
 		if (param != null) {
-			sourceXSubsampling = param.getSourceXSubsampling();
-			sourceYSubsampling = param.getSourceYSubsampling();
-			sourceBands = param.getSourceBands();
-			destinationBands = param.getDestinationBands();
-			destinationOffset = param.getDestinationOffset();
 		}
 		// Get the specified detination image or create a new one
 		BufferedImage dst = getDestination(param,
@@ -322,23 +277,6 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
 		}
 		readHeader();
 		this.metadata = new WebPMetadata();
-		/*try {
-			while (true) {
-				String keyword = stream.readUTF();
-				stream.readUnsignedByte();
-				if (keyword.equals("END")) {
-					break;
-				}
-				String value = stream.readUTF();
-				stream.readUnsignedByte();
-
-				metadata.keywords.add(keyword);
-				metadata.values.add(value);
-			}
-		} catch (IOException e) {
-			throw new IIOException("Exception reading metadata",
-			                       e);
-		}*/
 	}
 	
 	public void imageProgress(ImageReader source, float percentageDone) {

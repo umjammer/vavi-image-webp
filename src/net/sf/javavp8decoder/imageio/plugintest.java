@@ -33,6 +33,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class plugintest extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private BufferedImage bi;
 	private ScrollPane sp;
 	private JPanel jp;
@@ -52,6 +56,10 @@ public class plugintest extends JFrame {
 			e.printStackTrace();
 		}
 		class ImagePanel extends JPanel {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 			private BufferedImage bi;
 			public ImagePanel(BufferedImage bi) {
 				this.bi = bi;

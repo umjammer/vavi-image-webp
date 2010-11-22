@@ -16,7 +16,6 @@
 package vp8Decoder;
 
 import java.io.IOException;
-import java.util.logging.Level;
 
 public class SegmentQuants {
 
@@ -64,12 +63,6 @@ public class SegmentQuants {
 
 		}
 	}
-	
-	/*private String toString() {
-		for(SegmentQuant s : segQuants) {
-			
-		}
-	}*/
 	
 	private static DeltaQ get_delta_q(BoolDecoder bc, int prev) throws IOException {
 		DeltaQ ret = new DeltaQ();

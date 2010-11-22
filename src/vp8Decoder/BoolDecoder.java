@@ -91,32 +91,6 @@ public class BoolDecoder {
 		    return bit;
 		}
 	
-//	public int old_read_bool(int prob) {
-//	    int split = 1 + ( ((range - 1) * prob) >> 8);
-//	    int bigsplit = split << 8;
-//
-//	    int        retval=0;                    /* will be 0 or 1 */
-//	    if( value >= bigsplit) {              /* encoded a one */
-//
-//	    	retval = 1;
-//	    	range -= split;                 /* reduce range */
-//	    	value -= bigsplit;                 /* subtract off left endpoint of interval */
-//	     } else {                              /* encoded a zero */
-//
-//	    	 retval = 0;
-//	    	 range = split;                  /* reduce range, no change in left endpoint */
-//	     }
-//	     while( range < 128) {              /* shift out irrelevant value bits */
-//	    	 value <<= 1;
-//	    	 range <<= 1;
-//	    	 if( ++bit_count == 8) { /* shift in new bits 8 at a time */
-//	    		 bit_count = 0;
-//	    		 value |= data[offset++];
-//	        }
-//	     }
-//	    return retval;
-//	}
-	
 	  /* Convenience function reads a "literal", that is, a "num_bits" wide
     unsigned value whose bits come high- to low-order, with each bit
     encoded at probability 128 (i.e., 1/2). */

@@ -16,8 +16,10 @@ public class IVF {
 			in = new FileInputStream("bbb.ivf");
 			System.out.println("IVF");
 			readFileHeader(in);
+			@SuppressWarnings("unused")
 			int[] frameData;
 			
+			@SuppressWarnings("unused")
 			VP8Decoder f = new VP8Decoder();
 
 			

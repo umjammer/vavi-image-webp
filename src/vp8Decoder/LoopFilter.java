@@ -30,12 +30,6 @@ public class LoopFilter {
 		frame.fireLFProgressUpdate(100);
 	}
 	public static void loopFilterUV(VP8Frame frame) {
-		/*System.out.println("loop filter");
-		System.out.println("filterLevel: "+frame.getFilterLevel());
-		System.out.println("filterType: "+frame.getFilterType());
-
-		System.out.println(frame.getMacroBlockRows());
-		System.out.println(frame.getMacroBlockCols());*/
 		for(int y=0; y<frame.getMacroBlockRows(); y++) {
 			frame.fireLFProgressUpdate((100.0f*((float)(y+1)/(float)(frame.getMacroBlockRows())))/2);
 			for(int x=0; x<frame.getMacroBlockCols(); x++)
@@ -53,9 +47,7 @@ public class LoopFilter {
 				}
 				if( interior_limit==0)
 				    interior_limit = 1;
-
-				//System.out.println("interior_limit: "+interior_limit);
-				
+			
 				int hev_threshold = 0;
 				if( frame.getFrameType()==0)          /* current frame is a key frame */
 				{
@@ -73,20 +65,12 @@ public class LoopFilter {
 				     else if( loop_filter_level >= 15)
 				         hev_threshold = 1;
 				}
-
-				//System.out.println("hev_threshold: "+hev_threshold);
-				
+			
 				/* Luma and Chroma use the same inter-macroblock edge limit */
 				int mbedge_limit = ((loop_filter_level + 2) * 2) + interior_limit;
 				/* Luma and Chroma use the same inter-subblock edge limit */
 				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
-				/*if(frame.getFilterType()==2)
-					System.out.println("complex");
-					else if(frame.getFilterType()==1)
-					System.out.println("simple");
-					else
-						System.out.println("disabled");
-					//System.exit(0);*/
+
 				if(x>0) {
 					MacroBlock lmb = frame.getMacroBlock(x-1, y);
 					for(int b=0; b<2; b++) {
@@ -106,7 +90,7 @@ public class LoopFilter {
 					}
 				}
 				//sb left
-				//System.out.println("sb left");
+
 				if(!rmb.isSkip_inner_lf()) {
 					for(int a=1; a<2;a++) {
 						for(int b=0; b<2; b++) {
@@ -145,7 +129,7 @@ public class LoopFilter {
 					}
 				}
 				//sb top
-				//System.out.println("sb top");
+
 				if(!rmb.isSkip_inner_lf()) {
 					for(int a=1; a<2;a++) {
 						for(int b=0; b<2; b++) {
@@ -168,17 +152,10 @@ public class LoopFilter {
 		}
 	}
 	public static void loopFilterY(VP8Frame frame) {
-		/*System.out.println("loop filter");
-		System.out.println("filterLevel: "+frame.getFilterLevel());
-		System.out.println("filterType: "+frame.getFilterType());
-
-		System.out.println(frame.getMacroBlockRows());
-		System.out.println(frame.getMacroBlockCols());*/
 		for(int y=0; y<frame.getMacroBlockRows(); y++) {
 			frame.fireLFProgressUpdate(50+(100.0f*((float)(y+1)/(float)(frame.getMacroBlockRows())))/2);
 			for(int x=0; x<frame.getMacroBlockCols(); x++)
 			{
-				//System.out.println("x: "+x+" y: "+y);
 				MacroBlock rmb = frame.getMacroBlock(x, y);
 				MacroBlock bmb = frame.getMacroBlock(x, y);
 				int sharpnessLevel = frame.getSharpnessLevel();
@@ -213,18 +190,12 @@ public class LoopFilter {
 				     else if( loop_filter_level >= 15)
 				         hev_threshold = 1;
 				}
-				
 
-				//System.out.println("hev_threshold: "+hev_threshold);
 				
 				/* Luma and Chroma use the same inter-macroblock edge limit */
 				int mbedge_limit = ((loop_filter_level + 2) * 2) + interior_limit;
 				/* Luma and Chroma use the same inter-subblock edge limit */
 				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
-				//System.out.println("mbedge_limit: "+mbedge_limit);
-				//System.out.println("sub_bedge_limit: "+sub_bedge_limit);
-				
-				
 
 				//left
 				if(x>0) {
@@ -274,7 +245,6 @@ public class LoopFilter {
 							SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a-1);
 							SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a);
 							for(int c=0; c<4; c++) {
-								//System.out.println("sbtop");
 								Segment seg = getSegV(bsb, tsb, c);
 								subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
 								setSegV(bsb, tsb, seg, c);
@@ -287,12 +257,6 @@ public class LoopFilter {
 	}
 	
 	public static void loopFilterSimple(VP8Frame frame) {
-		/*System.out.println("loop filter");
-		System.out.println("filterLevel: "+frame.getFilterLevel());
-		System.out.println("filterType: "+frame.getFilterType());
-
-		System.out.println(frame.getMacroBlockRows());
-		System.out.println(frame.getMacroBlockCols());*/
 		for(int y=0; y<frame.getMacroBlockRows(); y++) {
 			frame.fireLFProgressUpdate((100.0f*((float)(y+1)/(float)(frame.getMacroBlockRows()))));
 			for(int x=0; x<frame.getMacroBlockCols(); x++)
@@ -300,50 +264,14 @@ public class LoopFilter {
 				//System.out.println("x: "+x+" y: "+y);
 				MacroBlock rmb = frame.getMacroBlock(x, y);
 				MacroBlock bmb = frame.getMacroBlock(x, y);
-				int sharpnessLevel = frame.getSharpnessLevel();
+
 				int loop_filter_level = rmb.getFilterLevel();
 				int interior_limit = rmb.getFilterLevel();
-
-				/*if( sharpnessLevel>0)
-				{
-				    interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
-				    if( interior_limit > 9 - sharpnessLevel)
-				        interior_limit = 9 - sharpnessLevel;
-				}
-				if( interior_limit==0)
-				    interior_limit = 1;
-
-
-				
-				int hev_threshold = 0;
-				if( frame.getFrameType()==0)          
-				{
-				     if( loop_filter_level >= 40)
-				         hev_threshold = 2;
-				     else if( loop_filter_level >= 15)
-				         hev_threshold = 1;
-				}
-				else                                 
-				     if( loop_filter_level >= 40)
-				         hev_threshold = 3;
-				     else if( loop_filter_level >= 20)
-				         hev_threshold = 2;
-				     else if( loop_filter_level >= 15)
-				         hev_threshold = 1;
-				}*/
-				 //int limit = 2 * loop_filter_level + interior_limit;
-				
-
-				//System.out.println("hev_threshold: "+hev_threshold);
 				
 				/* Luma and Chroma use the same inter-macroblock edge limit */
 				int mbedge_limit = ((loop_filter_level + 2) * 2) + interior_limit;
 				/* Luma and Chroma use the same inter-subblock edge limit */
 				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
-				//System.out.println("mbedge_limit: "+mbedge_limit);
-				//System.out.println("sub_bedge_limit: "+sub_bedge_limit);
-				
-				
 
 				//left
 				if(x>0) {
@@ -479,11 +407,9 @@ public class LoopFilter {
 		    Segment seg
 		) {
 		    if( (abs(seg.P0 - seg.Q0)*2 + abs(seg.P1-seg.Q1)/2) <= edge_limit) {
-		    	//System.out.println("True");
 		        common_adjust( true, seg);    /* use outer taps */
 		    }
 		    else {
-		    	//System.out.println(false);
 		    }
 	}
 	
@@ -505,22 +431,6 @@ public class LoopFilter {
      return   (abs(p0 - q0)*2 + abs(p1-q1)/2) <= E
          &&   abs(p3 - p2) <= I && abs(p2 - p1) <= I    && abs(p1 - p0) <= I
          &&   abs(q3 - q2) <= I && abs(q2 - q1) <= I    && abs(q1 - q0) <= I;
-     
-     
-     /*boolean a, b, c, d, e, f, g, r;
-     System.out.println("p0: "+p0+ " q0: "+q0+" p1: "+p1+" q1:"+q1);
-     System.out.println("E: "+E);
-     System.out.println((abs(p0 - q0)*2 + abs(p1-q1)/2));
-     a = (abs(p0 - q0)*2 + abs(p1-q1)/2) <= E;
-     b = abs(p3 - p2) <= I;
-     c = abs(p2 - p1) <= I;
-     d = abs(p1 - p0) <= I;
-     e = abs(q3 - q2) <= I;
-     f = abs(q2 - q1) <= I;
-     g = abs(q1 - q0) <= I;
-     r = a && b && c && d &&e && f && g;
-     System.out.println("a: "+a+" b: "+b+" c: "+c+" d: "+d+" e: "+e+" f: "+f+" g: "+g+" r: "+r);
-     return r;*/
 }
 
 	/* Filtering is altered if (at least) one of the differences on either
@@ -539,22 +449,18 @@ public class LoopFilter {
             int edge_limit,
             Segment seg
       ) {
-  		//System.out.print(seg);
     		int p3 = u2s(seg.P3), p2 = u2s(seg.P2), p1 = u2s(seg.P1), p0 = u2s(seg.P0);
             int q0 = u2s(seg.Q0), q1 = u2s(seg.Q1), q2 = u2s(seg.Q2), q3 = u2s(seg.Q3);
            if( filter_yes( interior_limit, edge_limit, q3, q2, q1, q0, p0, p1, p2, p3))
            {
-        	  // System.out.print(" filter_yes -> ");
                  boolean hv = hev( hev_threshold, p1, p0, q0, q1);
                  int a = ( common_adjust( hv, seg) + 1) >> 1;
                  if( !hv) {
                 	 seg.Q1 = s2u( q1 - a);
                 	 seg.P1 = s2u( p1 + a);
                  }
-                 //System.out.println(seg);
            }
            else {
-        	   //System.out.println("filter_no");
            }
 
       }
@@ -565,30 +471,21 @@ public class LoopFilter {
             int edge_limit,
             Segment seg
      ) {
-    	//System.out.print(seg);
     		int p3 = u2s(seg.P3), p2 = u2s(seg.P2), p1 = u2s(seg.P1), p0 = u2s(seg.P0);
     		int q0 = u2s(seg.Q0), q1 = u2s(seg.Q1), q2 = u2s(seg.Q2), q3 = u2s(seg.Q3);
             if( filter_yes( interior_limit, edge_limit, q3, q2, q1, q0, p0, p1, p2, p3))
             {
-            	//System.out.println("p0: "+p0);
-            	//System.out.println("s2u(p0): "+s2u(p0));
                 if( !hev( hev_threshold, p1, p0, q0, q1))
                 {
-                	//System.out.println("hev");
                     // Same as the initial calculation in "common_adjust",
                    //    w is something like twice the edge difference 
                     int w = c( c(p1 - q1) + 3*(q0 - p0) );
-                   
-                    //System.out.println("ctest: "+c(200));
-                    //System.out.println("w: "+w);
+
                     // 9/64 is approximately 9/63 = 1/7 and 1<<7 = 128 = 2*64.
                     //   So this a, used to adjust the pixels adjacent to the edge,
                     //   is something like 3/7 the edge difference. 
                     int a =  (27*w + 63) >> 7;
-     				//System.out.println("a: "+a);
-     				//System.out.println( 27*w + 63);
-     				//System.out.println( c(27*w + 63));
-     				//System.out.println( (27*w + 63) >> 7);
+     
      				seg.Q0 = s2u( q0 - a);  seg.P0 = s2u( p0 + a);
                    // Next two are adjusted by 2/7 the edge difference 
                     a = ( 18*w + 63) >> 7;
@@ -596,14 +493,10 @@ public class LoopFilter {
      				seg.Q1 = s2u( q1 - a);  seg.P1 = s2u( p1 + a);
                       // Last two are adjusted by 1/7 the edge difference 
                       a = ( 9*w + 63) >> 7;
-					//System.out.println("a: "+a);
 					seg.Q2 = s2u( q2 - a);  seg.P2 = s2u( p2 + a);
-					//System.out.println(seg);
                  } else                                   // if hev, do simple filter
                       common_adjust( true, seg);   // using outer taps 
-           //     System.out.print(" -> "+seg);
-           }
-           // System.out.println();
+            }
       }
 
 

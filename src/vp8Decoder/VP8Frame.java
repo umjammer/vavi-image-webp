@@ -26,8 +26,6 @@ import java.util.logging.Logger;
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.stream.ImageInputStream;
 
-import vp8Decoder.SubBlock.PLANE;
-
 public class VP8Frame {
 	private static int MAX_REF_LF_DELTAS = 4;
 	private static int MAX_MODE_LF_DELTAS = 4;
@@ -40,7 +38,6 @@ public class VP8Frame {
     private ImageInputStream frame;
 
 	private int[][][][] coefProbs;
-	//private int qIndex;
 	private int macroBlockNoCoeffSkip;
 	private int macroBlockRows;
 	private int macroBlockCols;
@@ -92,7 +89,6 @@ public class VP8Frame {
 	private boolean debug=false;
 	private int width;
 	private int height;
-	private int segmentationMode;
 	private int macroBlockSegementAbsoluteDelta;
 	private int[] macroBlockSegmentTreeProbs;
 	private int updateMacroBlockSegmentationMap;
@@ -228,7 +224,6 @@ public class VP8Frame {
 					}
 				}
 			}
-			//throw new IllegalArgumentException("bad input: segmentation_enabled");
 		}
 		simpleFilter = bc.readBit();
 		logger.log(Level.INFO, "simpleFilter: " + simpleFilter);
@@ -245,7 +240,6 @@ public class VP8Frame {
 			modeRefLoopFilterDeltaUpdate = bc.readBit();
 			logger.log(Level.INFO, "mode_ref_lf_delta_update: "
 					+ modeRefLoopFilterDeltaUpdate);
-			//System.exit(0);
 			if (modeRefLoopFilterDeltaUpdate > 0) {
 				for (int i = 0; i < MAX_REF_LF_DELTAS; i++) {
 
@@ -275,58 +269,6 @@ public class VP8Frame {
 		setupTokenDecoder(bc, firstPartitionLengthInBytes,
 				offset);
 		bc.seek();
-
-		/*int Qindex = bc.read_literal(7);
-		logger.log(Level.INFO, "Q: " + Qindex);
-		qIndex = Qindex;
-		boolean q_update = false;
-		DeltaQ v = get_delta_q(bc, 0);
-		int y1dc_delta_q = v.v;
-		q_update = q_update || v.update;
-		logger.log(Level.INFO, "y1dc_delta_q: " + y1dc_delta_q);
-		logger.log(Level.INFO, "q_update: " + q_update);
-		v = get_delta_q(bc, 0);
-		int y2dc_delta_q = v.v;
-		q_update = q_update || v.update;
-		logger.log(Level.INFO, "y2dc_delta_q: " + y2dc_delta_q);
-		logger.log(Level.INFO, "q_update: " + q_update);
-		v = get_delta_q(bc, 0);
-		int y2ac_delta_q = v.v;
-		q_update = q_update || v.update;
-		logger.log(Level.INFO, "y2ac_delta_q: " + y2ac_delta_q);
-		logger.log(Level.INFO, "q_update: " + q_update);
-		v = get_delta_q(bc, 0);
-		int uvdc_delta_q = v.v;
-		q_update = q_update || v.update;
-		logger.log(Level.INFO, "uvdc_delta_q: " + uvdc_delta_q);
-		logger.log(Level.INFO, "q_update: " + q_update);
-		v = get_delta_q(bc, 0);
-		int uvac_delta_q = v.v;
-		q_update = q_update || v.update;
-		logger.log(Level.INFO, "uvac_delta_q: " + uvac_delta_q);
-		logger.log(Level.INFO, "q_update: " + q_update);
-		
-		if(y1dc_delta_q>0) {
-			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+y1dc_delta_q);
-			//throw new IllegalArgumentException("bad input: delta_q");
-		}
-		if(y2dc_delta_q>0) {
-			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+y2dc_delta_q);
-			//throw new IllegalArgumentException("bad input: delta_q");
-		}
-		if(y2ac_delta_q>0) {
-			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+y2ac_delta_q);
-			//throw new IllegalArgumentException("bad input: delta_q");
-		}
-		if(uvdc_delta_q>0) {
-			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+uvdc_delta_q);
-			//throw new IllegalArgumentException("bad input: delta_q");
-		}
-		if(uvac_delta_q>0) {
-			logger.log(Level.SEVERE, "TODO y1dc_delta_q: "+uvac_delta_q);
-			//throw new IllegalArgumentException("bad input: delta_q");
-		}*/
-		
 
 		segmentQuants.parse(bc, segmentationIsEnabled==1, macroBlockSegementAbsoluteDelta==1);
 
@@ -394,21 +336,11 @@ public class VP8Frame {
 
 		}
 
-		//if(debug)
-		//	drawDebug();
 		if(this.getFilterType()>0)
 			this.loopFilter();
 		return true;
 	}
 	
-	private void drawDebug() {
-		for (int mb_row = 0; mb_row < macroBlockRows; mb_row++) {
-			for (int mb_col = 0; mb_col < macroBlockCols; mb_col++) {
-				macroBlocks[mb_col+1][mb_row+1].drawDebug();
-			}
-		}
-	}
-		
 	public int getFilterType() {
 		return filterType;
 	}
@@ -417,9 +349,6 @@ public class VP8Frame {
 	}
 	private void decodeMacroBlockRow(int mbRow) throws IOException {
 		for (int mbCol = 0; mbCol < macroBlockCols; mbCol++) {
-			//if(mbRow==27 && mb_col==1) {
-				//System.exit(0);
-			//}
 
 			MacroBlock mb = getMacroBlock(mbCol, mbRow);
 
@@ -433,8 +362,6 @@ public class VP8Frame {
 	public SubBlock getAboveRightSubBlock(SubBlock sb, SubBlock.PLANE plane) {
 		// this might break at right edge
 		SubBlock r;
-		int mbxPos=0;
-		
 		MacroBlock mb = sb.getMacroBlock();
 		int x = mb.getSubblockX(sb);
 		int y = mb.getSubblockY(sb);
@@ -662,7 +589,6 @@ public class VP8Frame {
 					mb.setFilterLevel(level);
 				}
 				else
-					//	logger.log(Level.SEVERE, "TODO:");
 					throw new IllegalArgumentException("TODO");
 				
 				int mb_skip_coeff = 0;
@@ -698,7 +624,6 @@ public class VP8Frame {
 						level = level + this.modeLoopFilterDeltas[0];
 						level = (level < 0) ? 0 : (level > 63) ? 63 : level;
 						mb.setFilterLevel(level);
-						//System.exit(0);
 					}
 				} else {
 					int BMode;
@@ -727,10 +652,7 @@ public class VP8Frame {
 							sb.setMode(BMode);
 						}
 					}
-
-
 				}
-
 				int mode = readUvMode(bc);
 				mb.setUvMode(mode);
 			}
@@ -1023,7 +945,7 @@ public class VP8Frame {
 		for(int x = 0; x< getWidth(); x++) {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
-				int yy, u, v;
+				int u;
 				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
 				c[0] = u;
 			 	c[1] = u;
@@ -1049,7 +971,7 @@ public class VP8Frame {
 		for(int x = 0; x< getWidth(); x++) {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
-				int yy, u, v;
+				int v;
 				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDest()[(x/2)%4][(y/2)%4];
 				c[0] = v;
 			 	c[1] = v;
@@ -1075,7 +997,7 @@ public class VP8Frame {
 		for(int x = 0; x< getWidth(); x++) {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
-				int yy, u, v;
+				int u;
 				u = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
 				c[0] = u;
 			 	c[1] = u;
@@ -1101,7 +1023,7 @@ public class VP8Frame {
 		for(int x = 0; x< getWidth(); x++) {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
-				int yy, u, v;
+				int v;
 				v = 127+this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getDiff()[(x/2)%4][(y/2)%4];
 				c[0] = v;
 			 	c[1] = v;
@@ -1127,7 +1049,7 @@ public class VP8Frame {
 		for(int x = 0; x< getWidth(); x++) {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
-				int yy, u, v;
+				int u;
 				u = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.U, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
 				c[0] = u;
 			 	c[1] = u;
@@ -1153,7 +1075,7 @@ public class VP8Frame {
 		for(int x = 0; x< getWidth(); x++) {
 			for(int y = 0; y< getHeight(); y++) {
 				int c[] = new int[3];
-				int yy, u, v;
+				int v;
 				v = this.getMacroBlock(x/16, y/16).getSubBlock(SubBlock.PLANE.V, ((x/2)%8)/4, ((y/2)%8)/4).getPredict()[(x/2)%4][(y/2)%4];
 				c[0] = v;
 			 	c[1] = v;

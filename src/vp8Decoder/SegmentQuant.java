@@ -23,6 +23,7 @@ public class SegmentQuant {
 	private int y2ac;
 	private int uvdc;
 	private int uvac;
+	@SuppressWarnings("unused")
 	private int filterStrength;
 	public int getQindex() {
 		return Qindex;

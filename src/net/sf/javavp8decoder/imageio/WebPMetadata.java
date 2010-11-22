@@ -16,16 +16,17 @@
 package net.sf.javavp8decoder.imageio;
 
 
-import org.w3c.dom.*;
-import javax.xml.parsers.*; // Package name may change in JDK 1.4
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataFormat;
 import javax.imageio.metadata.IIOMetadataNode;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 public class WebPMetadata extends IIOMetadata {
 
@@ -38,8 +39,8 @@ public class WebPMetadata extends IIOMetadata {
 	static final String[] extraMetadataFormatClassNames = null;
     
 	// Keyword/value pairs
-	List keywords = new ArrayList();
-	List values = new ArrayList();
+	List<String> keywords = new ArrayList<String>();
+	List<String> values = new ArrayList<String>();
 	public WebPMetadata() {
 		super(standardMetadataFormatSupported,
 		      nativeMetadataFormatName,
@@ -65,8 +66,8 @@ public class WebPMetadata extends IIOMetadata {
 			new IIOMetadataNode(nativeMetadataFormatName);
 
 		// Add a child to the root node for each keyword/value pair
-		Iterator keywordIter = keywords.iterator();
-		Iterator valueIter = values.iterator();
+		Iterator<String> keywordIter = keywords.iterator();
+		Iterator<String> valueIter = values.iterator();
 		while (keywordIter.hasNext()) {
 			IIOMetadataNode node =
 				new IIOMetadataNode("KeywordValuePair");
@@ -83,8 +84,8 @@ public class WebPMetadata extends IIOMetadata {
 	}
 
 	public void reset() {
-	    this.keywords = new ArrayList();
-	    this.values = new ArrayList();
+	    this.keywords = new ArrayList<String>();
+	    this.values = new ArrayList<String>();
 	}
 
 	public void mergeTree(String formatName, Node root)

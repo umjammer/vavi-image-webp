@@ -27,28 +27,18 @@ import vp8Decoder.VP8Decoder;
 
 
 public class dwebp {
-	private static int IVF_FRAME_HDR_SZ = (4+8);
-	private static int IVF_FILE_HDR_SZ = (32);
-
-
 	private static ImageInputStream getFrame(FileInputStream in) throws IOException  {
-		int[] frame;
 		ImageInputStream iis = ImageIO.createImageInputStream(in);
-		int c;
 		System.out.print(""+toHex(in.read()));
 		System.out.print(""+toHex(in.read()));
 		System.out.print(""+toHex(in.read()));
 		System.out.print(""+toHex(in.read()));
-		int frameSize = c = in.read();
-		frameSize += c = in.read()<<8;
-		frameSize += c = in.read()<<16;
-		frameSize += c = in.read()<<24;
+		int frameSize = in.read();
+		frameSize += in.read()<<8;
+		frameSize += in.read()<<16;
+		frameSize += in.read()<<24;
 		System.out.print("RIFF IMAGE DATA SIZE: "+frameSize);
 
-		frame = new int[frameSize];
-		for(int x=0; x<frameSize; x++)
-			;//frame[x]=in.read();
-		//in.reset();
 		return iis;
 	}
 	public static void main(String[] args) {
@@ -91,16 +81,15 @@ public class dwebp {
 		return r;
 	}
 	private static boolean readFileHeader(FileInputStream in) throws IOException {
-		int c;
 		System.out.print(""+toHex(in.read()));
 		System.out.print(""+toHex(in.read()));
 		System.out.print(""+toHex(in.read()));
 		System.out.print(""+toHex(in.read()));
 		System.out.println();
-		int frameSize = c = in.read();
-		frameSize += c = in.read()<<8;
-		frameSize += c = in.read()<<16;
-		frameSize += c = in.read()<<24;
+		int frameSize = in.read();
+		frameSize += in.read()<<8;
+		frameSize += in.read()<<16;
+		frameSize += in.read()<<24;
 		System.out.print("RIFF IMAGE DATA SIZE: "+frameSize);
 		System.out.println();
 		System.out.print(""+toHex(in.read()));

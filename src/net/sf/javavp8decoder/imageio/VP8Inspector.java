@@ -15,17 +15,14 @@
 */
 package net.sf.javavp8decoder.imageio;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -36,23 +33,19 @@ import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.event.IIOReadProgressListener;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -182,7 +175,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 	
 	private void frameReader(File file) throws IOException {
 		ImageInputStream stream = ImageIO.createImageInputStream(file);
-		this.getFrame(stream);
+		VP8Inspector.getFrame(stream);
 		frame = new VP8Frame(stream);
 		
 	    frame.addIIOReadProgressListener(new IIOReadProgressListener() {
@@ -308,8 +301,6 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 								}
 								if(colorCodeCheckBox.isSelected() && scale>0.1f) {
 									Graphics2D g2 = (Graphics2D)g;
-									Stroke s = g2.getStroke();
-
 									for(int y=0; y<bi.getHeight(); y+=16)
 										for(int x=0; x<bi.getWidth(); x+=16) {
 											Rectangle r = jp.getVisibleRect();
@@ -444,8 +435,6 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 
 	
 		int deltaY = vsb.getValue()-(e.getYOnScreen()-prevP.y);
-		Point delta = new Point(deltaX, deltaY);
-
 		hsb.setValue(deltaX);
 		vsb.setValue(deltaY);
 		prevP = new Point(e.getXOnScreen(), e.getYOnScreen());

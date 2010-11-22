@@ -32,18 +32,9 @@ public class VP8Decoder {
 		coefProbs = Globals.getDefaultCoefProbs();
 		f = new VP8Frame(stream, coefProbs);
 		if(f.decodeFrame(debug)) {
-			//if(f.getFilterType()>0)
-			//	f.loopFilter();
-			//writeYV12File(f, ""+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());
-			//f.loopFilter();
-			//writeYV12File(""+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());
-			//f.loopFilter();
-			//writeYV12File("lf"+frameCount+".raw", f.getYBuffer(), f.getUBuffer(), f.getVBuffer());
+
 		}
 		frameCount++;
-		//System.out.println(frameCount);
-			
-		
 	}
 	public void writeYV12File(String fileName, VP8Frame frame) {
 		
@@ -65,29 +56,21 @@ public class VP8Decoder {
 			out.write((byte) 0xa);
 			for(int y=0;y<f.getHeight(); y++) {
 				for(int x=0;x<f.getWidth(); x++) {
-					//System.out.print(yData[x][y]+" ");
-					//if(x<2 || x>f.getWidth()-3)
 						out.write(yData[x][y]);
-					//else
-					//	out.write(0);
 				}
-				//System.out.println();
+
 			}
 			for(int y=0;y<(f.getHeight()+1)/2; y++)
 				for(int x=0;x<(f.getWidth()+1)/2; x++) {
-
 					out.write(uData[x][y]);
 				}
 			for(int y=0;y<(f.getHeight()+1)/2; y++)
 				for(int x=0;x<(f.getWidth()+1)/2; x++) {
-
 					out.write(vData[x][y]);
 				}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -103,10 +86,8 @@ public class VP8Decoder {
 					out.write(data[x][y]);
 				}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
