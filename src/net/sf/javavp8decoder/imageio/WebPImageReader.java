@@ -21,8 +21,6 @@ import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageReadParam;
@@ -46,7 +44,7 @@ public class WebPImageReader extends ImageReader implements
 	private VP8Frame decoder;
 	boolean gotHeader = false;
 
-	Logger logger;
+
 	WebPMetadata metadata = null; // class defined below
 	ImageInputStream stream = null;
 
@@ -54,13 +52,9 @@ public class WebPImageReader extends ImageReader implements
 
 	public WebPImageReader(ImageReaderSpi originatingProvider) {
 		super(originatingProvider);
-		logger = Logger.getAnonymousLogger();
-		logger.setLevel(Level.ALL);
-		logger.log(Level.INFO, "WebPImageReader");
 	}
 
 	private void _setInput(Object input) {
-		logger.log(Level.INFO, "_setInput");
 		if (input == null) {
 			this.stream = null;
 			return;
@@ -73,21 +67,18 @@ public class WebPImageReader extends ImageReader implements
 	}
 
 	private void checkIndex(int imageIndex) {
-		logger.log(Level.INFO, "checkIndex");
 		if (imageIndex != 0) {
 			throw new IndexOutOfBoundsException("bad index");
 		}
 	}
 
 	public int getHeight(int imageIndex) throws IIOException {
-		logger.log(Level.INFO, "getHeight");
 		checkIndex(imageIndex);
 		readHeader();
 		return height;
 	}
 
 	public IIOMetadata getImageMetadata(int imageIndex) throws IIOException {
-		logger.log(Level.INFO, "getImageMetadata");
 		if (imageIndex != 0) {
 			throw new IndexOutOfBoundsException("imageIndex != 0!");
 		}
@@ -97,7 +88,6 @@ public class WebPImageReader extends ImageReader implements
 
 	public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex)
 			throws IIOException {
-		logger.log(Level.INFO, "getImageTypes");
 		checkIndex(imageIndex);
 		readHeader();
 
@@ -118,17 +108,14 @@ public class WebPImageReader extends ImageReader implements
 	}
 
 	public int getNumImages(boolean allowSearch) throws IIOException {
-		logger.log(Level.INFO, "getNumImages");
 		return 1; // format can only encode a single image
 	}
 
 	public IIOMetadata getStreamMetadata() throws IIOException {
-		logger.log(Level.INFO, "getStreamMetadata");
 		return null;
 	}
 
 	public int getWidth(int imageIndex) throws IIOException {
-		logger.log(Level.INFO, "getWidth");
 		checkIndex(imageIndex); // must throw an exception if != 0
 		readHeader();
 		return width;
@@ -147,7 +134,6 @@ public class WebPImageReader extends ImageReader implements
 	public BufferedImage read(int imageIndex, ImageReadParam param)
 			throws IIOException {
 		super.processImageStarted(0);
-		logger.log(Level.INFO, "read");
 		readMetadata(); // Stream is positioned at start of image data
 		// Get values from the ImageReadParam, if any
 		if (param != null) {
@@ -166,7 +152,6 @@ public class WebPImageReader extends ImageReader implements
 	}
 
 	public void readHeader() throws IIOException {
-		logger.log(Level.INFO, "readHeader");
 		if (gotHeader) {
 			return;
 		}
@@ -225,7 +210,6 @@ public class WebPImageReader extends ImageReader implements
 		} catch (IOException e) {
 			throw new IIOException("Error reading frame size 1", e);
 		}
-		logger.log(Level.INFO, "VP8 IMAGE DATA SIZE: " + frameSize);
 
 		try {
 			decoder = new VP8Frame(stream);
@@ -250,7 +234,6 @@ public class WebPImageReader extends ImageReader implements
 	}
 
 	public void readMetadata() throws IIOException {
-		logger.log(Level.INFO, "readMetadata");
 		if (metadata != null) {
 			return;
 		}
@@ -265,13 +248,11 @@ public class WebPImageReader extends ImageReader implements
 	}
 
 	public void setInput(Object input) {
-		logger.log(Level.INFO, "setInput");
 		super.setInput(input);
 		_setInput(input);
 	}
 
 	public void setInput(Object input, boolean isStreamable) {
-		logger.log(Level.INFO, "setInput");
 		super.setInput(input, isStreamable);
 		_setInput(input);
 
@@ -279,7 +260,6 @@ public class WebPImageReader extends ImageReader implements
 
 	public void setInput(Object input, boolean seekForwardOnly,
 			boolean ignoreMetadata) {
-		logger.log(Level.INFO, "setInput");
 		super.setInput(input, seekForwardOnly, ignoreMetadata);
 		_setInput(input);
 	}
