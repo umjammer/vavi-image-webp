@@ -64,9 +64,17 @@ public class WebPViewer extends JFrame implements MouseMotionListener,
 
 	public static void main(String[] args) {
 		WebPViewer app;
-		IIORegistry r = javax.imageio.spi.IIORegistry.getDefaultInstance();
-		WebPImageReaderSpi s = new WebPImageReaderSpi();
-		r.registerServiceProvider(s);
+		try {
+			IIORegistry r = javax.imageio.spi.IIORegistry.getDefaultInstance();
+			WebPImageReaderSpi s = new WebPImageReaderSpi();
+			r.registerServiceProvider(s);
+		}
+		catch (NoClassDefFoundError e) {
+			JOptionPane.showMessageDialog(null, "Error loading WebP ImageIo plugin",
+					"Error loading WebP ImageIo plugin",
+					JOptionPane.ERROR_MESSAGE);
+			System.exit(1);
+		}
 		try {
 			// Set System L&F
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
