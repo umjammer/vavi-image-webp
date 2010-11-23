@@ -141,7 +141,7 @@ public class WebPViewer extends JFrame implements MouseMotionListener,
 		progressBar.setVisible(false);
 		this.add(sp, BorderLayout.CENTER);
 		// loadImageData();
-		this.setTitle("WebViewer");
+		this.setTitle("WebPViewer");
 		this.setVisible(true);
 		this.setSize(800, 600);
 	}
@@ -184,7 +184,7 @@ public class WebPViewer extends JFrame implements MouseMotionListener,
 				// File f = new File("testdata/samples/1_original.webp");
 				try {
 
-					setTitle("WebViewer - " + f.getName() + " (Loading...)");
+					setTitle("WebPViewer - " + f.getName() + " (Loading...)");
 					invalidate();
 					progressBar.setVisible(true);
 					java.util.Iterator<ImageReader> readers = ImageIO
@@ -256,7 +256,7 @@ public class WebPViewer extends JFrame implements MouseMotionListener,
 					;
 					progressBar.setVisible(false);
 					progressBar.setValue(0);
-					setTitle("WebViewer - " + f.getName());
+					setTitle("WebPViewer - " + f.getName());
 					jp = new ImagePanel(bi);
 					jp.setPreferredSize(new Dimension(bi.getWidth(), bi
 							.getHeight()));
