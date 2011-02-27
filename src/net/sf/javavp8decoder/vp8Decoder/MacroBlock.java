@@ -153,9 +153,9 @@ public class MacroBlock {
 		MacroBlock mb = this;
 		if (mb.getYMode() != Globals.B_PRED) {
 			SubBlock sb = mb.getY2SubBlock();
-			int acQValue = frame.getSegmentQuants().getSegQuants()[0]
+			int acQValue = frame.getSegmentQuants().getSegQuants()[this.getSegmentId()]
 					.getY2ac_delta_q();
-			int dcQValue = frame.getSegmentQuants().getSegQuants()[0].getY2dc();
+			int dcQValue = frame.getSegmentQuants().getSegQuants()[this.getSegmentId()].getY2dc();
 
 			int input[] = new int[16];
 			input[0] = sb.getTokens()[0] * dcQValue;
@@ -756,5 +756,9 @@ public class MacroBlock {
 
 	public String toString() {
 		return "x: " + x + "y: " + y;
+	}
+
+	public int getSegmentId() {
+		return segmentId;
 	}
 }

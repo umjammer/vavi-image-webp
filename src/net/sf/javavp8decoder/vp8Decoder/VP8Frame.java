@@ -936,8 +936,9 @@ public class VP8Frame {
 					level = (level < 0) ? 0 : (level > 63) ? 63 : level;
 					mb.setFilterLevel(level);
 				}
-				else
-					throw new IllegalArgumentException("TODO");
+				else {
+					logger.error("TODO:");
+				}
 				
 				int mb_skip_coeff = 0;
 				if (macroBlockNoCoeffSkip > 0)

@@ -160,15 +160,15 @@ public class SubBlock {
 		for (int i = 0; i < 16; i++) {
 			int QValue;
 			if (plane == PLANE.U || plane == PLANE.V) {
-				QValue = frame.getSegmentQuants().getSegQuants()[0]
+				QValue = frame.getSegmentQuants().getSegQuants()[this.getMacroBlock().getSegmentId()]
 						.getUvac_delta_q();
 				if (i == 0)
-					QValue = frame.getSegmentQuants().getSegQuants()[0]
+					QValue = frame.getSegmentQuants().getSegQuants()[this.getMacroBlock().getSegmentId()]
 							.getUvdc_delta_q();
 			} else {
-				QValue = frame.getSegmentQuants().getSegQuants()[0].getY1ac();
+				QValue = frame.getSegmentQuants().getSegQuants()[this.getMacroBlock().getSegmentId()].getY1ac();
 				if (i == 0)
-					QValue = frame.getSegmentQuants().getSegQuants()[0]
+					QValue = frame.getSegmentQuants().getSegQuants()[this.getMacroBlock().getSegmentId()]
 							.getY1dc();
 			}
 
