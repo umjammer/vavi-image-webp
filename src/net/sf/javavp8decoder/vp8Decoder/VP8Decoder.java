@@ -70,6 +70,52 @@ public class VP8Decoder {
 		}
 	}
 
+	public void writePGMFile(String fileName, VP8Frame frame) {
+
+
+		FileOutputStream out;
+		try {
+			int[][] yData = frame.getYBuffer();
+			int[][] uData = frame.getUBuffer();
+			int[][] vData = frame.getVBuffer();
+			int outStride = (f.getWidth()+1)& ~1;
+			int uvHeight = (f.getHeight() +1) / 2;
+			out = new FileOutputStream(fileName);
+			out.write((byte) 'P');
+			out.write((byte) '5');
+			out.write((byte) 0x0a);
+			out.write(("" + outStride).getBytes());
+			out.write((byte) ' ');
+
+			out.write(("" + (f.getHeight() + uvHeight)).getBytes());
+			System.out.println(f.getHeight() + uvHeight);
+			out.write((byte) 0x0a);
+			out.write(("255").getBytes());
+			out.write((byte) 0xa);
+			for (int y = 0; y < f.getHeight(); y++) {
+				for (int x = 0; x < f.getWidth(); x++) {
+					out.write(yData[x][y]);
+				}
+				if((f.getWidth() & 1)==1)
+					out.write(0x0);
+			}
+			for (int y = 0; y < (f.getHeight() + 1) / 2; y++) {
+				for (int x = 0; x < (f.getWidth() + 1) / 2; x++) {
+					out.write(uData[x][y]);
+				}
+				for (int x = 0; x < (f.getWidth() + 1) / 2; x++) {
+					out.write(vData[x][y]);
+				}
+
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void writeYV12File(String fileName, VP8Frame frame) {
 
 		FileOutputStream out;

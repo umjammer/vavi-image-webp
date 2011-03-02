@@ -43,11 +43,11 @@ for f in $(awk '{print $2}' "$tests" | sed -e 's,webp\....,webp,' | uniq); do
 
     # Decode the file to PPM and YUV
     #"${executable}" -o "${f}.ppm" "$f" >/dev/null
-    "${executable}" -jar ../dwebp.jar "${f}.yuv" "$f" 2>&1|/dev/null
+    "${executable}" -jar ../dwebp.jar "${f}.pgm" "$f" 2>&1|/dev/null
 
     # Check the md5sums
     grep ${f##*/} "$tests" | (cd $(dirname $f); md5sum -c -)
 
     # Clean up.
-    rm -f ${f}.{ppm,yuv}
+    rm -f ${f}.{ppm,pgm}
 done

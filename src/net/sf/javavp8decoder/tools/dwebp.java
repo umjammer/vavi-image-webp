@@ -44,8 +44,8 @@ public class dwebp {
 	public static void main(String[] args) {
 		FileInputStream in = null;
 		try {
-			String inname = "testdata/small_31x13.webp";
-			String outname = "0.raw";
+			String inname = "testdata/bug3.webp";
+			String outname = "out.pgm";
 			if (args.length > 0)
 				outname = args[0];
 
@@ -62,7 +62,7 @@ public class dwebp {
 
 			frameData = getFrame(in);
 			f.decodeFrame(frameData, false);
-			f.writeYV12File(outname, f.getFrame());
+			f.writePGMFile(outname, f.getFrame());
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
