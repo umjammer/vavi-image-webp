@@ -88,7 +88,7 @@ public class VP8Decoder {
 			out.write((byte) ' ');
 
 			out.write(("" + (f.getHeight() + uvHeight)).getBytes());
-			System.out.println(f.getHeight() + uvHeight);
+			
 			out.write((byte) 0x0a);
 			out.write(("255").getBytes());
 			out.write((byte) 0xa);
