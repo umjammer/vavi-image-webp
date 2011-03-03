@@ -39,6 +39,7 @@ public class LoopFilter {
 		int p0 = u2s(seg.P0);
 		int q0 = u2s(seg.Q0);
 		int q1 = u2s(seg.Q1);
+
 		/*
 		 * Disregarding clamping, when "use_outer_taps" is false, "a" is
 		 * 3*(q0-p0). Since we are about to divide "a" by 8, in this case we end
@@ -52,7 +53,7 @@ public class LoopFilter {
 		 * b is used to balance the rounding of a/8 in the case where the
 		 * "fractional" part "f" of a/8 is exactly 1/2.
 		 */
-		int b = (a & 7) == 4 ? -1 : 0;
+		int b = (c(a + 3)) >> 3;
 		/*
 		 * Divide a by 8, rounding up when f >= 1/2. Although not strictly part
 		 * of the "C" language, the right-shift is assumed to propagate the sign
@@ -66,7 +67,7 @@ public class LoopFilter {
 		 * clamp of "a+b", while present in the reference decoder, is
 		 * superfluous; we have -16 <= a <= 15 at this point.
 		 */
-		seg.P0 = s2u(p0 + c(a + b));
+		seg.P0 = s2u(p0 + b);
 
 		return a;
 	}
@@ -163,6 +164,15 @@ public class LoopFilter {
 				int loop_filter_level = rmb.getFilterLevel();
 				int interior_limit = rmb.getFilterLevel();
 
+				int sharpnessLevel = frame.getSharpnessLevel();
+				if (sharpnessLevel  > 0) {
+					interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
+					if (interior_limit > 9 - sharpnessLevel)
+						interior_limit = 9 - sharpnessLevel;
+				}
+				if (interior_limit == 0)
+					interior_limit = 1;
+
 				/* Luma and Chroma use the same inter-subblock edge limit */
 				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
 				if(sub_bedge_limit < 1)
@@ -187,6 +197,7 @@ public class LoopFilter {
 						}
 					}
 				}
+
 				// sb left
 				if (!rmb.isSkip_inner_lf()) {
 
@@ -208,6 +219,7 @@ public class LoopFilter {
 						}
 					}
 				}
+
 				// top
 				if (y > 0) {
 					MacroBlock tmb = frame.getMacroBlock(x, y - 1);
@@ -224,6 +236,7 @@ public class LoopFilter {
 						}
 					}
 				}
+
 				// sb top
 				if (!rmb.isSkip_inner_lf()) {
 					for (int a = 1; a < 4; a++) {
