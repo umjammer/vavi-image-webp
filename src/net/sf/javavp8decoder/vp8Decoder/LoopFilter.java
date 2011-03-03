@@ -163,11 +163,13 @@ public class LoopFilter {
 				int loop_filter_level = rmb.getFilterLevel();
 				int interior_limit = rmb.getFilterLevel();
 
-				/* Luma and Chroma use the same inter-macroblock edge limit */
-				int mbedge_limit = ((loop_filter_level + 2) * 2)
-						+ interior_limit;
 				/* Luma and Chroma use the same inter-subblock edge limit */
 				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
+				if(sub_bedge_limit < 1)
+					sub_bedge_limit = 1;
+
+				/* Luma and Chroma use the same inter-macroblock edge limit */
+				int mbedge_limit = sub_bedge_limit+4;
 
 				// left
 				if (x > 0) {

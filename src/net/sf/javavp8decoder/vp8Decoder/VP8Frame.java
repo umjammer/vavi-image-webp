@@ -261,6 +261,7 @@ public class VP8Frame {
 				}
 			}
 		}
+
 		filterType = (filterLevel == 0) ? 0 : (simpleFilter>0) ? 1 : 2;
 		logger.log("filter_type: " + filterType);
 
@@ -937,7 +938,8 @@ public class VP8Frame {
 					mb.setFilterLevel(level);
 				}
 				else {
-					logger.error("TODO:");
+					mb.setFilterLevel(segmentQuants.getSegQuants()[mb.getSegmentId()].getFilterStrength());
+//					logger.error("TODO:");
 				}
 				
 				int mb_skip_coeff = 0;

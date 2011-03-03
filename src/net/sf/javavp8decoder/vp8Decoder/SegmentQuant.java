@@ -16,7 +16,6 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 public class SegmentQuant {
-	@SuppressWarnings("unused")
 	private int filterStrength;
 	private int Qindex;
 	private int uvac;
@@ -96,5 +95,9 @@ public class SegmentQuant {
 
 	public void setY2dc(int y2dc_delta_q) {
 		this.y2dc = Globals.vp8DcQLookup[clip(Qindex + y2dc_delta_q, 127)] * 2;
+	}
+
+	public int getFilterStrength() {
+		return filterStrength;
 	}
 }
