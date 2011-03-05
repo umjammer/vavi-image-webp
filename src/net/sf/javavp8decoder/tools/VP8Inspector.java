@@ -149,7 +149,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	private BufferedImage bi;
 	private JCheckBox colorCodeCheckBox = new JCheckBox("Colour Code");
 	private JRadioButton destButton = new JRadioButton("Dest");
-	private final JFileChooser fc = new JFileChooser();
+	private JFileChooser fc = new JFileChooser();
 	private JButton fileOpenButton = new JButton("Open");
 	private JMenuItem fileOpenMenu;
 	private VP8Frame frame;
@@ -258,6 +258,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 
 	public void actionPerformed(ActionEvent e) {
 
+		fc=new JFileChooser();
 		if ((e.getSource() == mBCheckBox || e.getSource() == sBCheckBox || e
 				.getSource() == colorCodeCheckBox) && jp != null)
 			jp.repaint();
