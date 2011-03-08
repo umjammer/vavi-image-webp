@@ -181,6 +181,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 		JPanel t = new JPanel();
 
 		prevButton.setEnabled(false);
+		prevButton.setVisible(false);
 		t.add(prevButton, BorderLayout.CENTER);
 		slider.setEnabled(false);
 		slider.setMaximum(0);
