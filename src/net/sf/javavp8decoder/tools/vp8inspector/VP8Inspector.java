@@ -59,11 +59,11 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileFilter;
 
-import org.ebml.matroska.MatroskaFile;
-
 import net.sf.javavp8decoder.vp8Decoder.Globals;
 import net.sf.javavp8decoder.vp8Decoder.SubBlock;
 import net.sf.javavp8decoder.vp8Decoder.VP8Frame;
+
+import org.ebml.matroska.MatroskaFile;
 
 public class VP8Inspector extends JFrame implements MouseMotionListener,
 		MouseListener, MouseWheelListener, ActionListener {
@@ -71,11 +71,9 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-
-
 	private BufferedImage bi;
 	private JCheckBox colorCodeCheckBox = new JCheckBox("Colour Code");
+	private File currentFile = null;
 	private JRadioButton destButton = new JRadioButton("Dest");
 	private JFileChooser fc = new JFileChooser();
 	private JButton fileOpenButton = new JButton("Open");
@@ -84,11 +82,14 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	JToolBar infoBar = new JToolBar();
 	JTextArea infoText = new JTextArea();
 	private JPanel jp;
+	private MatroskaFile matroskaFile;
 	private JCheckBox mBCheckBox = new JCheckBox("MB");
 	JMenuBar menuBar;
+	private JButton nextButton = new JButton("next");
 	private VP8Inspector panel;
 	private BufferedImage predict;
 	private JRadioButton predictButton = new JRadioButton("Predict");
+	private JButton prevButton = new JButton("prev");
 	private Point prevP;
 	JProgressBar progressBar;
 	private BufferedImage residual;
@@ -96,6 +97,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	private JRadioButton rgbButton = new JRadioButton("RGB");
 	private JCheckBox sBCheckBox = new JCheckBox("SB");
 	private float scale = 1.0f;
+	private JSlider slider = new JSlider();
 	private JScrollPane sp;
 	JToolBar toolBar;
 	private BufferedImage ub;
@@ -105,17 +107,12 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	private BufferedImage vb;
 	private JRadioButton vButton = new JRadioButton("V");
 	private BufferedImage vpred;
+	
 	private BufferedImage vResidual;
 	private BufferedImage yb;
 	private JRadioButton yButton = new JRadioButton("Y");
 	private BufferedImage ypred;
 	private BufferedImage yResidual;
-	
-	private JButton prevButton = new JButton("prev");
-	private JButton nextButton = new JButton("next");
-	private JSlider slider = new JSlider();
-	private File currentFile = null;
-	private MatroskaFile matroskaFile;
 
 	VP8Inspector() {
 		panel = this;
@@ -252,15 +249,6 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 				jp.repaint();
 			}
 		}
-	}
-
-	private void loadNextFrame() {
-		if(matroskaFile==null || (slider.getValue()>=slider.getMaximum())) {
-			nextButton.setEnabled(false);
-			return;
-		}
-		slider.setValue(slider.getValue()+1);
-		loadImageData();
 	}
 
 	private boolean frameReader() throws IOException {
@@ -673,6 +661,15 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 			}
 		}.start();
 
+	}
+
+	private void loadNextFrame() {
+		if(matroskaFile==null || (slider.getValue()>=slider.getMaximum())) {
+			nextButton.setEnabled(false);
+			return;
+		}
+		slider.setValue(slider.getValue()+1);
+		loadImageData();
 	}
 
 	public void mouseClicked(MouseEvent arg0) {

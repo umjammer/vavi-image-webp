@@ -18,52 +18,7 @@ import org.ebml.matroska.MatroskaFileTrack;
 
 public class VP8InspectorUtils {
 	
-	public static void main(String[] args) {
-		VP8Inspector app;
-		try {
-			// Set System L&F
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (UnsupportedLookAndFeelException e) {
-			// handle exception
-		} catch (ClassNotFoundException e) {
-			// handle exception
-		} catch (InstantiationException e) {
-			// handle exception
-		} catch (IllegalAccessException e) {
-			// handle exception
-		}
-		app = new VP8Inspector();
-		app.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
-	}
-	public static MatroskaFile loadMatroska(File f) {
-		FileDataSource iFS;
-		try {
-			iFS = new FileDataSource(f.getAbsolutePath());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			return null;
-		}
-		MatroskaFile mF = new MatroskaFile(iFS);
-		mF.setScanFirstCluster(true);
-		mF.readFile();
-		System.out.println(mF.getReport());
-		MatroskaFileTrack[] tl = mF.getTrackList();
-		MatroskaFileTrack track=null;
-		for(MatroskaFileTrack t : mF.getTrackList() ) {
-			if(t.CodecID.compareTo("V_VP8")==0)
-				track = t;
-		}
-		
-		return mF;		
-	}
 	public static int countKeyFrames(MatroskaFile mF) {
-		MatroskaFileTrack[] tl = mF.getTrackList();
 		MatroskaFileTrack track=null;
 		for(MatroskaFileTrack t : mF.getTrackList() ) {
 			if(t.CodecID.compareTo("V_VP8")==0)
@@ -82,9 +37,20 @@ public class VP8InspectorUtils {
 		}
 		return 0;
 	}
-	
+	/*
+     * Get the extension of a file.
+     */  
+    public static String getExtension(File f) {
+        String ext = null;
+        String s = f.getName();
+        int i = s.lastIndexOf('.');
+
+        if (i > 0 &&  i < s.length() - 1) {
+            ext = s.substring(i+1).toLowerCase();
+        }
+        return ext;
+    }
 	public static byte[] getMatroskaFrame(MatroskaFile mF) {
-		MatroskaFileTrack[] tl = mF.getTrackList();
 		MatroskaFileTrack track=null;
 		for(MatroskaFileTrack t : mF.getTrackList() ) {
 			if(t.CodecID.compareTo("V_VP8")==0)
@@ -101,20 +67,6 @@ public class VP8InspectorUtils {
 		return null;
 	}
 	
-    /*
-     * Get the extension of a file.
-     */  
-    public static String getExtension(File f) {
-        String ext = null;
-        String s = f.getName();
-        int i = s.lastIndexOf('.');
-
-        if (i > 0 &&  i < s.length() - 1) {
-            ext = s.substring(i+1).toLowerCase();
-        }
-        return ext;
-    }
-    
 	public static void getWebPFrame(ImageInputStream in) throws IOException {
 		byte[] signature = new byte[4];
 		try {
@@ -165,5 +117,49 @@ public class VP8InspectorUtils {
 		} catch (IOException e) {
 			throw new IIOException("Error reading frame size 1", e);
 		}
+	}
+	
+    public static MatroskaFile loadMatroska(File f) {
+		FileDataSource iFS;
+		try {
+			iFS = new FileDataSource(f.getAbsolutePath());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			return null;
+		}
+		MatroskaFile mF = new MatroskaFile(iFS);
+		mF.setScanFirstCluster(true);
+		mF.readFile();
+		System.out.println(mF.getReport());
+		for(MatroskaFileTrack t : mF.getTrackList() ) {
+			if(t.CodecID.compareTo("V_VP8")==0) {
+			}
+		}
+		
+		return mF;		
+	}
+    
+	public static void main(String[] args) {
+		VP8Inspector app;
+		try {
+			// Set System L&F
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (UnsupportedLookAndFeelException e) {
+			// handle exception
+		} catch (ClassNotFoundException e) {
+			// handle exception
+		} catch (InstantiationException e) {
+			// handle exception
+		} catch (IllegalAccessException e) {
+			// handle exception
+		}
+		app = new VP8Inspector();
+		app.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
 	}
 }
