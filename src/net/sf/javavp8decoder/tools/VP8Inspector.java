@@ -55,6 +55,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
@@ -178,14 +179,14 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	private JRadioButton vButton = new JRadioButton("V");
 	private BufferedImage vpred;
 	private BufferedImage vResidual;
-
 	private BufferedImage yb;
-
 	private JRadioButton yButton = new JRadioButton("Y");
-
 	private BufferedImage ypred;
-
 	private BufferedImage yResidual;
+	
+	private JButton prevButton = new JButton("prev");
+	private JButton nextButton = new JButton("next");
+	private JSlider slider = new JSlider();
 
 	VP8Inspector() {
 		panel = this;
@@ -247,7 +248,27 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 		progressBar.setValue(00);
 		progressBar.setPreferredSize(new Dimension(18, 18));
 		progressBar.setStringPainted(true);
-		add(progressBar, BorderLayout.SOUTH);
+		
+		JPanel bp = new JPanel();
+		bp.setLayout(new BorderLayout());
+		bp.add(progressBar, BorderLayout.SOUTH);
+		JPanel t = new JPanel();
+
+		prevButton.setEnabled(false);
+		t.add(prevButton, BorderLayout.CENTER);
+		
+		slider.setMaximum(0);
+	    slider.setMajorTickSpacing(20);
+	    slider.setMinorTickSpacing(5);
+		slider.setPaintTicks(true);
+		slider.setPaintLabels(true);
+
+		t.add(slider, BorderLayout.CENTER);
+		nextButton.setEnabled(false);
+		t.add(nextButton, BorderLayout.CENTER);
+		bp.add(t, BorderLayout.CENTER);
+		add(bp, BorderLayout.SOUTH);
+		
 		progressBar.setVisible(false);
 		this.add(sp, BorderLayout.CENTER);
 		// loadImageData();
@@ -258,7 +279,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 
 	public void actionPerformed(ActionEvent e) {
 
-		fc=new JFileChooser();
+		fc = new JFileChooser();
 		if ((e.getSource() == mBCheckBox || e.getSource() == sBCheckBox || e
 				.getSource() == colorCodeCheckBox) && jp != null)
 			jp.repaint();
