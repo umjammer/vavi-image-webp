@@ -30,13 +30,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
-import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.event.IIOReadProgressListener;
@@ -58,9 +57,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
+
+import org.ebml.matroska.MatroskaFile;
 
 import net.sf.javavp8decoder.vp8Decoder.Globals;
 import net.sf.javavp8decoder.vp8Decoder.SubBlock;
@@ -73,27 +72,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public static void main(String[] args) {
-		VP8Inspector app;
-		try {
-			// Set System L&F
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (UnsupportedLookAndFeelException e) {
-			// handle exception
-		} catch (ClassNotFoundException e) {
-			// handle exception
-		} catch (InstantiationException e) {
-			// handle exception
-		} catch (IllegalAccessException e) {
-			// handle exception
-		}
-		app = new VP8Inspector();
-		app.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
-	}
+
 
 	private BufferedImage bi;
 	private JCheckBox colorCodeCheckBox = new JCheckBox("Colour Code");
@@ -135,6 +114,8 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	private JButton prevButton = new JButton("prev");
 	private JButton nextButton = new JButton("next");
 	private JSlider slider = new JSlider();
+	private File currentFile = null;
+	private MatroskaFile matroskaFile;
 
 	VP8Inspector() {
 		panel = this;
@@ -204,7 +185,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 
 		prevButton.setEnabled(false);
 		t.add(prevButton, BorderLayout.CENTER);
-		
+		slider.setEnabled(false);
 		slider.setMaximum(0);
 	    slider.setMajorTickSpacing(20);
 	    slider.setMinorTickSpacing(5);
@@ -213,6 +194,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 
 		t.add(slider, BorderLayout.CENTER);
 		nextButton.setEnabled(false);
+		nextButton.addActionListener(this);
 		t.add(nextButton, BorderLayout.CENTER);
 		bp.add(t, BorderLayout.CENTER);
 		add(bp, BorderLayout.SOUTH);
@@ -227,32 +209,36 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 
 	public void actionPerformed(ActionEvent e) {
 
-		fc = new JFileChooser();
+		if ((e.getSource() == nextButton))
+			loadNextFrame();
+		
 		if ((e.getSource() == mBCheckBox || e.getSource() == sBCheckBox || e
 				.getSource() == colorCodeCheckBox) && jp != null)
 			jp.repaint();
 		if (e.getSource() == fileOpenMenu || e.getSource() == fileOpenButton
 				&& !progressBar.isVisible()) {
+			fc = new JFileChooser();
 
 			fc.setFileFilter(new FileFilter() {
 				public boolean accept(File f) {
 					return f.isDirectory()
-							|| f.getName().toLowerCase().endsWith(".webp");
+							|| f.getName().toLowerCase().endsWith(".webp")
+							|| f.getName().toLowerCase().endsWith(".webm");
 				}
 
 				public String getDescription() {
-					return "webp image files";
+					return "webm/webp files";
 				}
 			});
 			fc.setSelectedFile(new File(
-					"g:\\workspace\\javavp8decoder\\testdata\\test.webp"));
+					"g:\\workspace\\matroska\\a.webm"));
 			int returnVal = fc.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				sp.setViewport(null);
 				jp = null;
-				File file = fc.getSelectedFile();
 				scale = 1.0f;
-				loadImageData(file);
+				currentFile = fc.getSelectedFile();
+				loadImageData();
 			} else {
 
 			}
@@ -266,17 +252,36 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 				jp.repaint();
 			}
 		}
-
 	}
 
-	private void frameReader(File file) throws IOException {
-		if(VP8InspectorUtils.getExtension(file).equals("webp")) {
-			ImageInputStream stream = ImageIO.createImageInputStream(file);
+	private void loadNextFrame() {
+		if(matroskaFile==null || (slider.getValue()>=slider.getMaximum())) {
+			nextButton.setEnabled(false);
+			return;
+		}
+		slider.setValue(slider.getValue()+1);
+		loadImageData();
+	}
+
+	private boolean frameReader() throws IOException {
+		if(VP8InspectorUtils.getExtension(currentFile).equals("webp")) {
+			ImageInputStream stream = ImageIO.createImageInputStream(currentFile);
 			VP8InspectorUtils.getWebPFrame(stream);
 			frame = new VP8Frame(stream);
+			nextButton.setEnabled(false);
+		}
+		else if(matroskaFile!=null) {
+			byte[] data = VP8InspectorUtils.getMatroskaFrame(matroskaFile);
+			
+			if(data!=null) {
+				InputStream bais = new ByteArrayInputStream(data);
+				ImageInputStream iis = ImageIO.createImageInputStream(bais);
+				System.out.println(iis.length());
+				frame = new VP8Frame(iis);
+			}
 		}
 		else
-			return;
+			return false;
 
 		frame.addIIOReadProgressListener(new IIOReadProgressListener() {
 			public void imageComplete(ImageReader source) {
@@ -323,20 +328,38 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 		ypred = frame.getDebugImageYPredBuffer();
 		upred = frame.getDebugImageUPredBuffer();
 		vpred = frame.getDebugImageVPredBuffer();
-
+		return true;
 	}
 
-	private void loadImageData(final File f) {
+	private void loadImageData() {
 
 		new Thread() {
-			public void run() {
-				// File f = new File("testdata/samples/1_original.webp");
-				try {
 
-					setTitle("VP8Inspector - " + f.getName() + " (Loading...)");
+
+			public void run() {
+				try {
+					setTitle("VP8Inspector - " + currentFile.getName() + " (Loading...)");
+					nextButton.setEnabled(false);
 					invalidate();
 					progressBar.setVisible(true);
-					frameReader(f);
+					if(VP8InspectorUtils.getExtension(currentFile).equals("webm")) {
+						if(matroskaFile==null) {
+							matroskaFile = VP8InspectorUtils.loadMatroska(currentFile);
+							if(matroskaFile!=null) {
+								int kfs = VP8InspectorUtils.countKeyFrames(matroskaFile);
+								slider.setMaximum(kfs);
+								matroskaFile = VP8InspectorUtils.loadMatroska(currentFile);
+							}
+						}
+					}
+					if(!frameReader()) {
+						JOptionPane.showMessageDialog(null, "Failed to load "+currentFile.getName());
+						setTitle("VP8Inspector");
+						progressBar.setVisible(false);
+						progressBar.setValue(0);
+						return;
+					}
+						
 					class ImagePanel extends JPanel {
 						/**
 						 * 
@@ -617,7 +640,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 					;
 					progressBar.setVisible(false);
 					progressBar.setValue(0);
-					setTitle("VP8Inspector - " + f.getName());
+					setTitle("VP8Inspector - " + currentFile.getName());
 					jp = new ImagePanel(bi, yb, ub, vb, residual, predict,
 							yResidual, uResidual, vResidual, ypred, upred,
 							vpred);
@@ -632,16 +655,18 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 					jp.addMouseWheelListener(panel);
 					// sp.add(jp);
 					sp.setViewportView(jp);
+					if(slider.getMaximum()>1)
+						nextButton.setEnabled(true);
 					updateInfoText(null);
 					invalidate();
 				} catch (IOException e) {
 					JOptionPane.showMessageDialog(null, e.getMessage(),
-							"Error loading " + f.getName(),
+							"Error loading " + currentFile.getName(),
 							JOptionPane.ERROR_MESSAGE);
 				} catch (java.lang.OutOfMemoryError e) {
 					JOptionPane.showMessageDialog(null,
 							"Out of Memory " + e.getMessage(),
-							"Out of Memory loading " + f.getName(),
+							"Out of Memory loading " + currentFile.getName(),
 							JOptionPane.ERROR_MESSAGE);
 					System.exit(0);
 				}

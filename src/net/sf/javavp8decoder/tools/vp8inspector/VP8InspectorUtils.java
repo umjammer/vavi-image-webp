@@ -1,12 +1,120 @@
 package net.sf.javavp8decoder.tools.vp8inspector;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.imageio.IIOException;
 import javax.imageio.stream.ImageInputStream;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
+import org.ebml.io.FileDataSource;
+import org.ebml.matroska.MatroskaFile;
+import org.ebml.matroska.MatroskaFileFrame;
+import org.ebml.matroska.MatroskaFileTrack;
 
 public class VP8InspectorUtils {
+	
+	public static void main(String[] args) {
+		VP8Inspector app;
+		try {
+			// Set System L&F
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (UnsupportedLookAndFeelException e) {
+			// handle exception
+		} catch (ClassNotFoundException e) {
+			// handle exception
+		} catch (InstantiationException e) {
+			// handle exception
+		} catch (IllegalAccessException e) {
+			// handle exception
+		}
+		app = new VP8Inspector();
+		app.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
+	}
+	public static MatroskaFile loadMatroska(File f) {
+		System.out.println("Scanning file: " + f);
+		FileDataSource iFS;
+		try {
+			iFS = new FileDataSource(f.getAbsolutePath());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			return null;
+		}
+		MatroskaFile mF = new MatroskaFile(iFS);
+		mF.setScanFirstCluster(true);
+		mF.readFile();
+		System.out.println(mF.getReport());
+		MatroskaFileTrack[] tl = mF.getTrackList();
+		MatroskaFileTrack track=null;
+		for(MatroskaFileTrack t : mF.getTrackList() ) {
+			if(t.CodecID.compareTo("V_VP8")==0)
+				track = t;
+		}
+		
+		/*if (track!=null)
+		{
+			int count=0;
+			MatroskaFileFrame frame = mF.getNextFrame(track.TrackNo);
+			while(count!=frameNo) {
+				frame = mF.getNextFrame(track.TrackNo);
+				if(frame.isKeyFrame())
+					count++;
+			}
+			return frame.Data;
+		}
+		System.exit(0);*/
+		return mF;		
+	}
+	public static int countKeyFrames(MatroskaFile mF) {
+		MatroskaFileTrack[] tl = mF.getTrackList();
+		MatroskaFileTrack track=null;
+		for(MatroskaFileTrack t : mF.getTrackList() ) {
+			if(t.CodecID.compareTo("V_VP8")==0)
+				track = t;
+		}
+		if (track!=null)
+		{
+			int count=0;
+			MatroskaFileFrame frame=mF.getNextFrame(track.TrackNo);
+			while(frame!=null) {
+				if(frame.isKeyFrame())
+					count++;
+				System.out.println(count);
+				frame=mF.getNextFrame(track.TrackNo);
+			}
+			return count;
+		}
+		return 0;
+	}
+	
+	public static byte[] getMatroskaFrame(MatroskaFile mF) {
+		MatroskaFileTrack[] tl = mF.getTrackList();
+		MatroskaFileTrack track=null;
+		for(MatroskaFileTrack t : mF.getTrackList() ) {
+			if(t.CodecID.compareTo("V_VP8")==0)
+				track = t;
+		}
+		if (track!=null)
+		{
+			MatroskaFileFrame frame=mF.getNextFrame(track.TrackNo);
+			while(!frame.isKeyFrame()) {
+				frame=mF.getNextFrame(track.TrackNo);
+			}
+			return frame.Data;
+		}
+		return null;
+	}
+	
     /*
      * Get the extension of a file.
      */  
