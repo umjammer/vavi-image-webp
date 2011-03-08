@@ -13,7 +13,7 @@
     You should have received a copy of the GNU General Public License
     along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.javavp8decoder.tools;
+package net.sf.javavp8decoder.tools.vp8inspector;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

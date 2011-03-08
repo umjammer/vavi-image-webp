@@ -1,4 +1,4 @@
-package net.sf.javavp8decoder.tools;
+package net.sf.javavp8decoder.tools.vp8inspector;
 
 import java.io.File;
 import java.io.IOException;
