@@ -347,7 +347,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 							matroskaFile = VP8InspectorUtils.loadMatroska(currentFile);
 							if(matroskaFile!=null) {
 								int kfs = VP8InspectorUtils.countKeyFrames(matroskaFile);
-								slider.setMaximum(kfs);
+								slider.setMaximum(kfs-1);
 								matroskaFile = VP8InspectorUtils.loadMatroska(currentFile);
 							}
 						}
