@@ -322,9 +322,13 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	}
 
 	private void frameReader(File file) throws IOException {
-		ImageInputStream stream = ImageIO.createImageInputStream(file);
-		VP8Inspector.getFrame(stream);
-		frame = new VP8Frame(stream);
+		if(VP8InspectorUtils.getExtension(file).equals("webp")) {
+			ImageInputStream stream = ImageIO.createImageInputStream(file);
+			VP8Inspector.getWebPFrame(stream);
+			frame = new VP8Frame(stream);
+		}
+		else
+			return;
 
 		frame.addIIOReadProgressListener(new IIOReadProgressListener() {
 			public void imageComplete(ImageReader source) {
