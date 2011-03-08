@@ -40,7 +40,6 @@ public class VP8InspectorUtils {
 		});
 	}
 	public static MatroskaFile loadMatroska(File f) {
-		System.out.println("Scanning file: " + f);
 		FileDataSource iFS;
 		try {
 			iFS = new FileDataSource(f.getAbsolutePath());
@@ -61,18 +60,6 @@ public class VP8InspectorUtils {
 				track = t;
 		}
 		
-		/*if (track!=null)
-		{
-			int count=0;
-			MatroskaFileFrame frame = mF.getNextFrame(track.TrackNo);
-			while(count!=frameNo) {
-				frame = mF.getNextFrame(track.TrackNo);
-				if(frame.isKeyFrame())
-					count++;
-			}
-			return frame.Data;
-		}
-		System.exit(0);*/
 		return mF;		
 	}
 	public static int countKeyFrames(MatroskaFile mF) {
@@ -89,7 +76,6 @@ public class VP8InspectorUtils {
 			while(frame!=null) {
 				if(frame.isKeyFrame())
 					count++;
-				System.out.println(count);
 				frame=mF.getNextFrame(track.TrackNo);
 			}
 			return count;
