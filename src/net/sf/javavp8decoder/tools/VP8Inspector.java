@@ -73,58 +73,6 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static void getFrame(ImageInputStream in) throws IOException {
-		byte[] signature = new byte[4];
-		try {
-			in.readFully(signature);
-		} catch (IOException e) {
-			throw new IIOException("Error reading RIFF signature", e);
-		}
-		if (signature[0] != (byte) 'R' || signature[1] != (byte) 'I'
-				|| signature[2] != (byte) 'F' || signature[3] != (byte) 'F') { // etc.
-			throw new IIOException("Bad RIFF signature!");
-		}
-		int frameSize;
-		try {
-			frameSize = in.read();
-			frameSize += in.read() << 8;
-			frameSize += in.read() << 16;
-			frameSize += in.read() << 24;
-		} catch (IOException e) {
-			throw new IIOException("Error reading frame size 1", e);
-		}
-
-		try {
-			in.readFully(signature);
-		} catch (IOException e) {
-			throw new IIOException("Error reading WEBP signature", e);
-		}
-		if (signature[0] != (byte) 'W' || signature[1] != (byte) 'E'
-				|| signature[2] != (byte) 'B' || signature[3] != (byte) 'P') { // etc.
-			throw new IIOException("Bad WEBP signature!");
-		}
-
-		try {
-			in.readFully(signature);
-		} catch (IOException e) {
-			throw new IIOException("Error reading VP8 signature", e);
-		}
-		if (signature[0] != (byte) 'V' || signature[1] != (byte) 'P'
-				|| signature[2] != (byte) '8') {
-
-			throw new IIOException("Bad WEBP signature!");
-		}
-
-		try {
-			frameSize = in.read();
-			frameSize += in.read() << 8;
-			frameSize += in.read() << 16;
-			frameSize += in.read() << 24;
-		} catch (IOException e) {
-			throw new IIOException("Error reading frame size 1", e);
-		}
-	}
-
 	public static void main(String[] args) {
 		VP8Inspector app;
 		try {
@@ -324,7 +272,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	private void frameReader(File file) throws IOException {
 		if(VP8InspectorUtils.getExtension(file).equals("webp")) {
 			ImageInputStream stream = ImageIO.createImageInputStream(file);
-			VP8Inspector.getWebPFrame(stream);
+			VP8InspectorUtils.getWebPFrame(stream);
 			frame = new VP8Frame(stream);
 		}
 		else
