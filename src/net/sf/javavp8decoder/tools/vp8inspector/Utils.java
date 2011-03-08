@@ -16,7 +16,7 @@ import org.ebml.matroska.MatroskaFile;
 import org.ebml.matroska.MatroskaFileFrame;
 import org.ebml.matroska.MatroskaFileTrack;
 
-public class VP8InspectorUtils {
+public class Utils {
 	
 	public static int countKeyFrames(MatroskaFile mF) {
 		MatroskaFileTrack track=null;

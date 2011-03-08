@@ -253,14 +253,14 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	}
 
 	private boolean frameReader() throws IOException {
-		if(VP8InspectorUtils.getExtension(currentFile).equals("webp")) {
+		if(Utils.getExtension(currentFile).equals("webp")) {
 			ImageInputStream stream = ImageIO.createImageInputStream(currentFile);
-			VP8InspectorUtils.getWebPFrame(stream);
+			Utils.getWebPFrame(stream);
 			frame = new VP8Frame(stream);
 			nextButton.setEnabled(false);
 		}
 		else if(matroskaFile!=null) {
-			byte[] data = VP8InspectorUtils.getMatroskaFrame(matroskaFile);
+			byte[] data = Utils.getMatroskaFrame(matroskaFile);
 			
 			if(data!=null) {
 				InputStream bais = new ByteArrayInputStream(data);
@@ -331,13 +331,13 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 					nextButton.setEnabled(false);
 					invalidate();
 					progressBar.setVisible(true);
-					if(VP8InspectorUtils.getExtension(currentFile).equals("webm")) {
+					if(Utils.getExtension(currentFile).equals("webm")) {
 						if(matroskaFile==null) {
-							matroskaFile = VP8InspectorUtils.loadMatroska(currentFile);
+							matroskaFile = Utils.loadMatroska(currentFile);
 							if(matroskaFile!=null) {
-								int kfs = VP8InspectorUtils.countKeyFrames(matroskaFile);
+								int kfs = Utils.countKeyFrames(matroskaFile);
 								slider.setMaximum(kfs-1);
-								matroskaFile = VP8InspectorUtils.loadMatroska(currentFile);
+								matroskaFile = Utils.loadMatroska(currentFile);
 							}
 						}
 					}
