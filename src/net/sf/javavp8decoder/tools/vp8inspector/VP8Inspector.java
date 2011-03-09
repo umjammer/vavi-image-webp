@@ -83,6 +83,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	JTextArea infoText = new JTextArea();
 	private JPanel jp;
 	private MatroskaFile matroskaFile;
+	private IVFFile ivfFile;
 	private JCheckBox mBCheckBox = new JCheckBox("MB");
 	JMenuBar menuBar;
 	private JButton nextButton = new JButton("next");
@@ -221,21 +222,24 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 				public boolean accept(File f) {
 					return f.isDirectory()
 							|| f.getName().toLowerCase().endsWith(".webp")
-							|| f.getName().toLowerCase().endsWith(".webm");
+							|| f.getName().toLowerCase().endsWith(".webm")
+							|| f.getName().toLowerCase().endsWith(".ivf");
 				}
 
 				public String getDescription() {
-					return "webm/webp files";
+					return "WebM/IVF/WebP Files";
 				}
 			});
 			fc.setSelectedFile(new File(
-					"g:\\workspace\\matroska\\a.webm"));
+					"g:\\workspace\\javavp8decoder\\vp8-test-vectors"));
 			int returnVal = fc.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				sp.setViewport(null);
 				jp = null;
 				scale = 1.0f;
 				currentFile = fc.getSelectedFile();
+				matroskaFile=null;
+				ivfFile=null;
 				loadImageData();
 			} else {
 
@@ -265,10 +269,18 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 			if(data!=null) {
 				InputStream bais = new ByteArrayInputStream(data);
 				ImageInputStream iis = ImageIO.createImageInputStream(bais);
-				System.out.println(iis.length());
 				frame = new VP8Frame(iis);
 			}
 		}
+		else if(ivfFile!=null) {
+				byte[] data = ivfFile.getNextFrame();
+				
+				if(data!=null) {
+					InputStream bais = new ByteArrayInputStream(data);
+					ImageInputStream iis = ImageIO.createImageInputStream(bais);
+					frame = new VP8Frame(iis);
+				}
+			}
 		else
 			return false;
 
@@ -304,27 +316,28 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 			}
 		});
 		frame.setBuffersToCreate(12);
-		frame.decodeFrame(true);
-		bi = frame.getBufferedImage();
-		residual = frame.getDebugImageDiff();
-		predict = frame.getDebugImagePredict();
-		yb = frame.getDebugImageYBuffer();
-		ub = frame.getDebugImageUBuffer();
-		vb = frame.getDebugImageVBuffer();
-		yResidual = frame.getDebugImageYDiffBuffer();
-		uResidual = frame.getDebugImageUDiffBuffer();
-		vResidual = frame.getDebugImageVDiffBuffer();
-		ypred = frame.getDebugImageYPredBuffer();
-		upred = frame.getDebugImageUPredBuffer();
-		vpred = frame.getDebugImageVPredBuffer();
-		return true;
+		if(frame.decodeFrame(true)) {
+			bi = frame.getBufferedImage();
+			residual = frame.getDebugImageDiff();
+			predict = frame.getDebugImagePredict();
+			yb = frame.getDebugImageYBuffer();
+			ub = frame.getDebugImageUBuffer();
+			vb = frame.getDebugImageVBuffer();
+			yResidual = frame.getDebugImageYDiffBuffer();
+			uResidual = frame.getDebugImageUDiffBuffer();
+			vResidual = frame.getDebugImageVDiffBuffer();
+			ypred = frame.getDebugImageYPredBuffer();
+			upred = frame.getDebugImageUPredBuffer();
+			vpred = frame.getDebugImageVPredBuffer();
+			return true;
+		}
+		else
+			return false;
 	}
 
 	private void loadImageData() {
 
 		new Thread() {
-
-
 			public void run() {
 				try {
 					setTitle("VP8Inspector - " + currentFile.getName() + " (Loading...)");
@@ -337,8 +350,17 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 							if(matroskaFile!=null) {
 								int kfs = Utils.countKeyFrames(matroskaFile);
 								slider.setMaximum(kfs-1);
+								slider.setValue(0);
 								matroskaFile = Utils.loadMatroska(currentFile);
 							}
+						}
+					}
+					else if(Utils.getExtension(currentFile).equals("ivf")) {
+						if(ivfFile==null) {
+							ivfFile = new IVFFile(currentFile);
+							int kfs = ivfFile.getKeyFrames();
+							slider.setMaximum(kfs-1);
+							slider.setValue(0);
 						}
 					}
 					if(!frameReader()) {
@@ -665,7 +687,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener,
 	}
 
 	private void loadNextFrame() {
-		if(matroskaFile==null || (slider.getValue()>=slider.getMaximum())) {
+		if((matroskaFile==null && ivfFile == null )|| (slider.getValue()>=slider.getMaximum())) {
 			nextButton.setEnabled(false);
 			return;
 		}
