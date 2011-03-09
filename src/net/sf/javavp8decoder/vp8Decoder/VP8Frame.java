@@ -335,7 +335,7 @@ public class VP8Frame {
 
 		}
 
-		if(this.getFilterType()>0)
+		if(this.getFilterType()>0 && this.getFilterLevel()!=0)
 			this.loopFilter();
 		return true;
 	}

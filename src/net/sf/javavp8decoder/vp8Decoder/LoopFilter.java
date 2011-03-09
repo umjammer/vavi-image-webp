@@ -162,97 +162,99 @@ public class LoopFilter {
 				MacroBlock bmb = frame.getMacroBlock(x, y);
 
 				int loop_filter_level = rmb.getFilterLevel();
-				int interior_limit = rmb.getFilterLevel();
+				if(loop_filter_level!=0) {
+					int interior_limit = rmb.getFilterLevel();
 
-				int sharpnessLevel = frame.getSharpnessLevel();
-				if (sharpnessLevel  > 0) {
-					interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
-					if (interior_limit > 9 - sharpnessLevel)
-						interior_limit = 9 - sharpnessLevel;
-				}
-				if (interior_limit == 0)
-					interior_limit = 1;
-
-				/* Luma and Chroma use the same inter-subblock edge limit */
-				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
-				if(sub_bedge_limit < 1)
-					sub_bedge_limit = 1;
-
-				/* Luma and Chroma use the same inter-macroblock edge limit */
-				int mbedge_limit = sub_bedge_limit+4;
-
-				// left
-				if (x > 0) {
-					MacroBlock lmb = frame.getMacroBlock(x - 1, y);
-					for (int b = 0; b < 4; b++) {
-						SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, 0, b);
-						SubBlock lsb = lmb.getSubBlock(SubBlock.PLANE.Y1, 3, b);
-						for (int a = 0; a < 4; a++) {
-							Segment seg = getSegH(rsb, lsb, a);
-							// MBfilter(hev_threshold, interior_limit,
-							// mbedge_limit, seg);
-							// System.out.println(mbedge_limit);
-							simple_segment(mbedge_limit, seg);
-							setSegH(rsb, lsb, seg, a);
-						}
+					int sharpnessLevel = frame.getSharpnessLevel();
+					if (sharpnessLevel  > 0) {
+						interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
+						if (interior_limit > 9 - sharpnessLevel)
+							interior_limit = 9 - sharpnessLevel;
 					}
-				}
+					if (interior_limit == 0)
+						interior_limit = 1;
 
-				// sb left
-				if (!rmb.isSkip_inner_lf()) {
+					/* Luma and Chroma use the same inter-subblock edge limit */
+					int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
+					if(sub_bedge_limit < 1)
+						sub_bedge_limit = 1;
 
-					for (int a = 1; a < 4; a++) {
+					/* Luma and Chroma use the same inter-macroblock edge limit */
+					int mbedge_limit = sub_bedge_limit+4;
+
+					// left
+					if (x > 0) {
+						MacroBlock lmb = frame.getMacroBlock(x - 1, y);
 						for (int b = 0; b < 4; b++) {
-							SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
-									a - 1, b);
-							SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
-									a, b);
-							for (int c = 0; c < 4; c++) {
-								// System.out.println("sbleft a:"+a+" b:"+b+" c:"+c);
-								Segment seg = getSegH(rsb, lsb, c);
-								simple_segment(sub_bedge_limit, seg);
-								// System.out.println(sub_bedge_limit);
-								// subblock_filter(hev_threshold,interior_limit,sub_bedge_limit,
-								// seg);
-								setSegH(rsb, lsb, seg, c);
+							SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, 0, b);
+							SubBlock lsb = lmb.getSubBlock(SubBlock.PLANE.Y1, 3, b);
+							for (int a = 0; a < 4; a++) {
+								Segment seg = getSegH(rsb, lsb, a);
+								// MBfilter(hev_threshold, interior_limit,
+								// mbedge_limit, seg);
+								// System.out.println(mbedge_limit);
+								simple_segment(mbedge_limit, seg);
+								setSegH(rsb, lsb, seg, a);
 							}
 						}
 					}
-				}
 
-				// top
-				if (y > 0) {
-					MacroBlock tmb = frame.getMacroBlock(x, y - 1);
-					for (int b = 0; b < 4; b++) {
-						SubBlock tsb = tmb.getSubBlock(SubBlock.PLANE.Y1, b, 3);
-						SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, 0);
-						for (int a = 0; a < 4; a++) {
-							Segment seg = getSegV(bsb, tsb, a);
-							simple_segment(mbedge_limit, seg);
-							// System.out.println(mbedge_limit);
-							// MBfilter(hev_threshold, interior_limit,
-							// mbedge_limit, seg);
-							setSegV(bsb, tsb, seg, a);
+					// sb left
+					if (!rmb.isSkip_inner_lf()) {
+
+						for (int a = 1; a < 4; a++) {
+							for (int b = 0; b < 4; b++) {
+								SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
+										a - 1, b);
+								SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
+										a, b);
+								for (int c = 0; c < 4; c++) {
+									// System.out.println("sbleft a:"+a+" b:"+b+" c:"+c);
+									Segment seg = getSegH(rsb, lsb, c);
+									simple_segment(sub_bedge_limit, seg);
+									// System.out.println(sub_bedge_limit);
+									// subblock_filter(hev_threshold,interior_limit,sub_bedge_limit,
+									// seg);
+									setSegH(rsb, lsb, seg, c);
+								}
+							}
 						}
 					}
-				}
 
-				// sb top
-				if (!rmb.isSkip_inner_lf()) {
-					for (int a = 1; a < 4; a++) {
+					// top
+					if (y > 0) {
+						MacroBlock tmb = frame.getMacroBlock(x, y - 1);
 						for (int b = 0; b < 4; b++) {
-							SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
-									b, a - 1);
-							SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
-									b, a);
-							for (int c = 0; c < 4; c++) {
-								// System.out.println("sbtop");
-								Segment seg = getSegV(bsb, tsb, c);
-								simple_segment(sub_bedge_limit, seg);
-								// System.out.println(sub_bedge_limit);
-								// subblock_filter(hev_threshold,interior_limit,sub_bedge_limit,
-								// seg);
-								setSegV(bsb, tsb, seg, c);
+							SubBlock tsb = tmb.getSubBlock(SubBlock.PLANE.Y1, b, 3);
+							SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, 0);
+							for (int a = 0; a < 4; a++) {
+								Segment seg = getSegV(bsb, tsb, a);
+								simple_segment(mbedge_limit, seg);
+								// System.out.println(mbedge_limit);
+								// MBfilter(hev_threshold, interior_limit,
+								// mbedge_limit, seg);
+								setSegV(bsb, tsb, seg, a);
+							}
+						}
+					}
+
+					// sb top
+					if (!rmb.isSkip_inner_lf()) {
+						for (int a = 1; a < 4; a++) {
+							for (int b = 0; b < 4; b++) {
+								SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
+										b, a - 1);
+								SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
+										b, a);
+								for (int c = 0; c < 4; c++) {
+									// System.out.println("sbtop");
+									Segment seg = getSegV(bsb, tsb, c);
+									simple_segment(sub_bedge_limit, seg);
+									// System.out.println(sub_bedge_limit);
+									// subblock_filter(hev_threshold,interior_limit,sub_bedge_limit,
+									// seg);
+									setSegV(bsb, tsb, seg, c);
+								}
 							}
 						}
 					}
@@ -270,127 +272,129 @@ public class LoopFilter {
 				MacroBlock bmb = frame.getMacroBlock(x, y);
 				int sharpnessLevel = frame.getSharpnessLevel();
 				int loop_filter_level = rmb.getFilterLevel();
-				int interior_limit = rmb.getFilterLevel();
-				if (sharpnessLevel > 0) {
-					interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
-					if (interior_limit > 9 - sharpnessLevel)
-						interior_limit = 9 - sharpnessLevel;
-				}
-				if (interior_limit == 0)
-					interior_limit = 1;
-
-				int hev_threshold = 0;
-				if (frame.getFrameType() == 0) /* current frame is a key frame */
-				{
-					if (loop_filter_level >= 40)
-						hev_threshold = 2;
-					else if (loop_filter_level >= 15)
-						hev_threshold = 1;
-				} else /* current frame is an interframe */
-				{
-					if (loop_filter_level >= 40)
-						hev_threshold = 3;
-					else if (loop_filter_level >= 20)
-						hev_threshold = 2;
-					else if (loop_filter_level >= 15)
-						hev_threshold = 1;
-				}
-
-				/* Luma and Chroma use the same inter-macroblock edge limit */
-				int mbedge_limit = ((loop_filter_level + 2) * 2)
-						+ interior_limit;
-				/* Luma and Chroma use the same inter-subblock edge limit */
-				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
-
-				if (x > 0) {
-					MacroBlock lmb = frame.getMacroBlock(x - 1, y);
-					for (int b = 0; b < 2; b++) {
-						SubBlock rsbU = rmb.getSubBlock(SubBlock.PLANE.U, 0, b);
-						SubBlock lsbU = lmb.getSubBlock(SubBlock.PLANE.U, 1, b);
-						SubBlock rsbV = rmb.getSubBlock(SubBlock.PLANE.V, 0, b);
-						SubBlock lsbV = lmb.getSubBlock(SubBlock.PLANE.V, 1, b);
-						for (int a = 0; a < 4; a++) {
-							Segment seg = getSegH(rsbU, lsbU, a);
-							MBfilter(hev_threshold, interior_limit,
-									mbedge_limit, seg);
-							setSegH(rsbU, lsbU, seg, a);
-							seg = getSegH(rsbV, lsbV, a);
-							MBfilter(hev_threshold, interior_limit,
-									mbedge_limit, seg);
-							setSegH(rsbV, lsbV, seg, a);
-
-						}
+				if(loop_filter_level!=0) {
+					int interior_limit = rmb.getFilterLevel();
+					if (sharpnessLevel > 0) {
+						interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
+						if (interior_limit > 9 - sharpnessLevel)
+							interior_limit = 9 - sharpnessLevel;
 					}
-				}
-				// sb left
+					if (interior_limit == 0)
+						interior_limit = 1;
 
-				if (!rmb.isSkip_inner_lf()) {
-					for (int a = 1; a < 2; a++) {
+					int hev_threshold = 0;
+					if (frame.getFrameType() == 0) /* current frame is a key frame */
+					{
+						if (loop_filter_level >= 40)
+							hev_threshold = 2;
+						else if (loop_filter_level >= 15)
+							hev_threshold = 1;
+					} else /* current frame is an interframe */
+					{
+						if (loop_filter_level >= 40)
+							hev_threshold = 3;
+						else if (loop_filter_level >= 20)
+							hev_threshold = 2;
+						else if (loop_filter_level >= 15)
+							hev_threshold = 1;
+					}
+
+					/* Luma and Chroma use the same inter-macroblock edge limit */
+					int mbedge_limit = ((loop_filter_level + 2) * 2)
+					+ interior_limit;
+					/* Luma and Chroma use the same inter-subblock edge limit */
+					int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
+
+					if (x > 0) {
+						MacroBlock lmb = frame.getMacroBlock(x - 1, y);
 						for (int b = 0; b < 2; b++) {
-							SubBlock lsbU = rmb.getSubBlock(SubBlock.PLANE.U,
-									a - 1, b);
-							SubBlock rsbU = rmb.getSubBlock(SubBlock.PLANE.U,
-									a, b);
-							SubBlock lsbV = rmb.getSubBlock(SubBlock.PLANE.V,
-									a - 1, b);
-							SubBlock rsbV = rmb.getSubBlock(SubBlock.PLANE.V,
-									a, b);
-							for (int c = 0; c < 4; c++) {
-								Segment seg = getSegH(rsbU, lsbU, c);
-								subblock_filter(hev_threshold, interior_limit,
-										sub_bedge_limit, seg);
-								setSegH(rsbU, lsbU, seg, c);
-								seg = getSegH(rsbV, lsbV, c);
-								subblock_filter(hev_threshold, interior_limit,
-										sub_bedge_limit, seg);
-								setSegH(rsbV, lsbV, seg, c);
+							SubBlock rsbU = rmb.getSubBlock(SubBlock.PLANE.U, 0, b);
+							SubBlock lsbU = lmb.getSubBlock(SubBlock.PLANE.U, 1, b);
+							SubBlock rsbV = rmb.getSubBlock(SubBlock.PLANE.V, 0, b);
+							SubBlock lsbV = lmb.getSubBlock(SubBlock.PLANE.V, 1, b);
+							for (int a = 0; a < 4; a++) {
+								Segment seg = getSegH(rsbU, lsbU, a);
+								MBfilter(hev_threshold, interior_limit,
+										mbedge_limit, seg);
+								setSegH(rsbU, lsbU, seg, a);
+								seg = getSegH(rsbV, lsbV, a);
+								MBfilter(hev_threshold, interior_limit,
+										mbedge_limit, seg);
+								setSegH(rsbV, lsbV, seg, a);
+
 							}
 						}
 					}
-				}
-				// top
-				if (y > 0) {
-					MacroBlock tmb = frame.getMacroBlock(x, y - 1);
-					for (int b = 0; b < 2; b++) {
-						SubBlock tsbU = tmb.getSubBlock(SubBlock.PLANE.U, b, 1);
-						SubBlock bsbU = bmb.getSubBlock(SubBlock.PLANE.U, b, 0);
-						SubBlock tsbV = tmb.getSubBlock(SubBlock.PLANE.V, b, 1);
-						SubBlock bsbV = bmb.getSubBlock(SubBlock.PLANE.V, b, 0);
-						for (int a = 0; a < 4; a++) {
-							// System.out.println("l");
-							Segment seg = getSegV(bsbU, tsbU, a);
-							MBfilter(hev_threshold, interior_limit,
-									mbedge_limit, seg);
-							setSegV(bsbU, tsbU, seg, a);
-							seg = getSegV(bsbV, tsbV, a);
-							MBfilter(hev_threshold, interior_limit,
-									mbedge_limit, seg);
-							setSegV(bsbV, tsbV, seg, a);
+					// sb left
+
+					if (!rmb.isSkip_inner_lf()) {
+						for (int a = 1; a < 2; a++) {
+							for (int b = 0; b < 2; b++) {
+								SubBlock lsbU = rmb.getSubBlock(SubBlock.PLANE.U,
+										a - 1, b);
+								SubBlock rsbU = rmb.getSubBlock(SubBlock.PLANE.U,
+										a, b);
+								SubBlock lsbV = rmb.getSubBlock(SubBlock.PLANE.V,
+										a - 1, b);
+								SubBlock rsbV = rmb.getSubBlock(SubBlock.PLANE.V,
+										a, b);
+								for (int c = 0; c < 4; c++) {
+									Segment seg = getSegH(rsbU, lsbU, c);
+									subblock_filter(hev_threshold, interior_limit,
+											sub_bedge_limit, seg);
+									setSegH(rsbU, lsbU, seg, c);
+									seg = getSegH(rsbV, lsbV, c);
+									subblock_filter(hev_threshold, interior_limit,
+											sub_bedge_limit, seg);
+									setSegH(rsbV, lsbV, seg, c);
+								}
+							}
 						}
 					}
-				}
-				// sb top
-
-				if (!rmb.isSkip_inner_lf()) {
-					for (int a = 1; a < 2; a++) {
+					// top
+					if (y > 0) {
+						MacroBlock tmb = frame.getMacroBlock(x, y - 1);
 						for (int b = 0; b < 2; b++) {
-							SubBlock tsbU = bmb.getSubBlock(SubBlock.PLANE.U,
-									b, a - 1);
-							SubBlock bsbU = bmb.getSubBlock(SubBlock.PLANE.U,
-									b, a);
-							SubBlock tsbV = bmb.getSubBlock(SubBlock.PLANE.V,
-									b, a - 1);
-							SubBlock bsbV = bmb.getSubBlock(SubBlock.PLANE.V,
-									b, a);
-							for (int c = 0; c < 4; c++) {
-								Segment seg = getSegV(bsbU, tsbU, c);
-								subblock_filter(hev_threshold, interior_limit,
-										sub_bedge_limit, seg);
-								setSegV(bsbU, tsbU, seg, c);
-								seg = getSegV(bsbV, tsbV, c);
-								subblock_filter(hev_threshold, interior_limit,
-										sub_bedge_limit, seg);
-								setSegV(bsbV, tsbV, seg, c);
+							SubBlock tsbU = tmb.getSubBlock(SubBlock.PLANE.U, b, 1);
+							SubBlock bsbU = bmb.getSubBlock(SubBlock.PLANE.U, b, 0);
+							SubBlock tsbV = tmb.getSubBlock(SubBlock.PLANE.V, b, 1);
+							SubBlock bsbV = bmb.getSubBlock(SubBlock.PLANE.V, b, 0);
+							for (int a = 0; a < 4; a++) {
+								// System.out.println("l");
+								Segment seg = getSegV(bsbU, tsbU, a);
+								MBfilter(hev_threshold, interior_limit,
+										mbedge_limit, seg);
+								setSegV(bsbU, tsbU, seg, a);
+								seg = getSegV(bsbV, tsbV, a);
+								MBfilter(hev_threshold, interior_limit,
+										mbedge_limit, seg);
+								setSegV(bsbV, tsbV, seg, a);
+							}
+						}
+					}
+					// sb top
+
+					if (!rmb.isSkip_inner_lf()) {
+						for (int a = 1; a < 2; a++) {
+							for (int b = 0; b < 2; b++) {
+								SubBlock tsbU = bmb.getSubBlock(SubBlock.PLANE.U,
+										b, a - 1);
+								SubBlock bsbU = bmb.getSubBlock(SubBlock.PLANE.U,
+										b, a);
+								SubBlock tsbV = bmb.getSubBlock(SubBlock.PLANE.V,
+										b, a - 1);
+								SubBlock bsbV = bmb.getSubBlock(SubBlock.PLANE.V,
+										b, a);
+								for (int c = 0; c < 4; c++) {
+									Segment seg = getSegV(bsbU, tsbU, c);
+									subblock_filter(hev_threshold, interior_limit,
+											sub_bedge_limit, seg);
+									setSegV(bsbU, tsbU, seg, c);
+									seg = getSegV(bsbV, tsbV, c);
+									subblock_filter(hev_threshold, interior_limit,
+											sub_bedge_limit, seg);
+									setSegV(bsbV, tsbV, seg, c);
+								}
 							}
 						}
 					}
@@ -408,98 +412,101 @@ public class LoopFilter {
 				MacroBlock bmb = frame.getMacroBlock(x, y);
 				int sharpnessLevel = frame.getSharpnessLevel();
 				int loop_filter_level = rmb.getFilterLevel();
-				int interior_limit = rmb.getFilterLevel();
 
-				if (sharpnessLevel > 0) {
-					interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
-					if (interior_limit > 9 - sharpnessLevel)
-						interior_limit = 9 - sharpnessLevel;
-				}
-				if (interior_limit == 0)
-					interior_limit = 1;
+				if(loop_filter_level!=0) {
+					int interior_limit = rmb.getFilterLevel();
 
-				int hev_threshold = 0;
-				if (frame.getFrameType() == 0) /* current frame is a key frame */
-				{
-					if (loop_filter_level >= 40)
-						hev_threshold = 2;
-					else if (loop_filter_level >= 15)
-						hev_threshold = 1;
-				} else /* current frame is an interframe */
-				{
-					if (loop_filter_level >= 40)
-						hev_threshold = 3;
-					else if (loop_filter_level >= 20)
-						hev_threshold = 2;
-					else if (loop_filter_level >= 15)
-						hev_threshold = 1;
-				}
-
-				/* Luma and Chroma use the same inter-macroblock edge limit */
-				int mbedge_limit = ((loop_filter_level + 2) * 2)
-						+ interior_limit;
-				/* Luma and Chroma use the same inter-subblock edge limit */
-				int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
-
-				// left
-				if (x > 0) {
-					MacroBlock lmb = frame.getMacroBlock(x - 1, y);
-					for (int b = 0; b < 4; b++) {
-						SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, 0, b);
-						SubBlock lsb = lmb.getSubBlock(SubBlock.PLANE.Y1, 3, b);
-						for (int a = 0; a < 4; a++) {
-							Segment seg = getSegH(rsb, lsb, a);
-							MBfilter(hev_threshold, interior_limit,
-									mbedge_limit, seg);
-							setSegH(rsb, lsb, seg, a);
-						}
+					if (sharpnessLevel > 0) {
+						interior_limit >>= sharpnessLevel > 4 ? 2 : 1;
+						if (interior_limit > 9 - sharpnessLevel)
+							interior_limit = 9 - sharpnessLevel;
 					}
-				}
-				// sb left
-				if (!rmb.isSkip_inner_lf()) {
-					for (int a = 1; a < 4; a++) {
+					if (interior_limit == 0)
+						interior_limit = 1;
+
+					int hev_threshold = 0;
+					if (frame.getFrameType() == 0) /* current frame is a key frame */
+					{
+						if (loop_filter_level >= 40)
+							hev_threshold = 2;
+						else if (loop_filter_level >= 15)
+							hev_threshold = 1;
+					} else /* current frame is an interframe */
+					{
+						if (loop_filter_level >= 40)
+							hev_threshold = 3;
+						else if (loop_filter_level >= 20)
+							hev_threshold = 2;
+						else if (loop_filter_level >= 15)
+							hev_threshold = 1;
+					}
+
+					/* Luma and Chroma use the same inter-macroblock edge limit */
+					int mbedge_limit = ((loop_filter_level + 2) * 2)
+					+ interior_limit;
+					/* Luma and Chroma use the same inter-subblock edge limit */
+					int sub_bedge_limit = (loop_filter_level * 2) + interior_limit;
+
+					// left
+					if (x > 0) {
+						MacroBlock lmb = frame.getMacroBlock(x - 1, y);
 						for (int b = 0; b < 4; b++) {
-							SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
-									a - 1, b);
-							SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
-									a, b);
-							for (int c = 0; c < 4; c++) {
-								// System.out.println("sbleft a:"+a+" b:"+b+" c:"+c);
-								Segment seg = getSegH(rsb, lsb, c);
-								subblock_filter(hev_threshold, interior_limit,
-										sub_bedge_limit, seg);
-								setSegH(rsb, lsb, seg, c);
+							SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, 0, b);
+							SubBlock lsb = lmb.getSubBlock(SubBlock.PLANE.Y1, 3, b);
+							for (int a = 0; a < 4; a++) {
+								Segment seg = getSegH(rsb, lsb, a);
+								MBfilter(hev_threshold, interior_limit,
+										mbedge_limit, seg);
+								setSegH(rsb, lsb, seg, a);
 							}
 						}
 					}
-				}
-				// top
-				if (y > 0) {
-					MacroBlock tmb = frame.getMacroBlock(x, y - 1);
-					for (int b = 0; b < 4; b++) {
-						SubBlock tsb = tmb.getSubBlock(SubBlock.PLANE.Y1, b, 3);
-						SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, 0);
-						for (int a = 0; a < 4; a++) {
-							Segment seg = getSegV(bsb, tsb, a);
-							MBfilter(hev_threshold, interior_limit,
-									mbedge_limit, seg);
-							setSegV(bsb, tsb, seg, a);
+					// sb left
+					if (!rmb.isSkip_inner_lf()) {
+						for (int a = 1; a < 4; a++) {
+							for (int b = 0; b < 4; b++) {
+								SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
+										a - 1, b);
+								SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1,
+										a, b);
+								for (int c = 0; c < 4; c++) {
+									// System.out.println("sbleft a:"+a+" b:"+b+" c:"+c);
+									Segment seg = getSegH(rsb, lsb, c);
+									subblock_filter(hev_threshold, interior_limit,
+											sub_bedge_limit, seg);
+									setSegH(rsb, lsb, seg, c);
+								}
+							}
 						}
 					}
-				}
-				// sb top
-				if (!rmb.isSkip_inner_lf()) {
-					for (int a = 1; a < 4; a++) {
+					// top
+					if (y > 0) {
+						MacroBlock tmb = frame.getMacroBlock(x, y - 1);
 						for (int b = 0; b < 4; b++) {
-							SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
-									b, a - 1);
-							SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
-									b, a);
-							for (int c = 0; c < 4; c++) {
-								Segment seg = getSegV(bsb, tsb, c);
-								subblock_filter(hev_threshold, interior_limit,
-										sub_bedge_limit, seg);
-								setSegV(bsb, tsb, seg, c);
+							SubBlock tsb = tmb.getSubBlock(SubBlock.PLANE.Y1, b, 3);
+							SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, 0);
+							for (int a = 0; a < 4; a++) {
+								Segment seg = getSegV(bsb, tsb, a);
+								MBfilter(hev_threshold, interior_limit,
+										mbedge_limit, seg);
+								setSegV(bsb, tsb, seg, a);
+							}
+						}
+					}
+					// sb top
+					if (!rmb.isSkip_inner_lf()) {
+						for (int a = 1; a < 4; a++) {
+							for (int b = 0; b < 4; b++) {
+								SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
+										b, a - 1);
+								SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1,
+										b, a);
+								for (int c = 0; c < 4; c++) {
+									Segment seg = getSegV(bsb, tsb, c);
+									subblock_filter(hev_threshold, interior_limit,
+											sub_bedge_limit, seg);
+									setSegV(bsb, tsb, seg, c);
+								}
 							}
 						}
 					}
