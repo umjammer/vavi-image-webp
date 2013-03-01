@@ -152,85 +152,70 @@ public class WebPImageReader extends ImageReader implements
 	}
 
 	public void readHeader() throws IIOException {
-		if (gotHeader) {
-			return;
-		}
-		gotHeader = true;
-
 		if (stream == null) {
 			throw new IllegalStateException("No input stream");
 		}
-
-		byte[] signature = new byte[4];
 		try {
-			stream.readFully(signature);
-		} catch (IOException e) {
-			throw new IIOException("Error reading RIFF signature", e);
-		}
-		if (signature[0] != (byte) 'R' || signature[1] != (byte) 'I'
-				|| signature[2] != (byte) 'F' || signature[3] != (byte) 'F') { // etc.
-			throw new IIOException("Bad RIFF signature!");
-		}
-		int frameSize;
-		try {
-			frameSize = stream.read();
-			frameSize += stream.read() << 8;
-			frameSize += stream.read() << 16;
-			frameSize += stream.read() << 24;
-		} catch (IOException e) {
-			throw new IIOException("Error reading frame size 1", e);
-		}
-
-		try {
-			stream.readFully(signature);
-		} catch (IOException e) {
-			throw new IIOException("Error reading WEBP signature", e);
-		}
-		if (signature[0] != (byte) 'W' || signature[1] != (byte) 'E'
-				|| signature[2] != (byte) 'B' || signature[3] != (byte) 'P') { // etc.
-			throw new IIOException("Bad WEBP signature!");
-		}
-
-		try {
-			stream.readFully(signature);
-		} catch (IOException e) {
-			throw new IIOException("Error reading VP8 signature", e);
-		}
-		if (signature[0] != (byte) 'V' || signature[1] != (byte) 'P'
-				|| signature[2] != (byte) '8') {
-
-			throw new IIOException("Bad WEBP signature!");
-		}
-
-		try {
-			frameSize = stream.read();
-			frameSize += stream.read() << 8;
-			frameSize += stream.read() << 16;
-			frameSize += stream.read() << 24;
-		} catch (IOException e) {
-			throw new IIOException("Error reading frame size 1", e);
-		}
-
-		try {
-			decoder = new VP8Frame(stream);
-			decoder.addIIOReadProgressListener(this);
-			decoder.decodeFrame(false);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			byte[] signature = new byte[4];
+			try {
+				stream.readFully(signature);
+			} catch (IOException e) {
+				throw new IIOException("Error reading RIFF signature", e);
+			}
+			if (signature[0] != (byte) 'R' || signature[1] != (byte) 'I'
+					|| signature[2] != (byte) 'F' || signature[3] != (byte) 'F') { // etc.
+				throw new IIOException("Bad RIFF signature!");
+			}
+			try {
+				stream.read();
+				stream.read();
+				stream.read();
+				stream.read();
+			} catch (IOException e) {
+				throw new IIOException("Error reading frame size 1", e);
+			}
+			try {
+				stream.readFully(signature);
+			} catch (IOException e) {
+				throw new IIOException("Error reading WEBP signature", e);
+			}
+			if (signature[0] != (byte) 'W' || signature[1] != (byte) 'E'
+					|| signature[2] != (byte) 'B' || signature[3] != (byte) 'P') { // etc.
+				throw new IIOException("Bad WEBP signature!");
+			}
+			try {
+				stream.readFully(signature);
+			} catch (IOException e) {
+				throw new IIOException("Error reading VP8 signature", e);
+			}
+			if (signature[0] != (byte) 'V' || signature[1] != (byte) 'P'
+					|| signature[2] != (byte) '8') {
+				throw new IIOException("Bad WEBP signature!");
+			}
+			try {
+				stream.read();
+				stream.read();
+				stream.read();
+				stream.read();
+			} catch (IOException e) {
+				throw new IIOException("Error reading frame size 1", e);
+			}
+			try {
+				if(decoder == null) {
+					decoder = new VP8Frame(stream);
+					decoder.addIIOReadProgressListener(this);
+				} else {
+					decoder.setFrame(stream);
+				}
+				decoder.decodeFrame(false);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch(IOException e) {
 			e.printStackTrace();
 		}
 		this.width = decoder.getWidth();
 		this.height = decoder.getHeight();
-
-		// Read width, height, color type, newline
-		/*
-		 * try { this.width = stream.readInt(); this.height = stream.readInt();
-		 * this.colorType = stream.readUnsignedByte();
-		 * stream.readUnsignedByte(); // skip newline character } catch
-		 * (IOException e) { throw new IIOException("Error reading header", e);
-		 * }
-		 */
 	}
 
 	public void readMetadata() throws IIOException {

@@ -1098,4 +1098,16 @@ public class VP8Frame {
 			fireRGBProgressUpdate(100.0F*x/getWidth());
 		}
 	}
+	public void setFrame(ImageInputStream frame) {
+		try {
+			this.frame.flush();
+			this.frame.close();
+			this.frame = frame;
+			offset = frame.getStreamPosition();
+			this.coefProbs=Globals.getDefaultCoefProbs();
+			tokenBoolDecoders = new Vector<BoolDecoder>();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
