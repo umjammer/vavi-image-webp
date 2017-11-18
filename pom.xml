@@ -2,14 +2,17 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.sf.javavp8decoder</groupId>
   <artifactId>javavp8decoder</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <name>Java VP8 Decoder</name>
   <description>An implementation of the VP8 image/video codec in pure Java.
 
+0.2.2
+
+    bug fix about lost service file
+
 0.2.1
 
-    mavenize
-</description>
+    mavenize</description>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -34,6 +37,10 @@
     </dependency>
   </dependencies>
   <scm>
-    <url>https://sourceforge.net/projects/javavp8decoder/</url>
+    <url>https://github.com/umjammer/javavp8decoder/</url>
   </scm>
+  <url>https://sourceforge.net/projects/javavp8decoder/</url>
+  <issueManagement>
+    <url>https://github.com/umjammer/javavp8decoder/issues</url>
+  </issueManagement>
 </project>
