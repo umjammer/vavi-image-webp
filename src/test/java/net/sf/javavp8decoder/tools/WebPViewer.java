@@ -59,9 +59,8 @@ import net.sf.javavp8decoder.imageio.WebPImageReaderSpi;
 
 
 public class WebPViewer extends JFrame implements MouseMotionListener, MouseListener, MouseWheelListener, ActionListener {
-    /**
-     *
-     */
+
+    /** */
     private static final long serialVersionUID = 1L;
 
     public static void main(String[] args) {
@@ -80,13 +79,8 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
         try {
             // Set System L&F
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException e) {
-            // handle exception
-        } catch (ClassNotFoundException e) {
-            // handle exception
-        } catch (InstantiationException e) {
-            // handle exception
-        } catch (IllegalAccessException e) {
+        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
+                 IllegalAccessException e) {
             // handle exception
         }
 
@@ -146,7 +140,7 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
         this.setJMenuBar(menuBar);
 
         progressBar = new JProgressBar();
-        progressBar.setValue(00);
+        progressBar.setValue(0);
         progressBar.setPreferredSize(new Dimension(18, 18));
         progressBar.setStringPainted(true);
         add(progressBar, BorderLayout.SOUTH);
@@ -330,9 +324,6 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
         e.consume();
         jp.setPreferredSize(new Dimension((int) (bi.getWidth() * scale), (int) (bi.getHeight() * scale)));
         jp.setSize(new Dimension((int) (bi.getWidth() * scale), (int) (bi.getHeight() * scale)));
-        // sp.remove(jp);
-        // sp.add(jp);
         sp.repaint();
-
     }
 }

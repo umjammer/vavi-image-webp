@@ -23,6 +23,8 @@ import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageReadParam;
@@ -37,6 +39,8 @@ import net.sf.javavp8decoder.vp8Decoder.VP8Frame;
 
 
 public class WebPImageReader extends ImageReader implements IIOReadProgressListener {
+
+    private static final Logger logger = Logger.getLogger(WebPImageReader.class.getName());
 
     // Constants enumerating the values of colorType
     static final int COLOR_TYPE_GRAY = 0;
@@ -209,10 +213,14 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
                 }
                 decoder.decodeFrame(false);
             } catch (IOException e) {
-                e.printStackTrace();
+                if (logger.isLoggable(Level.FINE)) {
+                    e.printStackTrace();
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            if (logger.isLoggable(Level.FINE)) {
+                e.printStackTrace();
+            }
         }
         this.width = decoder.getWidth();
         this.height = decoder.getHeight();

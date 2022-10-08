@@ -95,9 +95,8 @@ public class dwebp {
     }
 
     public static String toHex(int c) {
-        String r = new String();
+        String r = "";
         r = String.format("%1$#x ", c);
         return r;
     }
-
 }

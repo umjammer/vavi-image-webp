@@ -22,15 +22,15 @@ import javax.imageio.metadata.IIOMetadataFormatImpl;
 
 public class WebPMetadataFormat extends IIOMetadataFormatImpl {
 
-    // Create a single instance of this class (singleton pattern)
+    /** Create a single instance of this class (singleton pattern) */
     private static WebPMetadataFormat defaultInstance = new WebPMetadataFormat();
 
-    // Return the singleton instance
+    /** Return the singleton instance */
     public static WebPMetadataFormat getDefaultInstance() {
         return defaultInstance;
     }
 
-    // Make constructor private to enforce the singleton pattern
+    /** Make constructor private to enforce the singleton pattern */
     private WebPMetadataFormat() {
         // Set the name of the root node
         // The root node has a single child node type that may repeat
@@ -47,7 +47,7 @@ public class WebPMetadataFormat extends IIOMetadataFormatImpl {
         addAttribute("KeywordValuePair", "value", DATATYPE_STRING, true, null);
     }
 
-    // Check for legal element name
+    /** Check for legal element name */
     public boolean canNodeAppear(String elementName, ImageTypeSpecifier imageType) {
         return elementName.equals("KeywordValuePair");
     }

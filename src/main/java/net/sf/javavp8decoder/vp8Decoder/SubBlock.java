@@ -17,15 +17,19 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 
 public class SubBlock {
-    public static enum PLANE {
+
+    private static final Logger logger = Logger.getLogger(SubBlock.class.getName());
+
+    public enum PLANE {
         U,
         V,
         Y1,
         Y2
-    };
+    }
 
     public static final int UV = 2;
 
@@ -69,9 +73,9 @@ public class SubBlock {
 
     private PLANE plane;
 
-    private int predict[][];
+    private int[][] predict;
 
-    private int tokens[];
+    private int[] tokens;
 
     public SubBlock(MacroBlock macroBlock, SubBlock above, SubBlock left, SubBlock.PLANE plane) {
         this.macroBlock = macroBlock;
@@ -84,7 +88,7 @@ public class SubBlock {
             tokens[z] = 0;
     }
 
-    private int DCTextra(BoolDecoder bc2, int p[]) throws IOException {
+    private int DCTextra(BoolDecoder bc2, int[] p) throws IOException {
         int v = 0;
         int offset = 0;
         do {
@@ -122,7 +126,7 @@ public class SubBlock {
             else if (dv == Globals.DCT_0)
                 skip = true;
 
-            int tokens[] = sb.getTokens();
+            int[] tokens = sb.getTokens();
 
             if (v != Globals.dct_eob)
                 tokens[Globals.vp8defaultZigZag1d[c + startAt]] = dv;
@@ -130,8 +134,10 @@ public class SubBlock {
         }
         hasNoZeroToken = false;
         for (int x = 0; x < 16; x++)
-            if (tokens[x] != 0)
+            if (tokens[x] != 0) {
                 hasNoZeroToken = true;
+                break;
+            }
     }
 
     private int decodeToken(BoolDecoder bc2, int v) throws IOException {
@@ -231,7 +237,7 @@ public class SubBlock {
     }
 
     public String getDebugString() {
-        String r = new String();
+        String r = "";
         r = r + "  " + plane;
         if (getMacroBlock().getYMode() == Globals.B_PRED && plane == SubBlock.PLANE.Y1)
             r = r + "\n  " + Globals.getSubBlockModeAsString(mode);
@@ -267,7 +273,7 @@ public class SubBlock {
             int rv = 127;
             if (intra_mode == Globals.H_PRED)
                 rv = 129;
-            int r[][] = new int[4][4];
+            int[][] r = new int[4][4];
             for (int j = 0; j < 4; j++)
                 for (int i = 0; i < 4; i++)
                     r[i][j] = rv;
@@ -303,7 +309,7 @@ public class SubBlock {
                 && left)
 
                 rv = 129;
-            int r[][] = new int[4][4];
+            int[][] r = new int[4][4];
             for (int j = 0; j < 4; j++)
                 for (int i = 0; i < 4; i++)
                     r[i][j] = rv;
@@ -355,16 +361,16 @@ public class SubBlock {
         } else
             al = AL.getPredict(sb.getMode(), true)[3][3];
         SubBlock AR = frame.getAboveRightSubBlock(sb, sb.plane);
-        int ar[] = new int[4];
+        int[] ar = new int[4];
         ar[0] = AR.getPredict(sb.getMode(), false)[0][3];
         ar[1] = AR.getPredict(sb.getMode(), false)[1][3];
         ar[2] = AR.getPredict(sb.getMode(), false)[2][3];
         ar[3] = AR.getPredict(sb.getMode(), false)[3][3];
         int[][] p = new int[4][4];
-        int pp[];
+        int[] pp;
         switch (sb.getMode()) {
         case Globals.B_DC_PRED:
-            // System.out.println("B_DC_PRED");
+            logger.finer("B_DC_PRED");
             int expected_dc = 0;
 
             for (int i = 0; i < 4; i++) {
@@ -380,7 +386,7 @@ public class SubBlock {
             break;
         case Globals.B_TM_PRED:
 
-            // System.out.println("B_TM_PRED");
+            logger.finer("B_TM_PRED");
 
             // prediction similar to true_motion prediction
 
@@ -399,9 +405,9 @@ public class SubBlock {
             }
             break;
         case Globals.B_VE_PRED:
-            // System.out.println("B_VE_PRED");
+            logger.finer("B_VE_PRED");
 
-            int ap[] = new int[4];
+            int[] ap = new int[4];
             ap[0] = (al + 2 * above[0] + above[1] + 2) >> 2;
             ap[1] = (above[0] + 2 * above[1] + above[2] + 2) >> 2;
             ap[2] = (above[1] + 2 * above[2] + above[3] + 2) >> 2;
@@ -416,9 +422,9 @@ public class SubBlock {
             }
             break;
         case Globals.B_HE_PRED:
-            // System.out.println("B_HE_PRED");
+            logger.finer("B_HE_PRED");
 
-            int lp[] = new int[4];
+            int[] lp = new int[4];
             lp[0] = (al + 2 * left[0] + left[1] + 2) >> 2;
             lp[1] = (left[0] + 2 * left[1] + left[2] + 2) >> 2;
             lp[2] = (left[1] + 2 * left[2] + left[3] + 2) >> 2;
@@ -431,7 +437,7 @@ public class SubBlock {
             }
             break;
         case Globals.B_LD_PRED:
-            // System.out.println("B_LD_PRED");
+            logger.finer("B_LD_PRED");
             p[0][0] = (above[0] + above[1] * 2 + above[2] + 2) >> 2;
             p[1][0] = p[0][1] = (above[1] + above[2] * 2 + above[3] + 2) >> 2;
             p[2][0] = p[1][1] = p[0][2] = (above[2] + above[3] * 2 + ar[0] + 2) >> 2;
@@ -442,7 +448,7 @@ public class SubBlock {
 
             break;
         case Globals.B_RD_PRED:
-            // System.out.println("B_RD_PRED");
+            logger.finer("B_RD_PRED");
             pp = new int[9];
 
             pp[0] = left[3];
@@ -465,7 +471,7 @@ public class SubBlock {
             break;
 
         case Globals.B_VR_PRED:
-            // System.out.println("B_VR_PRED");
+            logger.finer("B_VR_PRED");
             pp = new int[9];
 
             pp[0] = left[3];
@@ -491,7 +497,7 @@ public class SubBlock {
 
             break;
         case Globals.B_VL_PRED:
-            // System.out.println("B_VL_PRED");
+            logger.finer("B_VL_PRED");
 
             p[0][0] = (above[0] + above[1] + 1) >> 1;
             p[0][1] = (above[0] + above[1] * 2 + above[2] + 2) >> 2;
@@ -506,7 +512,7 @@ public class SubBlock {
 
             break;
         case Globals.B_HD_PRED:
-            // System.out.println("B_HD_PRED");
+            logger.finer("B_HD_PRED");
             pp = new int[9];
             pp[0] = left[3];
             pp[1] = left[2];
@@ -530,7 +536,7 @@ public class SubBlock {
             p[3][0] = (pp[5] + pp[6] * 2 + pp[7] + 2) >> 2;
             break;
         case Globals.B_HU_PRED:
-            // System.out.println("B_HU_PRED");
+            logger.finer("B_HU_PRED");
 
             p[0][0] = (left[0] + left[1] + 1) >> 1;
             p[1][0] = (left[0] + left[1] * 2 + left[2] + 2) >> 2;
@@ -542,9 +548,7 @@ public class SubBlock {
             break;
 
         default:
-            System.out.println("TODO: " + sb.getMode());
-            System.exit(0);
-            break;
+            throw new UnsupportedOperationException(String.valueOf(sb.getMode()));
         }
 
         sb.setPredict(p);
@@ -554,10 +558,10 @@ public class SubBlock {
         SubBlock sb = this;
 
         int r, c;
-        int p[][] = sb.getPredict(1, false);
+        int[][] p = sb.getPredict(1, false);
 
-        int dest[][] = new int[4][4];
-        int diff[][] = sb.getDiff();
+        int[][] dest = new int[4][4];
+        int[][] diff = sb.getDiff();
 
         for (r = 0; r < 4; r++) {
             for (c = 0; c < 4; c++) {
@@ -608,12 +612,12 @@ public class SubBlock {
     }
 
     public String toString() {
-        String r = "[";
+        StringBuilder r = new StringBuilder("[");
         for (int x = 0; x < 16; x++)
-            r = r + tokens[x] + " ";
-        r = r + "]";
+            r.append(tokens[x]).append(" ");
+        r.append("]");
 
-        return r;
+        return r.toString();
     }
 
 }
