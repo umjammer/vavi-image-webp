@@ -61,7 +61,7 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
               suffixes,
               MIMETypes,
               readerClassName,
-              STANDARD_INPUT_TYPE, // Accept ImageInputStreams
+              new Class[] { ImageInputStream.class },
               writerSpiNames,
               supportsStandardStreamMetadataFormat,
               nativeStreamMetadataFormatName,

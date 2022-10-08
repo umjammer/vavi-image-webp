@@ -22,7 +22,7 @@ public class IDCT {
 
     private static final int sinpi8sqrt2 = 35468;
 
-    public static int[][] idct4x4llm(int input[]) {
+    public static int[][] idct4x4llm(int[] input) {
 
         int i;
         int a1, b1, c1, d1;
@@ -53,7 +53,7 @@ public class IDCT {
         }
 
         int diffo = 0;
-        int diff[][] = new int[4][4];
+        int[][] diff = new int[4][4];
         offset = 0;
         for (i = 0; i < 4; i++) {
             a1 = output[(offset * 4) + 0] + output[(offset * 4) + 2];
@@ -85,13 +85,13 @@ public class IDCT {
 
     }
 
-    public static int[][] iwalsh4x4(int input[]) {
+    public static int[][] iwalsh4x4(int[] input) {
         int i;
         int a1, b1, c1, d1;
         int a2, b2, c2, d2;
 
         int[] output = new int[16];
-        int diff[][] = new int[4][4];
+        int[][] diff = new int[4][4];
         int offset = 0;
         for (i = 0; i < 4; i++) {
             a1 = input[offset + 0] + input[offset + 12];

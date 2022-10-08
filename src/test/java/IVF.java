@@ -6,11 +6,11 @@ import net.sf.javavp8decoder.vp8Decoder.VP8Decoder;
 
 public class IVF {
 
-    private static int IVF_FRAME_HDR_SZ = 4 + 8;
-    private static int IVF_FILE_HDR_SZ = 32;
+    private static final int IVF_FRAME_HDR_SZ = 4 + 8;
+    private static final int IVF_FILE_HDR_SZ = 32;
 
     IVF() {
-        InputStream in = null;
+        InputStream in;
         try {
             in = getClass().getResourceAsStream("bbb.ivf");
             System.out.println("IVF");
@@ -62,9 +62,7 @@ public class IVF {
     }
 
     public String toHex(int c) {
-        String r = new String();
-        r = String.format("%1$#x ", c);
-        return r;
+        return String.format("%1$#x ", c);
     }
 
     private boolean readFileHeader(InputStream in) throws IOException {
@@ -77,5 +75,4 @@ public class IVF {
         System.out.println();
         return true;
     }
-
 }

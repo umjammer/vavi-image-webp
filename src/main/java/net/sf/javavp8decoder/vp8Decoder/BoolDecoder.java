@@ -22,15 +22,19 @@ import javax.imageio.stream.ImageInputStream;
 
 
 public class BoolDecoder {
-    int bit_count; /* # of bits shifted out of value, at most 7 */
+    /** # of bits shifted out of value, at most 7 */
+    int bit_count;
 
     ImageInputStream data;
 
-    private long offset; /* pointer to next compressed data byte */
+    /** pointer to next compressed data byte */
+    private long offset;
 
-    private int range; /* always identical to encoder's range */
+    /** always identical to encoder's range */
+    private int range;
 
-    private int value; /* contains at least 24 significant bits */
+    /** contains at least 24 significant bits */
+    private int value;
 
     BoolDecoder(ImageInputStream frame, long offset) throws IOException {
         this.data = frame;
@@ -40,15 +44,15 @@ public class BoolDecoder {
 
     private void initBoolDecoder() throws IOException {
 
-        value = 0; /* value = first 16 input bits */
+        value = 0; // value = first 16 input bits
 
         data.seek(offset);
         value = data.readUnsignedByte() << 8;
         // value = (data[offset]) << 8;
         offset++;
 
-        range = 255; /* initial range is full */
-        bit_count = 0; /* have not yet shifted out any bits */
+        range = 255; // initial range is full
+        bit_count = 0; // have not yet shifted out any bits
     }
 
     public int readBit() throws IOException {
@@ -94,9 +98,11 @@ public class BoolDecoder {
         return bit;
     }
 
-    /* Convenience function reads a "literal", that is, a "num_bits" wide
+    /**
+     * Convenience function reads a "literal", that is, a "num_bits" wide
      * unsigned value whose bits come high- to low-order, with each bit encoded
-     * at probability 128 (i.e., 1/2). */
+     * at probability 128 (i.e., 1/2).
+     */
     public int readLiteral(int num_bits) throws IOException {
         int v = 0;
         while (num_bits-- > 0)
@@ -104,9 +110,11 @@ public class BoolDecoder {
         return v;
     }
 
-    int readTree(int t[], /* tree specification */
-                 int p[] /* corresponding interior node probabilities */
-    ) throws IOException {
+    /**
+     * @param t tree specification
+     * @param p corresponding interior node probabilities
+     */
+    int readTree(int[] t, int[] p) throws IOException {
         int i = 0; /* begin at root */
 
         /* Descend tree until leaf is reached */
@@ -116,9 +124,11 @@ public class BoolDecoder {
 
     }
 
-    int readTreeSkip(int t[], /* tree specification */
-                     int p[], /* corresponding interior node probabilities */
-                     int skip_branches) throws IOException {
+    /**
+     * @param t tree specification
+     * @param p corresponding interior node probabilities
+     */
+    int readTreeSkip(int[] t, int[] p, int skip_branches) throws IOException {
         int i = skip_branches * 2; /* begin at root */
 
         /* Descend tree until leaf is reached */

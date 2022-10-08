@@ -17,9 +17,12 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 
 public class MacroBlock {
+
+    private static final Logger logger = Logger.getLogger(MacroBlock.class.getName());
 
     private int filterLevel;
 
@@ -55,8 +58,8 @@ public class MacroBlock {
         ySubBlocks = new SubBlock[4][4];
         uSubBlocks = new SubBlock[2][2];
         vSubBlocks = new SubBlock[2][2];
-        SubBlock above = null;
-        SubBlock left = null;
+        SubBlock above;
+        SubBlock left;
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -162,7 +165,7 @@ public class MacroBlock {
             int acQValue = frame.getSegmentQuants().getSegQuants()[this.getSegmentId()].getY2ac_delta_q();
             int dcQValue = frame.getSegmentQuants().getSegQuants()[this.getSegmentId()].getY2dc();
 
-            int input[] = new int[16];
+            int[] input = new int[16];
             input[0] = sb.getTokens()[0] * dcQValue;
 
             for (int x = 1; x < 16; x++)
@@ -239,15 +242,12 @@ public class MacroBlock {
     }
 
     public String getDebugString() {
-        String r = new String();
-        r = r + " YMode: " + Globals.getModeAsString(yMode);
-        r = r + "\n UVMode: " + Globals.getModeAsString(uvMode);
-        r = r + "\n SegmentID: " + segmentId;
-        r = r + "\n Filter Level: " + filterLevel;
-        r = r + "\n UV Filter Level: " + uVFilterLevel;
-        r = r + "\n Skip Coeff: " + skipCoeff;
-
-        return r;
+        return " YMode: " + Globals.getModeAsString(yMode)
+         + "\n UVMode: " + Globals.getModeAsString(uvMode)
+         + "\n SegmentID: " + segmentId
+         + "\n Filter Level: " + filterLevel
+         + "\n UV Filter Level: " + uVFilterLevel
+         + "\n Skip Coeff: " + skipCoeff;
     }
 
     public int getFilterLevel() {
@@ -399,7 +399,7 @@ public class MacroBlock {
 
         switch (this.uvMode) {
         case Globals.DC_PRED:
-            // System.out.println("UV DC_PRED");
+            logger.finer("UV DC_PRED");
 
             boolean up_available = false;
             boolean left_available = false;
@@ -447,12 +447,12 @@ public class MacroBlock {
                 expected_vdc = 128;
             }
 
-            int ufill[][] = new int[4][4];
+            int[][] ufill = new int[4][4];
             for (int y = 0; y < 4; y++)
                 for (int x = 0; x < 4; x++)
                     ufill[x][y] = expected_udc;
 
-            int vfill[][] = new int[4][4];
+            int[][] vfill = new int[4][4];
             for (int y = 0; y < 4; y++)
                 for (int x = 0; x < 4; x++)
                     vfill[x][y] = expected_vdc;
@@ -467,7 +467,7 @@ public class MacroBlock {
 
             break;
         case Globals.V_PRED:
-            // System.out.println("UV V_PRED");
+            logger.finer("UV V_PRED");
 
             SubBlock[] aboveUSb = new SubBlock[2];
             SubBlock[] aboveVSb = new SubBlock[2];
@@ -480,8 +480,8 @@ public class MacroBlock {
                 for (int x = 0; x < 2; x++) {
                     SubBlock usb = uSubBlocks[y][x];
                     SubBlock vsb = vSubBlocks[y][x];
-                    int ublock[][] = new int[4][4];
-                    int vblock[][] = new int[4][4];
+                    int[][] ublock = new int[4][4];
+                    int[][] vblock = new int[4][4];
                     for (int j = 0; j < 4; j++)
                         for (int i = 0; i < 4; i++) {
                             ublock[j][i] = aboveUSb[y].getMacroBlockPredict(Globals.V_PRED)[j][3];
@@ -494,7 +494,7 @@ public class MacroBlock {
             break;
 
         case Globals.H_PRED:
-            // System.out.println("UV H_PRED");
+            logger.finer("UV H_PRED");
 
             SubBlock[] leftUSb = new SubBlock[2];
             SubBlock[] leftVSb = new SubBlock[2];
@@ -507,8 +507,8 @@ public class MacroBlock {
                 for (int x = 0; x < 2; x++) {
                     SubBlock usb = uSubBlocks[x][y];
                     SubBlock vsb = vSubBlocks[x][y];
-                    int ublock[][] = new int[4][4];
-                    int vblock[][] = new int[4][4];
+                    int[][] ublock = new int[4][4];
+                    int[][] vblock = new int[4][4];
                     for (int j = 0; j < 4; j++)
                         for (int i = 0; i < 4; i++) {
                             ublock[i][j] = leftUSb[y].getMacroBlockPredict(Globals.H_PRED)[3][j];
@@ -521,7 +521,7 @@ public class MacroBlock {
             break;
         case Globals.TM_PRED:
             // TODO:
-            // System.out.println("UV TM_PRED MB");
+            logger.finer("UV TM_PRED MB");
             MacroBlock ALMb = frame.getMacroBlock(x - 1, y - 1);
             SubBlock ALUSb = ALMb.getUSubBlock(1, 1);
             int alu = ALUSb.getDest()[3][3];
@@ -571,7 +571,7 @@ public class MacroBlock {
 
         switch (this.yMode) {
         case Globals.DC_PRED:
-            // System.out.println("DC_PRED");
+            logger.finer("DC_PRED");
             boolean up_available = false;
             boolean left_available = false;
 
@@ -612,7 +612,7 @@ public class MacroBlock {
                 expected_dc = 128;
             }
 
-            int fill[][] = new int[4][4];
+            int[][] fill = new int[4][4];
             for (int y = 0; y < 4; y++)
                 for (int x = 0; x < 4; x++)
                     fill[x][y] = expected_dc;
@@ -624,7 +624,7 @@ public class MacroBlock {
 
             break;
         case Globals.V_PRED:
-            // System.out.println("V_PRED");
+            logger.finer("V_PRED");
 
             SubBlock[] aboveYSb = new SubBlock[4];
             for (int x = 0; x < 4; x++)
@@ -633,7 +633,7 @@ public class MacroBlock {
             for (int y = 0; y < 4; y++) {
                 for (int x = 0; x < 4; x++) {
                     SubBlock sb = ySubBlocks[x][y];
-                    int block[][] = new int[4][4];
+                    int[][] block = new int[4][4];
                     for (int j = 0; j < 4; j++)
                         for (int i = 0; i < 4; i++) {
                             block[i][j] = aboveYSb[x].getPredict(Globals.B_VE_PRED, false)[i][3];
@@ -646,7 +646,7 @@ public class MacroBlock {
             break;
 
         case Globals.H_PRED:
-            // System.out.println("H_PRED");
+            logger.finer("H_PRED");
 
             SubBlock[] leftYSb = new SubBlock[4];
             for (int x = 0; x < 4; x++)
@@ -655,7 +655,7 @@ public class MacroBlock {
             for (int y = 0; y < 4; y++)
                 for (int x = 0; x < 4; x++) {
                     SubBlock sb = ySubBlocks[x][y];
-                    int block[][] = new int[4][4];
+                    int[][] block = new int[4][4];
                     for (int j = 0; j < 4; j++)
                         for (int i = 0; i < 4; i++) {
                             block[i][j] = leftYSb[y].getPredict(Globals.B_DC_PRED, true)[3][j];
@@ -669,7 +669,7 @@ public class MacroBlock {
 
             break;
         case Globals.TM_PRED:
-            // System.out.println("TM_PRED MB");
+            logger.finer("TM_PRED MB");
             MacroBlock ALMb = frame.getMacroBlock(x - 1, y - 1);
             SubBlock ALSb = ALMb.getYSubBlock(3, 3);
             int al = ALSb.getDest()[3][3];

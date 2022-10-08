@@ -16,7 +16,6 @@
 
 package net.sf.javavp8decoder.vp8Decoder;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -28,6 +27,7 @@ public class VP8Decoder {
 
     VP8Frame f;
 
+    @SuppressWarnings("unused")
     private int frameCount = 0;
 
     public VP8Decoder() {
@@ -55,34 +55,24 @@ public class VP8Decoder {
         return f.getWidth();
     }
 
-    @SuppressWarnings("unused")
-    private void writeFile(int[][] data) {
-        FileOutputStream out;
-        try {
-            out = new FileOutputStream("outagain.raw");
+    public void writeFile(int[][] data) throws IOException {
+        try (FileOutputStream out = new FileOutputStream("outagain.raw")) {
             for (int y = 0; y < data[0].length; y++)
                 for (int x = 0; x < data.length; x++) {
                     out.write(data[x][y]);
                     out.write(data[x][y]);
                     out.write(data[x][y]);
                 }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
-    public void writePGMFile(String fileName, VP8Frame frame) {
-
-        FileOutputStream out;
-        try {
-            int[][] yData = frame.getYBuffer();
-            int[][] uData = frame.getUBuffer();
-            int[][] vData = frame.getVBuffer();
-            int outStride = (f.getWidth() + 1) & ~1;
-            int uvHeight = (f.getHeight() + 1) / 2;
-            out = new FileOutputStream(fileName);
+    public void writePGMFile(String fileName, VP8Frame frame) throws IOException {
+        int[][] yData = frame.getYBuffer();
+        int[][] uData = frame.getUBuffer();
+        int[][] vData = frame.getVBuffer();
+        int outStride = (f.getWidth() + 1) & ~1;
+        int uvHeight = (f.getHeight() + 1) / 2;
+        try (FileOutputStream out = new FileOutputStream(fileName)) {
             out.write((byte) 'P');
             out.write((byte) '5');
             out.write((byte) 0x0a);
@@ -108,24 +98,15 @@ public class VP8Decoder {
                 for (int x = 0; x < (f.getWidth() + 1) / 2; x++) {
                     out.write(vData[x][y]);
                 }
-
             }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
-    public void writeYV12File(String fileName, VP8Frame frame) {
-
-        FileOutputStream out;
-        try {
-            int[][] yData = frame.getYBuffer();
-            int[][] uData = frame.getUBuffer();
-            int[][] vData = frame.getVBuffer();
-            out = new FileOutputStream(fileName);
+    public void writeYV12File(String fileName, VP8Frame frame) throws IOException {
+        int[][] yData = frame.getYBuffer();
+        int[][] uData = frame.getUBuffer();
+        int[][] vData = frame.getVBuffer();
+        try (FileOutputStream out = new FileOutputStream(fileName)) {
             out.write((byte) 'P');
             out.write((byte) '5');
             out.write((byte) 0x0a);
@@ -150,10 +131,6 @@ public class VP8Decoder {
                 for (int x = 0; x < (f.getWidth() + 1) / 2; x++) {
                     out.write(vData[x][y]);
                 }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

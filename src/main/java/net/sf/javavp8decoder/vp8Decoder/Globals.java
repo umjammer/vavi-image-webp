@@ -111,7 +111,7 @@ public class Globals {
 
     public static final int MB_FEATURE_TREE_PROBS = 3;
 
-    public static int macroBlockSegmentTree[] = {
+    public static int[] macroBlockSegmentTree = {
         2, 4,
         /* root: "0", "1" subtrees */
         -0, -1,
@@ -120,11 +120,11 @@ public class Globals {
             /* "10" = 2nd value, "11" = 3rd value */
     };
 
-    public static int vp8KeyFrameYModeTree[] = {
+    public static int[] vp8KeyFrameYModeTree = {
         -B_PRED, 2, 4, 6, -DC_PRED, -V_PRED, -H_PRED, -TM_PRED
     };
 
-    public static int vp8SubBlockModeTree[] = {
+    public static int[] vp8SubBlockModeTree = {
         -B_DC_PRED, 2, /* B_DC_PRED =
                         * "0" */
         -B_TM_PRED, 4, /* B_TM_PRED = "10" */
@@ -136,23 +136,23 @@ public class Globals {
         -B_HD_PRED, -B_HU_PRED /* HD = "11111110", HU = "11111111" */
     };
 
-    public static int vp8KeyFrameYModeProb[] = {
+    public static int[] vp8KeyFrameYModeProb = {
         145, 156, 163, 128
     };
 
     // uv
-    public static int vp8UVModeTree[] = {
+    public static int[] vp8UVModeTree = {
         -DC_PRED, 2, /* root: DC_PRED = "0",
                       * "1" subtree */
         -V_PRED, 4, /* "1" subtree: V_PRED = "10", "11" subtree */
         -H_PRED, -TM_PRED /* "11" subtree: H_PRED = "110", TM_PRED = "111" */
     };
 
-    public static int vp8KeyFrameUVModeProb[] = {
+    public static int[] vp8KeyFrameUVModeProb = {
         142, 114, 183
     };
 
-    public static int vp8KeyFrameSubBlockModeProb[][][] = {
+    public static int[][][] vp8KeyFrameSubBlockModeProb = {
         {
             {
                 231, 120, 48, 89, 115, 113, 120, 152, 112
@@ -376,7 +376,7 @@ public class Globals {
         }
     };
 
-    static int vp8CoefUpdateProbs[][][][] = new int[][][][] {
+    static int[][][][] vp8CoefUpdateProbs = new int[][][][] {
         {
             {
                 {
@@ -649,16 +649,15 @@ public class Globals {
     };
 
     public static int[][][][] getDefaultCoefProbs() {
-        int r[][][][] = new int[vp8DefaultCoefProbs.length][vp8DefaultCoefProbs[0].length][vp8DefaultCoefProbs[0][0].length][vp8DefaultCoefProbs[0][0][0].length];
+        int[][][][] r = new int[vp8DefaultCoefProbs.length][vp8DefaultCoefProbs[0].length][vp8DefaultCoefProbs[0][0].length][vp8DefaultCoefProbs[0][0][0].length];
         for (int i = 0; i < vp8DefaultCoefProbs.length; i++)
             for (int j = 0; j < vp8DefaultCoefProbs[0].length; j++)
                 for (int k = 0; k < vp8DefaultCoefProbs[0][0].length; k++)
-                    for (int l = 0; l < vp8DefaultCoefProbs[0][0][0].length; l++)
-                        r[i][j][k][l] = vp8DefaultCoefProbs[i][j][k][l];
+                    System.arraycopy(vp8DefaultCoefProbs[i][j][k], 0, r[i][j][k], 0, vp8DefaultCoefProbs[0][0][0].length);
         return r;
     }
 
-    private static int vp8DefaultCoefProbs[][][][] = new int[][][][] {
+    private static final int[][][][] vp8DefaultCoefProbs = new int[][][][] {
         {
             {
                 {
@@ -954,7 +953,7 @@ public class Globals {
 
     public static final int dct_eob = 11; /* end of block */
 
-    public static final int vp8CoefTree[] = {
+    public static final int[] vp8CoefTree = {
         -dct_eob, 2, /* eob = "0" */
         -DCT_0, 4, /* 0 = "10" */
         -DCT_1, 6, /* 1 = "110" */
@@ -965,7 +964,7 @@ public class Globals {
         -dct_cat5, -dct_cat6 /* cat4 = "1111110", cat4 = "1111111" */
     };
 
-    public static final int vp8CoefTreeNoEOB[] = {
+    public static final int[] vp8CoefTreeNoEOB = {
         // -dct_eob, 2, /* eob = "0" */
         -DCT_0, 4, /* 0 = "10" */
         -DCT_1, 6, /* 1 = "110" */
@@ -976,39 +975,39 @@ public class Globals {
         -dct_cat5, -dct_cat6 /* cat4 = "1111110", cat4 = "1111111" */
     };
 
-    public final static int Pcat1[] = {
+    public final static int[] Pcat1 = {
         159, 0
     };
 
-    public final static int Pcat2[] = {
+    public final static int[] Pcat2 = {
         165, 145, 0
     };
 
-    public final static int Pcat3[] = {
+    public final static int[] Pcat3 = {
         173, 148, 140, 0
     };
 
-    public final static int Pcat4[] = {
+    public final static int[] Pcat4 = {
         176, 155, 140, 135, 0
     };
 
-    public final static int Pcat5[] = {
+    public final static int[] Pcat5 = {
         180, 157, 141, 134, 130, 0
     };
 
-    public final static int Pcat6[] = {
+    public final static int[] Pcat6 = {
         254, 254, 243, 230, 196, 177, 153, 140, 133, 130, 129, 0
     };
 
-    public static final int vp8CoefBands[] = {
+    public static final int[] vp8CoefBands = {
         0, 1, 2, 3, 6, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 7
     };
 
-    public static final int vp8defaultZigZag1d[] = {
+    public static final int[] vp8defaultZigZag1d = {
         0, 1, 4, 8, 5, 2, 3, 6, 9, 12, 13, 10, 7, 11, 14, 15,
     };
 
-    public static final int vp8dxBitreaderNorm[] = {
+    public static final int[] vp8dxBitreaderNorm = {
         0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2,
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1018,7 +1017,7 @@ public class Globals {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-    public static final int vp8DcQLookup[] = {
+    public static final int[] vp8DcQLookup = {
         4, 5, 6, 7, 8, 9, 10, 10, 11, 12, 13, 14, 15, 16, 17, 17, 18, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 25, 25, 26, 27,
         28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
         56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 76, 77, 78, 79, 80, 81, 82, 83, 84,
@@ -1026,7 +1025,7 @@ public class Globals {
         132, 134, 136, 138, 140, 143, 145, 148, 151, 154, 157,
     };
 
-    public static final int vp8AcQLookup[] = {
+    public static final int[] vp8AcQLookup = {
         4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
         35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 60, 62, 64, 66, 68, 70,
         72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 119, 122, 125, 128,
@@ -1035,7 +1034,7 @@ public class Globals {
     };
 
     public static String toHex(int c) {
-        String r = new String();
+        String r = "";
         r = String.format("%1$#x ", c);
         return r;
     }

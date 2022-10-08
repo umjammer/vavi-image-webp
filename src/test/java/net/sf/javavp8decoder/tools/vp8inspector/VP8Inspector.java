@@ -68,9 +68,8 @@ import net.sf.javavp8decoder.vp8Decoder.VP8Frame;
 
 
 public class VP8Inspector extends JFrame implements MouseMotionListener, MouseListener, MouseWheelListener, ActionListener {
-    /**
-     *
-     */
+
+    /** */
     private static final long serialVersionUID = 1L;
 
     private BufferedImage bi;
@@ -214,7 +213,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
         this.setJMenuBar(menuBar);
 
         progressBar = new JProgressBar();
-        progressBar.setValue(00);
+        progressBar.setValue(0);
         progressBar.setPreferredSize(new Dimension(18, 18));
         progressBar.setStringPainted(true);
 
@@ -606,7 +605,6 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
                             }
                         }
                     }
-                    ;
                     progressBar.setVisible(false);
                     progressBar.setValue(0);
                     setTitle("VP8Inspector - " + currentFile.getName());
@@ -726,5 +724,4 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
         }
         jp.repaint();
     }
-
 }

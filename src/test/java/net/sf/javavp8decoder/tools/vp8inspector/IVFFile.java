@@ -8,9 +8,9 @@ import java.io.IOException;
 
 
 public class IVFFile {
-    private static int IVF_FRAME_HDR_SZ = (4 + 8);
+    private static final int IVF_FRAME_HDR_SZ = (4 + 8);
 
-    private static int IVF_FILE_HDR_SZ = (32);
+    private static final int IVF_FILE_HDR_SZ = (32);
 
     File file;
 

@@ -34,9 +34,7 @@ public class SegmentQuant {
     private int y2dc;
 
     private int clip(int val, int max) {
-        int r = val;
-        if (val > max)
-            r = max;
+        int r = Math.min(val, max);
         if (r < 0)
             r = 0;
         return r;
