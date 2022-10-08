@@ -3,7 +3,7 @@
 
   <groupId>net.sf.javavp8decoder</groupId>
   <artifactId>javavp8decoder</artifactId>
-  <version>0.2.3-SNAPSHOT</version>
+  <version>0.2.3</version>
 
   <name>Java VP8 Decoder</name>
   <scm>
