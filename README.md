@@ -6,6 +6,8 @@
 
 # javavp8decoder
 
+<img src="https://upload.wikimedia.org/wikipedia/commons/0/00/WebP_logo_2010.png" width="160" />
+
 An implementation of the VP8 image/video codec in _**pure Java**_.
 
 ## Install
