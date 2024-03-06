@@ -54,7 +54,7 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
         "image/webp"
     };
     static final String[] names = {
-        "webp"
+        "webp", "WEBP"
     };
     static final String nativeImageMetadataFormatClassName = "net.sf.javavp8decoder.imageio.WebPMetadata_0.1";
     static final String nativeImageMetadataFormatName = "net.sf.javavp8decoder.imageio.WebPMetadata_0.1";
