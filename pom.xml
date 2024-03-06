@@ -15,28 +15,70 @@
   </issueManagement>
   <description>pure Java webp Decoder</description>
 
+  <profiles>
+    <profile>
+      <id>mac arm64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <native.prefix>/opt/homebrew</native.prefix>
+      </properties>
+    </profile>
+  </profiles>
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.10.1</version>
+        <version>3.11.0</version>
         <configuration>
-          <source>8</source>
-          <target>8</target>
-          <encoding>UTF-8</encoding>
+          <release>17</release>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M7</version>
+        <version>3.2.2</version>
         <configuration>
           <argLine>
             -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
+            -Dvavi.test.version=${project.version}
           </argLine>
           <trimStackTrace>false</trimStackTrace>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <target>
+                <java classname="Integration" fork="true">
+                  <classpath>
+                    <path location="${project.build.directory}/${project.artifactId}-${project.version}.jar"/>
+                    <path refid="maven.test.classpath"/>
+                  </classpath>
+                  <jvmarg value="-ea" />
+                  <arg value="${project.version}" />
+                </java>
+              </target>
+              <failOnError>true</failOnError>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -53,7 +95,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.9.1</version>
+        <version>5.10.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -86,7 +128,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.8</version>
+      <version>1.1.10</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
