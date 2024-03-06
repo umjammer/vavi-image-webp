@@ -75,12 +75,12 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
               extraImageMetadataFormatClassNames);
     }
 
+    @Override
     public boolean canDecodeInput(Object input) {
-        if (!(input instanceof ImageInputStream)) {
+        if (!(input instanceof ImageInputStream stream)) {
             return false;
         }
 
-        ImageInputStream stream = (ImageInputStream) input;
         byte[] b = new byte[8];
         try {
             stream.mark();
@@ -93,10 +93,12 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
         return (b[0] == (byte) 'R' && b[1] == (byte) 'I' && b[2] == (byte) 'F' && b[3] == (byte) 'F');
     }
 
+    @Override
     public ImageReader createReaderInstance(Object extension) {
         return new WebPImageReader(this);
     }
 
+    @Override
     public String getDescription(Locale locale) {
         // Localize as appropriate
         return "Description goes here";

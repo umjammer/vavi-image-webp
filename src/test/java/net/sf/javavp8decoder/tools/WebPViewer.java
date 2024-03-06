@@ -1,17 +1,18 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.sf.javavp8decoder.tools;
@@ -33,6 +34,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -61,6 +63,7 @@ import net.sf.javavp8decoder.imageio.WebPImageReaderSpi;
 public class WebPViewer extends JFrame implements MouseMotionListener, MouseListener, MouseWheelListener, ActionListener {
 
     /** */
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public static void main(String[] args) {
@@ -86,6 +89,7 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
 
         app = new WebPViewer();
         app.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
             }
@@ -96,25 +100,25 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
 
     private final JFileChooser fc = new JFileChooser();
 
-    private JButton fileOpenButton = new JButton("Open");
+    private final JButton fileOpenButton = new JButton("Open");
 
-    private JMenuItem fileOpenMenu;
+    private final JMenuItem fileOpenMenu;
 
     private JPanel jp;
 
-    JMenuBar menuBar;
+    final JMenuBar menuBar;
 
-    private WebPViewer panel;
+    private final WebPViewer panel;
 
     private Point prevP;
 
-    JProgressBar progressBar;
+    final JProgressBar progressBar;
 
     private float scale = 1.0f;
 
-    private JScrollPane sp;
+    private final JScrollPane sp;
 
-    JToolBar toolBar;
+    final JToolBar toolBar;
 
     WebPViewer() {
         panel = this;
@@ -152,16 +156,19 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
         this.setSize(800, 600);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (jp != null)
             jp.repaint();
         if (e.getSource() == fileOpenMenu || e.getSource() == fileOpenButton && !progressBar.isVisible()) {
 
             fc.setFileFilter(new FileFilter() {
+                @Override
                 public boolean accept(File f) {
                     return f.isDirectory() || f.getName().toLowerCase().endsWith(".webp");
                 }
 
+                @Override
                 public String getDescription() {
                     return "webp image files";
                 }
@@ -180,9 +187,10 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
         }
     }
 
-    private void loadImageData(final File f) {
+    private void loadImageData(File f) {
 
         new Thread() {
+            @Override
             public void run() {
                 // File f = new File("src/test/resources/testdata/samples/1_original.webp");
                 try {
@@ -196,31 +204,40 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
                     imageReader.setInput(iis, false);
 
                     imageReader.addIIOReadProgressListener(new IIOReadProgressListener() {
+                        @Override
                         public void imageComplete(ImageReader source) {
                         }
 
+                        @Override
                         public void imageProgress(ImageReader source, float percentageDone) {
                             progressBar.setValue((int) percentageDone);
                         }
 
+                        @Override
                         public void imageStarted(ImageReader source, int imageIndex) {
                         }
 
+                        @Override
                         public void readAborted(ImageReader source) {
                         }
 
+                        @Override
                         public void sequenceComplete(ImageReader source) {
                         }
 
+                        @Override
                         public void sequenceStarted(ImageReader source, int minIndex) {
                         }
 
+                        @Override
                         public void thumbnailComplete(ImageReader source) {
                         }
 
+                        @Override
                         public void thumbnailProgress(ImageReader source, float percentageDone) {
                         }
 
+                        @Override
                         public void thumbnailStarted(ImageReader source, int imageIndex, int thumbnailIndex) {
                         }
                     });
@@ -229,14 +246,16 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
                         /**
                          *
                          */
+                        @Serial
                         private static final long serialVersionUID = 1L;
 
-                        private BufferedImage bi;
+                        private final BufferedImage bi;
 
                         public ImagePanel(BufferedImage bi) {
                             this.bi = bi;
                         }
 
+                        @Override
                         public void paintComponent(Graphics g) {
                             super.paintComponent(g);
                             BufferedImage bi = this.bi;
@@ -280,9 +299,11 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
 
     }
 
+    @Override
     public void mouseClicked(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         if (prevP == null) {
             prevP = new Point(e.getXOnScreen(), e.getYOnScreen());
@@ -299,25 +320,31 @@ public class WebPViewer extends JFrame implements MouseMotionListener, MouseList
         setCursor(new Cursor(Cursor.MOVE_CURSOR));
     }
 
+    @Override
     public void mouseEntered(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseExited(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
 
     }
 
+    @Override
     public void mousePressed(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent arg0) {
         prevP = null;
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         jp.repaint();
     }
 
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         jp.repaint();
         scale = scale - scale * ((e.getWheelRotation() * 0.1f));

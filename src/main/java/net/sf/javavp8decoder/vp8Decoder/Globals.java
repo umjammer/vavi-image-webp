@@ -1,17 +1,18 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.sf.javavp8decoder.vp8Decoder;
@@ -34,19 +35,14 @@ public class Globals {
                                          * predicted */
 
     public static String getModeAsString(int mode) {
-        switch (mode) {
-        case DC_PRED:
-            return "DC_PRED";
-        case V_PRED:
-            return "V_PRED";
-        case H_PRED:
-            return "H_PRED";
-        case TM_PRED:
-            return "TM_PRED";
-        case B_PRED:
-            return "B_PRED";
-        }
-        return "not found";
+        return switch (mode) {
+            case DC_PRED -> "DC_PRED";
+            case V_PRED -> "V_PRED";
+            case H_PRED -> "H_PRED";
+            case TM_PRED -> "TM_PRED";
+            case B_PRED -> "B_PRED";
+            default -> "not found";
+        };
     }
 
     /* intra_bmode */
@@ -76,42 +72,32 @@ public class Globals {
     public static final int B_HU_PRED = 9; /* ENE (horizontal up) "" */
 
     public static String getSubBlockModeAsString(int mode) {
-        switch (mode) {
-        case B_DC_PRED:
-            return "B_DC_PRED";
-        case B_TM_PRED:
-            return "B_TM_PRED";
-        case B_VE_PRED:
-            return "B_VE_PRED";
-        case B_HE_PRED:
-            return "B_HE_PRED";
-        case B_LD_PRED:
-            return "B_LD_PRED";
-        case B_RD_PRED:
-            return "B_RD_PRED";
-        case B_VR_PRED:
-            return "B_VR_PRED";
-        case B_VL_PRED:
-            return "B_VL_PRED";
-        case B_HD_PRED:
-            return "B_HD_PRED";
-        case B_HU_PRED:
-            return "B_HU_PRED";
-        }
-        return "not found";
+        return switch (mode) {
+            case B_DC_PRED -> "B_DC_PRED";
+            case B_TM_PRED -> "B_TM_PRED";
+            case B_VE_PRED -> "B_VE_PRED";
+            case B_HE_PRED -> "B_HE_PRED";
+            case B_LD_PRED -> "B_LD_PRED";
+            case B_RD_PRED -> "B_RD_PRED";
+            case B_VR_PRED -> "B_VR_PRED";
+            case B_VL_PRED -> "B_VL_PRED";
+            case B_HD_PRED -> "B_HD_PRED";
+            case B_HU_PRED -> "B_HU_PRED";
+            default -> "not found";
+        };
     }
 
     public static final int MAX_MB_SEGMENTS = 4;
 
     public static final int MB_LVL_MAX = 2;
 
-    public static int[] vp8MacroBlockFeatureDataBits = {
+    public static final int[] vp8MacroBlockFeatureDataBits = {
         7, 6
     };
 
     public static final int MB_FEATURE_TREE_PROBS = 3;
 
-    public static int[] macroBlockSegmentTree = {
+    public static final int[] macroBlockSegmentTree = {
         2, 4,
         /* root: "0", "1" subtrees */
         -0, -1,
@@ -120,11 +106,11 @@ public class Globals {
             /* "10" = 2nd value, "11" = 3rd value */
     };
 
-    public static int[] vp8KeyFrameYModeTree = {
+    public static final int[] vp8KeyFrameYModeTree = {
         -B_PRED, 2, 4, 6, -DC_PRED, -V_PRED, -H_PRED, -TM_PRED
     };
 
-    public static int[] vp8SubBlockModeTree = {
+    public static final int[] vp8SubBlockModeTree = {
         -B_DC_PRED, 2, /* B_DC_PRED =
                         * "0" */
         -B_TM_PRED, 4, /* B_TM_PRED = "10" */
@@ -136,23 +122,23 @@ public class Globals {
         -B_HD_PRED, -B_HU_PRED /* HD = "11111110", HU = "11111111" */
     };
 
-    public static int[] vp8KeyFrameYModeProb = {
+    public static final int[] vp8KeyFrameYModeProb = {
         145, 156, 163, 128
     };
 
     // uv
-    public static int[] vp8UVModeTree = {
+    public static final int[] vp8UVModeTree = {
         -DC_PRED, 2, /* root: DC_PRED = "0",
                       * "1" subtree */
         -V_PRED, 4, /* "1" subtree: V_PRED = "10", "11" subtree */
         -H_PRED, -TM_PRED /* "11" subtree: H_PRED = "110", TM_PRED = "111" */
     };
 
-    public static int[] vp8KeyFrameUVModeProb = {
+    public static final int[] vp8KeyFrameUVModeProb = {
         142, 114, 183
     };
 
-    public static int[][][] vp8KeyFrameSubBlockModeProb = {
+    public static final int[][][] vp8KeyFrameSubBlockModeProb = {
         {
             {
                 231, 120, 48, 89, 115, 113, 120, 152, 112
@@ -376,7 +362,7 @@ public class Globals {
         }
     };
 
-    static int[][][][] vp8CoefUpdateProbs = new int[][][][] {
+    static final int[][][][] vp8CoefUpdateProbs = new int[][][][] {
         {
             {
                 {

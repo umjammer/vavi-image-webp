@@ -1,17 +1,18 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.sf.javavp8decoder.vp8Decoder;
@@ -34,21 +35,22 @@ public class MacroBlock {
 
     private boolean skipInnerLoopFilter;
 
-    SubBlock[][] uSubBlocks;
+    final SubBlock[][] uSubBlocks;
 
     private int uVFilterLevel;
 
     private int uvMode;
 
-    SubBlock[][] vSubBlocks;
+    final SubBlock[][] vSubBlocks;
 
-    private int x, y;
+    private final int x;
+    private final int y;
 
-    SubBlock y2SubBlock;
+    final SubBlock y2SubBlock;
 
     private int yMode;
 
-    SubBlock[][] ySubBlocks;
+    final SubBlock[][] ySubBlocks;
 
     MacroBlock(int x, int y, boolean keepDebugInfo) {
         this.x = x - 1;
@@ -288,18 +290,12 @@ public class MacroBlock {
     }
 
     public SubBlock getSubBlock(SubBlock.PLANE plane, int i, int j) {
-        switch (plane) {
-        case Y1:
-            return getYSubBlock(i, j);
-        case U:
-            return getUSubBlock(i, j);
-
-        case V:
-            return getVSubBlock(i, j);
-        case Y2:
-            return getY2SubBlock();
-        }
-        return null;
+        return switch (plane) {
+            case Y1 -> getYSubBlock(i, j);
+            case U -> getUSubBlock(i, j);
+            case V -> getVSubBlock(i, j);
+            case Y2 -> getY2SubBlock();
+        };
     }
 
     public int getSubblockX(SubBlock sb) {
@@ -398,7 +394,7 @@ public class MacroBlock {
         MacroBlock leftMb = frame.getMacroBlock(x - 1, y);
 
         switch (this.uvMode) {
-        case Globals.DC_PRED:
+        case Globals.DC_PRED: {
             logger.finer("UV DC_PRED");
 
             boolean up_available = false;
@@ -466,7 +462,8 @@ public class MacroBlock {
                 }
 
             break;
-        case Globals.V_PRED:
+        }
+        case Globals.V_PRED: {
             logger.finer("UV V_PRED");
 
             SubBlock[] aboveUSb = new SubBlock[2];
@@ -492,8 +489,8 @@ public class MacroBlock {
                 }
 
             break;
-
-        case Globals.H_PRED:
+        }
+        case Globals.H_PRED: {
             logger.finer("UV H_PRED");
 
             SubBlock[] leftUSb = new SubBlock[2];
@@ -519,7 +516,8 @@ public class MacroBlock {
                 }
 
             break;
-        case Globals.TM_PRED:
+        }
+        case Globals.TM_PRED: {
             // TODO:
             logger.finer("UV TM_PRED MB");
             MacroBlock ALMb = frame.getMacroBlock(x - 1, y - 1);
@@ -528,10 +526,10 @@ public class MacroBlock {
             SubBlock ALVSb = ALMb.getVSubBlock(1, 1);
             int alv = ALVSb.getDest()[3][3];
 
-            aboveUSb = new SubBlock[2];
-            leftUSb = new SubBlock[2];
-            aboveVSb = new SubBlock[2];
-            leftVSb = new SubBlock[2];
+            SubBlock[] aboveUSb = new SubBlock[2];
+            SubBlock[] leftUSb = new SubBlock[2];
+            SubBlock[] aboveVSb = new SubBlock[2];
+            SubBlock[] leftVSb = new SubBlock[2];
             for (int x = 0; x < 2; x++) {
                 aboveUSb[x] = aboveMb.getUSubBlock(x, 1);
                 leftUSb[x] = leftMb.getUSubBlock(1, x);
@@ -559,6 +557,7 @@ public class MacroBlock {
             }
 
             break;
+        }
         default:
             System.out.println("TODO predict_mb_uv: " + this.yMode);
             System.exit(0);

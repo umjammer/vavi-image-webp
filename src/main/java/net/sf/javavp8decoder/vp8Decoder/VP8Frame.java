@@ -1,18 +1,19 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package net.sf.javavp8decoder.vp8Decoder;
 
@@ -391,24 +392,21 @@ public class VP8Frame {
     }
 
     public void fireLFProgressUpdate(float p) {
-        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
-        while (listeners.hasNext()) {
-            listeners.next().imageProgress(null, (100f / buffersToCreate) + (p / buffersToCreate));
+        for (IIOReadProgressListener listener : _listeners) {
+            listener.imageProgress(null, (100f / buffersToCreate) + (p / buffersToCreate));
         }
     }
 
     private void fireProgressUpdate(int mb_row) {
-        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
-        while (listeners.hasNext()) {
-            listeners.next().imageProgress(null,
-                                           (100.0f * ((float) (mb_row + 1) / (float) getMacroBlockRows())) / buffersToCreate);
+        for (IIOReadProgressListener listener : _listeners) {
+            listener.imageProgress(null,
+                    (100.0f * ((float) (mb_row + 1) / (float) getMacroBlockRows())) / buffersToCreate);
         }
     }
 
     public void fireRGBProgressUpdate(float p) {
-        java.util.Iterator<IIOReadProgressListener> listeners = _listeners.iterator();
-        while (listeners.hasNext()) {
-            listeners.next().imageProgress(null, ((bufferCount + 4) * (100f / buffersToCreate)) + (p / buffersToCreate));
+        for (IIOReadProgressListener listener : _listeners) {
+            listener.imageProgress(null, ((bufferCount + 4) * (100f / buffersToCreate)) + (p / buffersToCreate));
         }
     }
 
@@ -488,12 +486,12 @@ public class VP8Frame {
         return r;
     }
 
-    private boolean getBit(int data, int bit) {
+    private static boolean getBit(int data, int bit) {
         int r = data & (1 << bit);
         return r > 0;
     }
 
-    private int getBitAsInt(int data, int bit) {
+    private static int getBitAsInt(int data, int bit) {
         int r = data & (1 << bit);
         if (r > 0)
             return 1;
@@ -1055,25 +1053,14 @@ public class VP8Frame {
                         mb.setFilterLevel(level);
                     }
                 } else {
-                    int BMode;
+                    int BMode = switch (y_mode) {
+                        case Globals.DC_PRED -> Globals.B_DC_PRED;
+                        case Globals.V_PRED -> Globals.B_VE_PRED;
+                        case Globals.H_PRED -> Globals.B_HE_PRED;
+                        case Globals.TM_PRED -> Globals.B_TM_PRED;
+                        default -> Globals.B_DC_PRED;
+                    };
 
-                    switch (y_mode) {
-                    case Globals.DC_PRED:
-                        BMode = Globals.B_DC_PRED;
-                        break;
-                    case Globals.V_PRED:
-                        BMode = Globals.B_VE_PRED;
-                        break;
-                    case Globals.H_PRED:
-                        BMode = Globals.B_HE_PRED;
-                        break;
-                    case Globals.TM_PRED:
-                        BMode = Globals.B_TM_PRED;
-                        break;
-                    default:
-                        BMode = Globals.B_DC_PRED;
-                        break;
-                    }
                     for (int x = 0; x < 4; x++) {
                         for (int y = 0; y < 4; y++) {
                             SubBlock sb = mb.getYSubBlock(x, y);
@@ -1094,17 +1081,17 @@ public class VP8Frame {
 
     }
 
-    private int readSubBlockMode(BoolDecoder bc, int A, int L) throws IOException {
+    private static int readSubBlockMode(BoolDecoder bc, int A, int L) throws IOException {
         int i = bc.readTree(Globals.vp8SubBlockModeTree, Globals.vp8KeyFrameSubBlockModeProb[A][L]);
         return i;
     }
 
-    private int readUvMode(BoolDecoder bc) throws IOException {
+    private static int readUvMode(BoolDecoder bc) throws IOException {
         int i = bc.readTree(Globals.vp8UVModeTree, Globals.vp8KeyFrameUVModeProb);
         return i;
     }
 
-    private int readYMode(BoolDecoder bc) throws IOException {
+    private static int readYMode(BoolDecoder bc) throws IOException {
         int i = bc.readTree(Globals.vp8KeyFrameYModeTree, Globals.vp8KeyFrameYModeProb);
         return i;
     }

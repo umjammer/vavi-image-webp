@@ -1,17 +1,18 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.sf.javavp8decoder.imageio;
@@ -54,10 +55,11 @@ public class WebPMetadata extends IIOMetadata {
               extraMetadataFormatClassNames);
     }
 
-    private void fatal(Node node, String reason) throws IIOInvalidTreeException {
+    private static void fatal(Node node, String reason) throws IIOInvalidTreeException {
         throw new IIOInvalidTreeException(reason, node);
     }
 
+    @Override
     public Node getAsTree(String formatName) {
         if (!formatName.equals(nativeMetadataFormatName)) {
             throw new IllegalArgumentException("Bad format name!");
@@ -79,6 +81,7 @@ public class WebPMetadata extends IIOMetadata {
         return root;
     }
 
+    @Override
     public IIOMetadataFormat getMetadataFormat(String formatName) {
         if (!formatName.equals(nativeMetadataFormatName)) {
             throw new IllegalArgumentException("Bad format name!");
@@ -86,10 +89,12 @@ public class WebPMetadata extends IIOMetadata {
         return WebPMetadataFormat.getDefaultInstance();
     }
 
+    @Override
     public boolean isReadOnly() {
         return false;
     }
 
+    @Override
     public void mergeTree(String formatName, Node root) throws IIOInvalidTreeException {
         if (!formatName.equals(nativeMetadataFormatName)) {
             throw new IllegalArgumentException("Bad format name!");
@@ -120,6 +125,7 @@ public class WebPMetadata extends IIOMetadata {
         }
     }
 
+    @Override
     public void reset() {
         this.keywords = new ArrayList<>();
         this.values = new ArrayList<>();

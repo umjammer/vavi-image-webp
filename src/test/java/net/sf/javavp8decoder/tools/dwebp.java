@@ -1,23 +1,23 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.sf.javavp8decoder.tools;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -29,10 +29,10 @@ import net.sf.javavp8decoder.vp8Decoder.VP8Decoder;
 public class dwebp {
     private static ImageInputStream getFrame(FileInputStream in) throws IOException {
         ImageInputStream iis = ImageIO.createImageInputStream(in);
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
         int frameSize = in.read();
         frameSize += in.read() << 8;
         frameSize += in.read() << 16;
@@ -65,9 +65,6 @@ public class dwebp {
             f.decodeFrame(frameData, false);
             f.writePGMFile(outname, f.getFrame());
 
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -75,10 +72,10 @@ public class dwebp {
     }
 
     private static boolean readFileHeader(FileInputStream in) throws IOException {
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
         System.out.println();
         int frameSize = in.read();
         frameSize += in.read() << 8;
@@ -86,10 +83,10 @@ public class dwebp {
         frameSize += in.read() << 24;
         System.out.print("RIFF IMAGE DATA SIZE: " + frameSize);
         System.out.println();
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
-        System.out.print("" + toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
+        System.out.print(toHex(in.read()));
         System.out.println();
         return true;
     }
