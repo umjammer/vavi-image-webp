@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-image-webp</artifactId>
-  <version>0.2.4</version>
+  <version>0.2.5</version>
 
   <name>Java VP8 Decoder</name>
   <scm>
