@@ -1,17 +1,18 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.sf.javavp8decoder.tools.vp8inspector;
@@ -36,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -70,27 +72,28 @@ import net.sf.javavp8decoder.vp8Decoder.VP8Frame;
 public class VP8Inspector extends JFrame implements MouseMotionListener, MouseListener, MouseWheelListener, ActionListener {
 
     /** */
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private BufferedImage bi;
 
-    private JCheckBox colorCodeCheckBox = new JCheckBox("Colour Code");
+    private final JCheckBox colorCodeCheckBox = new JCheckBox("Colour Code");
 
     private File currentFile = null;
 
-    private JRadioButton destButton = new JRadioButton("Dest");
+    private final JRadioButton destButton = new JRadioButton("Dest");
 
     private JFileChooser fc = new JFileChooser();
 
-    private JButton fileOpenButton = new JButton("Open");
+    private final JButton fileOpenButton = new JButton("Open");
 
-    private JMenuItem fileOpenMenu;
+    private final JMenuItem fileOpenMenu;
 
     private VP8Frame frame;
 
-    JToolBar infoBar = new JToolBar();
+    final JToolBar infoBar = new JToolBar();
 
-    JTextArea infoText = new JTextArea();
+    final JTextArea infoText = new JTextArea();
 
     private JPanel jp;
 
@@ -98,43 +101,43 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 
     private IVFFile ivfFile;
 
-    private JCheckBox mBCheckBox = new JCheckBox("MB");
+    private final JCheckBox mBCheckBox = new JCheckBox("MB");
 
-    JMenuBar menuBar;
+    final JMenuBar menuBar;
 
-    private JButton nextButton = new JButton("next");
+    private final JButton nextButton = new JButton("next");
 
-    private VP8Inspector panel;
+    private final VP8Inspector panel;
 
     private BufferedImage predict;
 
-    private JRadioButton predictButton = new JRadioButton("Predict");
+    private final JRadioButton predictButton = new JRadioButton("Predict");
 
-    private JButton prevButton = new JButton("prev");
+    private final JButton prevButton = new JButton("prev");
 
     private Point prevP;
 
-    JProgressBar progressBar;
+    final JProgressBar progressBar;
 
     private BufferedImage residual;
 
-    private JRadioButton residualButton = new JRadioButton("Residual");
+    private final JRadioButton residualButton = new JRadioButton("Residual");
 
-    private JRadioButton rgbButton = new JRadioButton("RGB");
+    private final JRadioButton rgbButton = new JRadioButton("RGB");
 
-    private JCheckBox sBCheckBox = new JCheckBox("SB");
+    private final JCheckBox sBCheckBox = new JCheckBox("SB");
 
     private float scale = 1.0f;
 
-    private JSlider slider = new JSlider();
+    private final JSlider slider = new JSlider();
 
-    private JScrollPane sp;
+    private final JScrollPane sp;
 
-    JToolBar toolBar;
+    final JToolBar toolBar;
 
     private BufferedImage ub;
 
-    private JRadioButton uButton = new JRadioButton("U");
+    private final JRadioButton uButton = new JRadioButton("U");
 
     private BufferedImage upred;
 
@@ -142,7 +145,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 
     private BufferedImage vb;
 
-    private JRadioButton vButton = new JRadioButton("V");
+    private final JRadioButton vButton = new JRadioButton("V");
 
     private BufferedImage vpred;
 
@@ -150,7 +153,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 
     private BufferedImage yb;
 
-    private JRadioButton yButton = new JRadioButton("Y");
+    private final JRadioButton yButton = new JRadioButton("Y");
 
     private BufferedImage ypred;
 
@@ -247,6 +250,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
         this.setSize(800, 600);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         if ((e.getSource() == nextButton))
@@ -258,11 +262,13 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
             fc = new JFileChooser();
 
             fc.setFileFilter(new FileFilter() {
+                @Override
                 public boolean accept(File f) {
                     return f.isDirectory() || f.getName().toLowerCase().endsWith(".webp")
                            || f.getName().toLowerCase().endsWith(".webm") || f.getName().toLowerCase().endsWith(".ivf");
                 }
 
+                @Override
                 public String getDescription() {
                     return "WebM/IVF/WebP Files";
                 }
@@ -317,31 +323,40 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
             return false;
 
         frame.addIIOReadProgressListener(new IIOReadProgressListener() {
+            @Override
             public void imageComplete(ImageReader source) {
             }
 
+            @Override
             public void imageProgress(ImageReader source, float percentageDone) {
                 progressBar.setValue((int) percentageDone);
             }
 
+            @Override
             public void imageStarted(ImageReader source, int imageIndex) {
             }
 
+            @Override
             public void readAborted(ImageReader source) {
             }
 
+            @Override
             public void sequenceComplete(ImageReader source) {
             }
 
+            @Override
             public void sequenceStarted(ImageReader source, int minIndex) {
             }
 
+            @Override
             public void thumbnailComplete(ImageReader source) {
             }
 
+            @Override
             public void thumbnailProgress(ImageReader source, float percentageDone) {
             }
 
+            @Override
             public void thumbnailStarted(ImageReader source, int imageIndex, int thumbnailIndex) {
             }
         });
@@ -367,6 +382,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
     private void loadImageData() {
 
         new Thread() {
+            @Override
             public void run() {
                 try {
                     setTitle("VP8Inspector - " + currentFile.getName() + " (Loading...)");
@@ -403,31 +419,32 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
                         /**
                          *
                          */
+                        @Serial
                         private static final long serialVersionUID = 1L;
 
-                        private BufferedImage bi;
+                        private final BufferedImage bi;
 
-                        private BufferedImage predict;
+                        private final BufferedImage predict;
 
-                        private BufferedImage residual;
+                        private final BufferedImage residual;
 
-                        private BufferedImage ub;
+                        private final BufferedImage ub;
 
-                        private BufferedImage uPred;
+                        private final BufferedImage uPred;
 
-                        private BufferedImage uResidual;
+                        private final BufferedImage uResidual;
 
-                        private BufferedImage vb;
+                        private final BufferedImage vb;
 
-                        private BufferedImage vPred;
+                        private final BufferedImage vPred;
 
-                        private BufferedImage vResidual;
+                        private final BufferedImage vResidual;
 
-                        private BufferedImage yb;
+                        private final BufferedImage yb;
 
-                        private BufferedImage yPred;
+                        private final BufferedImage yPred;
 
-                        private BufferedImage yResidual;
+                        private final BufferedImage yResidual;
 
                         public ImagePanel(BufferedImage bi,
                                 BufferedImage yb,
@@ -456,6 +473,7 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
 
                         }
 
+                        @Override
                         public void paintComponent(Graphics g) {
                             super.paintComponent(g);
                             BufferedImage bi = this.bi;
@@ -659,9 +677,11 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
         loadImageData();
     }
 
+    @Override
     public void mouseClicked(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         if (prevP == null) {
             prevP = new Point(e.getXOnScreen(), e.getYOnScreen());
@@ -678,25 +698,31 @@ public class VP8Inspector extends JFrame implements MouseMotionListener, MouseLi
         setCursor(new Cursor(Cursor.MOVE_CURSOR));
     }
 
+    @Override
     public void mouseEntered(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseExited(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         updateInfoText(e.getPoint());
     }
 
+    @Override
     public void mousePressed(MouseEvent arg0) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent arg0) {
         prevP = null;
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         jp.repaint();
     }
 
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         jp.repaint();
         scale = scale - scale * ((e.getWheelRotation() * 0.1f));

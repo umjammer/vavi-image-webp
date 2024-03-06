@@ -18,7 +18,9 @@
 package net.sf.javavp8decoder.imageio;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
+import java.util.Properties;
 
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
@@ -27,6 +29,23 @@ import javax.imageio.stream.ImageInputStream;
 
 public class WebPImageReaderSpi extends ImageReaderSpi {
 
+    static {
+        try {
+            try (InputStream is = WebPImageReaderSpi.class.getResourceAsStream("/META-INF/maven/vavi/vavi-image-webp/pom.properties")) {
+                if (is != null) {
+                    Properties props = new Properties();
+                    props.load(is);
+                    version = props.getProperty("version", "undefined in pom.properties");
+                } else {
+                    version = System.getProperty("vavi.test.version", "undefined");
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    static final String version;
     static final String[] extraImageMetadataFormatClassNames = null;
     static final String[] extraImageMetadataFormatNames = null;
     static final String[] extraStreamMetadataFormatClassNames = null;
@@ -35,7 +54,7 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
         "image/webp"
     };
     static final String[] names = {
-        "webp"
+        "webp", "WEBP"
     };
     static final String nativeImageMetadataFormatClassName = "net.sf.javavp8decoder.imageio.WebPMetadata_0.1";
     static final String nativeImageMetadataFormatName = "net.sf.javavp8decoder.imageio.WebPMetadata_0.1";
@@ -48,8 +67,7 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
     static final boolean supportsStandardImageMetadataFormat = false;
     // Metadata formats, more information below
     static final boolean supportsStandardStreamMetadataFormat = false;
-    static final String vendorName = "javavp8decoder";
-    static final String version = "0.1";
+    static final String vendorName = "https://github.com/umjammer/vavi-image-webp";
     static final String[] writerSpiNames = {
         "net.sf.javavp8decoder.WebPImageReader"
     };
@@ -75,12 +93,12 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
               extraImageMetadataFormatClassNames);
     }
 
+    @Override
     public boolean canDecodeInput(Object input) {
-        if (!(input instanceof ImageInputStream)) {
+        if (!(input instanceof ImageInputStream stream)) {
             return false;
         }
 
-        ImageInputStream stream = (ImageInputStream) input;
         byte[] b = new byte[8];
         try {
             stream.mark();
@@ -93,10 +111,12 @@ public class WebPImageReaderSpi extends ImageReaderSpi {
         return (b[0] == (byte) 'R' && b[1] == (byte) 'I' && b[2] == (byte) 'F' && b[3] == (byte) 'F');
     }
 
+    @Override
     public ImageReader createReaderInstance(Object extension) {
         return new WebPImageReader(this);
     }
 
+    @Override
     public String getDescription(Locale locale) {
         // Localize as appropriate
         return "Description goes here";

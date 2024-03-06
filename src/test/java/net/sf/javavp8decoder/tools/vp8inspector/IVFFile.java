@@ -1,9 +1,24 @@
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package net.sf.javavp8decoder.tools.vp8inspector;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
@@ -12,7 +27,7 @@ public class IVFFile {
 
     private static final int IVF_FILE_HDR_SZ = (32);
 
-    File file;
+    final File file;
 
     FileInputStream in;
 
@@ -24,14 +39,12 @@ public class IVFFile {
             readFileHeader(in);
         }
 
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private boolean readFileHeader(FileInputStream in) throws IOException {
+    private static boolean readFileHeader(FileInputStream in) throws IOException {
         for (int x = 0; x < IVF_FILE_HDR_SZ; x++) {
             in.read();
         }
@@ -89,7 +102,7 @@ public class IVFFile {
         return frameData;
     }
 
-    private int getBitAsInt(int data, int bit) {
+    private static int getBitAsInt(int data, int bit) {
         int r = data & (1 << bit);
         if (r > 0)
             return 1;

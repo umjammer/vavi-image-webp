@@ -1,17 +1,18 @@
-/*    This file is part of javavp8decoder.
-
-    javavp8decoder is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    javavp8decoder is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of javavp8decoder.
+ *
+ * javavp8decoder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * javavp8decoder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with javavp8decoder.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.sf.javavp8decoder.vp8Decoder;
@@ -57,7 +58,7 @@ public class SubBlock {
 
     }
 
-    private SubBlock above;
+    private final SubBlock above;
 
     private int[][] dest;
 
@@ -65,13 +66,13 @@ public class SubBlock {
 
     private boolean hasNoZeroToken;
 
-    private SubBlock left;
+    private final SubBlock left;
 
-    private MacroBlock macroBlock;
+    private final MacroBlock macroBlock;
 
     private int mode;
 
-    private PLANE plane;
+    private final PLANE plane;
 
     private int[][] predict;
 
@@ -88,7 +89,7 @@ public class SubBlock {
             tokens[z] = 0;
     }
 
-    private int DCTextra(BoolDecoder bc2, int[] p) throws IOException {
+    private static int DCTextra(BoolDecoder bc2, int[] p) throws IOException {
         int v = 0;
         int offset = 0;
         do {
@@ -140,7 +141,7 @@ public class SubBlock {
             }
     }
 
-    private int decodeToken(BoolDecoder bc2, int v) throws IOException {
+    private static int decodeToken(BoolDecoder bc2, int v) throws IOException {
         int r = v;
 
         if (v == Globals.dct_cat1) {

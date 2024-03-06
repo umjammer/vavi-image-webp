@@ -75,18 +75,20 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
         }
     }
 
-    private void checkIndex(int imageIndex) {
+    private static void checkIndex(int imageIndex) {
         if (imageIndex != 0) {
             throw new IndexOutOfBoundsException("bad index");
         }
     }
 
+    @Override
     public int getHeight(int imageIndex) throws IIOException {
         checkIndex(imageIndex);
         readHeader();
         return height;
     }
 
+    @Override
     public IIOMetadata getImageMetadata(int imageIndex) throws IIOException {
         if (imageIndex != 0) {
             throw new IndexOutOfBoundsException("imageIndex != 0!");
@@ -95,6 +97,7 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
         return metadata;
     }
 
+    @Override
     public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex) throws IIOException {
         checkIndex(imageIndex);
         readHeader();
@@ -114,30 +117,37 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
         return l.iterator();
     }
 
+    @Override
     public int getNumImages(boolean allowSearch) throws IIOException {
         return 1; // format can only encode a single image
     }
 
+    @Override
     public IIOMetadata getStreamMetadata() throws IIOException {
         return null;
     }
 
+    @Override
     public int getWidth(int imageIndex) throws IIOException {
         checkIndex(imageIndex); // must throw an exception if != 0
         readHeader();
         return width;
     }
 
+    @Override
     public void imageComplete(ImageReader source) {
     }
 
+    @Override
     public void imageProgress(ImageReader source, float percentageDone) {
         processImageProgress(percentageDone);
     }
 
+    @Override
     public void imageStarted(ImageReader source, int imageIndex) {
     }
 
+    @Override
     public BufferedImage read(int imageIndex, ImageReadParam param) throws IIOException {
         super.processImageStarted(0);
         readMetadata(); // Stream is positioned at start of image data
@@ -153,6 +163,7 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
         return dst;
     }
 
+    @Override
     public void readAborted(ImageReader source) {
     }
 
@@ -234,34 +245,42 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
         this.metadata = new WebPMetadata();
     }
 
+    @Override
     public void sequenceComplete(ImageReader source) {
     }
 
+    @Override
     public void sequenceStarted(ImageReader source, int minIndex) {
     }
 
+    @Override
     public void setInput(Object input) {
         super.setInput(input);
         _setInput(input);
     }
 
+    @Override
     public void setInput(Object input, boolean isStreamable) {
         super.setInput(input, isStreamable);
         _setInput(input);
 
     }
 
+    @Override
     public void setInput(Object input, boolean seekForwardOnly, boolean ignoreMetadata) {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
         _setInput(input);
     }
 
+    @Override
     public void thumbnailComplete(ImageReader source) {
     }
 
+    @Override
     public void thumbnailProgress(ImageReader source, float percentageDone) {
     }
 
+    @Override
     public void thumbnailStarted(ImageReader source, int imageIndex, int thumbnailIndex) {
     }
 }
