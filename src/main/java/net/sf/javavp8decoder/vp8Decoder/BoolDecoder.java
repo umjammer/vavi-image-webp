@@ -23,6 +23,7 @@ import javax.imageio.stream.ImageInputStream;
 
 
 public class BoolDecoder {
+
     /** # of bits shifted out of value, at most 7 */
     int bit_count;
 
@@ -116,13 +117,13 @@ public class BoolDecoder {
      * @param p corresponding interior node probabilities
      */
     int readTree(int[] t, int[] p) throws IOException {
-        int i = 0; /* begin at root */
+        int i = 0; // begin at root
 
-        /* Descend tree until leaf is reached */
+        // Descend tree until leaf is reached
         while ((i = t[i + readBool(p[i >> 1])]) > 0) {
         }
-        return -i; /* return value is negation of nonpositive index */
 
+        return -i; // return value is negation of nonpositive index
     }
 
     /**
@@ -130,13 +131,13 @@ public class BoolDecoder {
      * @param p corresponding interior node probabilities
      */
     int readTreeSkip(int[] t, int[] p, int skip_branches) throws IOException {
-        int i = skip_branches * 2; /* begin at root */
+        int i = skip_branches * 2; // begin at root
 
-        /* Descend tree until leaf is reached */
+        // Descend tree until leaf is reached
         while ((i = t[i + readBool(p[i >> 1])]) > 0) {
         }
-        return -i; /* return value is negation of nonpositive index */
 
+        return -i; // return value is negation of nonpositive index
     }
 
     public void seek() throws IOException {

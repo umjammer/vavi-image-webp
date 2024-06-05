@@ -34,7 +34,7 @@ public class SegmentQuants {
                 ret.v = -ret.v;
         }
 
-        /* Trigger a quantizer update if the delta-q value has changed */
+        // Trigger a quantizer update if the delta-q value has changed
         if (ret.v != prev)
             ret.update = true;
 
@@ -89,7 +89,6 @@ public class SegmentQuants {
             s.setY2ac_delta_q(y2ac_delta_q);
             s.setUvdc_delta_q(uvdc_delta_q);
             s.setUvac_delta_q(uvac_delta_q);
-
         }
     }
 

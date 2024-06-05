@@ -24,6 +24,7 @@ import javax.imageio.stream.ImageInputStream;
 
 
 public class VP8Decoder {
+
     private int[][][][] coefProbs;
 
     VP8Frame f;
@@ -122,7 +123,6 @@ public class VP8Decoder {
                 for (int x = 0; x < f.getWidth(); x++) {
                     out.write(yData[x][y]);
                 }
-
             }
             for (int y = 0; y < (f.getHeight() + 1) / 2; y++)
                 for (int x = 0; x < (f.getWidth() + 1) / 2; x++) {

@@ -17,12 +17,15 @@
 
 package net.sf.javavp8decoder.vp8Decoder;
 
-import java.util.logging.Logger;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+import static java.lang.System.getLogger;
 
 
 public class LoopFilter {
 
-    private static final Logger logger = Logger.getLogger(LoopFilter.class.getName());
+    private static final Logger logger = getLogger(LoopFilter.class.getName());
 
     private static int abs(int v) {
         return v < 0 ? -v : v;
@@ -150,7 +153,7 @@ public class LoopFilter {
         for (int y = 0; y < frame.getMacroBlockRows(); y++) {
             frame.fireLFProgressUpdate((100.0f * ((float) (y + 1) / (float) (frame.getMacroBlockRows()))));
             for (int x = 0; x < frame.getMacroBlockCols(); x++) {
-                logger.finer("x: "+x+" y: "+y);
+                logger.log(Level.TRACE, "x: "+x+" y: "+y);
                 MacroBlock rmb = frame.getMacroBlock(x, y);
                 MacroBlock bmb = frame.getMacroBlock(x, y);
 
@@ -184,7 +187,7 @@ public class LoopFilter {
                             for (int a = 0; a < 4; a++) {
                                 Segment seg = getSegH(rsb, lsb, a);
                                 //MBfilter(hev_threshold, interior_limit, mbedge_limit, seg);
-                                //logger.finer(mbedge_limit);
+                                //logger.log(Level.TRACE, mbedge_limit);
                                 simple_segment(mbedge_limit, seg);
                                 setSegH(rsb, lsb, seg, a);
                             }
@@ -199,10 +202,10 @@ public class LoopFilter {
                                 SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a - 1, b);
                                 SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a, b);
                                 for (int c = 0; c < 4; c++) {
-                                    logger.finer("sbleft a:" + a + " b:" + b + " c:" + c);
+                                    logger.log(Level.TRACE, "sbleft a:" + a + " b:" + b + " c:" + c);
                                     Segment seg = getSegH(rsb, lsb, c);
                                     simple_segment(sub_bedge_limit, seg);
-                                    //logger.finer(sub_bedge_limit);
+                                    //logger.log(Level.TRACE, sub_bedge_limit);
                                     //subblock_filter(hev_threshold,interior_limit, sub_bedge_limit, seg);
                                     setSegH(rsb, lsb, seg, c);
                                 }
@@ -219,7 +222,7 @@ public class LoopFilter {
                             for (int a = 0; a < 4; a++) {
                                 Segment seg = getSegV(bsb, tsb, a);
                                 simple_segment(mbedge_limit, seg);
-                                //logger.finer(mbedge_limit);
+                                //logger.log(Level.TRACE, mbedge_limit);
                                 //MBfilter(hev_threshold, interior_limit, mbedge_limit, seg);
                                 setSegV(bsb, tsb, seg, a);
                             }
@@ -233,10 +236,10 @@ public class LoopFilter {
                                 SubBlock tsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a - 1);
                                 SubBlock bsb = bmb.getSubBlock(SubBlock.PLANE.Y1, b, a);
                                 for (int c = 0; c < 4; c++) {
-                                    logger.finer("sbtop");
+                                    logger.log(Level.TRACE, "sbtop");
                                     Segment seg = getSegV(bsb, tsb, c);
                                     simple_segment(sub_bedge_limit, seg);
-                                    //logger.finer(sub_bedge_limit);
+                                    //logger.log(Level.TRACE, sub_bedge_limit);
                                     //subblock_filter(hev_threshold,interior_limit,sub_bedge_limit, seg);
                                     setSegV(bsb, tsb, seg, c);
                                 }
@@ -331,7 +334,7 @@ public class LoopFilter {
                             SubBlock tsbV = tmb.getSubBlock(SubBlock.PLANE.V, b, 1);
                             SubBlock bsbV = bmb.getSubBlock(SubBlock.PLANE.V, b, 0);
                             for (int a = 0; a < 4; a++) {
-                                logger.finer("l");
+                                logger.log(Level.TRACE, "l");
                                 Segment seg = getSegV(bsbU, tsbU, a);
                                 MBfilter(hev_threshold, interior_limit, mbedge_limit, seg);
                                 setSegV(bsbU, tsbU, seg, a);
@@ -425,7 +428,7 @@ public class LoopFilter {
                                 SubBlock lsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a - 1, b);
                                 SubBlock rsb = rmb.getSubBlock(SubBlock.PLANE.Y1, a, b);
                                 for (int c = 0; c < 4; c++) {
-                                    logger.finer("sbleft a:"+a+" b:"+b+" c:"+c);
+                                    logger.log(Level.TRACE, "sbleft a:"+a+" b:"+b+" c:"+c);
                                     Segment seg = getSegH(rsb, lsb, c);
                                     subblock_filter(hev_threshold, interior_limit, sub_bedge_limit, seg);
                                     setSegH(rsb, lsb, seg, c);
@@ -490,7 +493,7 @@ public class LoopFilter {
                 seg.P0 = s2u(p0 + a);
                 // Next two are adjusted by 2/7 the edge difference
                 a = (18 * w + 63) >> 7;
-                logger.finer("a: "+a);
+                logger.log(Level.TRACE, "a: "+a);
                 seg.Q1 = s2u(q1 - a);
                 seg.P1 = s2u(p1 + a);
                 // Last two are adjusted by 1/7 the edge difference

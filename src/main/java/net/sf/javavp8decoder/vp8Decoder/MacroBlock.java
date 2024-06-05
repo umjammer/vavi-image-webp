@@ -18,12 +18,15 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+import static java.lang.System.getLogger;
 
 
 public class MacroBlock {
 
-    private static final Logger logger = Logger.getLogger(MacroBlock.class.getName());
+    private static final Logger logger = getLogger(MacroBlock.class.getName());
 
     private int filterLevel;
 
@@ -244,12 +247,12 @@ public class MacroBlock {
     }
 
     public String getDebugString() {
-        return " YMode: " + Globals.getModeAsString(yMode)
-         + "\n UVMode: " + Globals.getModeAsString(uvMode)
-         + "\n SegmentID: " + segmentId
-         + "\n Filter Level: " + filterLevel
-         + "\n UV Filter Level: " + uVFilterLevel
-         + "\n Skip Coeff: " + skipCoeff;
+        return " YMode: " + Globals.getModeAsString(yMode) +
+                "\n UVMode: " + Globals.getModeAsString(uvMode) +
+                "\n SegmentID: " + segmentId +
+                "\n Filter Level: " + filterLevel +
+                "\n UV Filter Level: " + uVFilterLevel +
+                "\n Skip Coeff: " + skipCoeff;
     }
 
     public int getFilterLevel() {
@@ -395,7 +398,7 @@ public class MacroBlock {
 
         switch (this.uvMode) {
         case Globals.DC_PRED: {
-            logger.finer("UV DC_PRED");
+            logger.log(Level.TRACE, "UV DC_PRED");
 
             boolean up_available = false;
             boolean left_available = false;
@@ -464,7 +467,7 @@ public class MacroBlock {
             break;
         }
         case Globals.V_PRED: {
-            logger.finer("UV V_PRED");
+            logger.log(Level.TRACE, "UV V_PRED");
 
             SubBlock[] aboveUSb = new SubBlock[2];
             SubBlock[] aboveVSb = new SubBlock[2];
@@ -491,7 +494,7 @@ public class MacroBlock {
             break;
         }
         case Globals.H_PRED: {
-            logger.finer("UV H_PRED");
+            logger.log(Level.TRACE, "UV H_PRED");
 
             SubBlock[] leftUSb = new SubBlock[2];
             SubBlock[] leftVSb = new SubBlock[2];
@@ -519,7 +522,7 @@ public class MacroBlock {
         }
         case Globals.TM_PRED: {
             // TODO:
-            logger.finer("UV TM_PRED MB");
+            logger.log(Level.TRACE, "UV TM_PRED MB");
             MacroBlock ALMb = frame.getMacroBlock(x - 1, y - 1);
             SubBlock ALUSb = ALMb.getUSubBlock(1, 1);
             int alu = ALUSb.getDest()[3][3];
@@ -552,7 +555,6 @@ public class MacroBlock {
 
                         }
                     }
-
                 }
             }
 
@@ -570,7 +572,7 @@ public class MacroBlock {
 
         switch (this.yMode) {
         case Globals.DC_PRED:
-            logger.finer("DC_PRED");
+            logger.log(Level.TRACE, "DC_PRED");
             boolean up_available = false;
             boolean left_available = false;
 
@@ -623,7 +625,7 @@ public class MacroBlock {
 
             break;
         case Globals.V_PRED:
-            logger.finer("V_PRED");
+            logger.log(Level.TRACE, "V_PRED");
 
             SubBlock[] aboveYSb = new SubBlock[4];
             for (int x = 0; x < 4; x++)
@@ -638,14 +640,13 @@ public class MacroBlock {
                             block[i][j] = aboveYSb[x].getPredict(Globals.B_VE_PRED, false)[i][3];
                         }
                     sb.setPredict(block);
-
                 }
             }
 
             break;
 
         case Globals.H_PRED:
-            logger.finer("H_PRED");
+            logger.log(Level.TRACE, "H_PRED");
 
             SubBlock[] leftYSb = new SubBlock[4];
             for (int x = 0; x < 4; x++)
@@ -668,7 +669,7 @@ public class MacroBlock {
 
             break;
         case Globals.TM_PRED:
-            logger.finer("TM_PRED MB");
+            logger.log(Level.TRACE, "TM_PRED MB");
             MacroBlock ALMb = frame.getMacroBlock(x - 1, y - 1);
             SubBlock ALSb = ALMb.getYSubBlock(3, 3);
             int al = ALSb.getDest()[3][3];
@@ -690,10 +691,8 @@ public class MacroBlock {
                             int pred = leftYSb[b].getDest()[3][a] + aboveYSb[d].getDest()[c][3] - al;
 
                             ySubBlocks[d][b].setPixel(c, a, Globals.clamp(pred, 255));
-
                         }
                     }
-
                 }
             }
 
@@ -721,7 +720,6 @@ public class MacroBlock {
                 SubBlock sb = vSubBlocks[i][j];
                 sb.reconstruct();
             }
-
     }
 
     public void setFilterLevel(int value) {

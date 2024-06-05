@@ -18,6 +18,7 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 public class DeltaQ {
+
     public boolean update = false;
 
     public int v = 0;

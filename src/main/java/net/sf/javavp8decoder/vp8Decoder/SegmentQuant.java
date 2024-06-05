@@ -18,6 +18,7 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 public class SegmentQuant {
+
     private int filterStrength;
 
     private int Qindex;

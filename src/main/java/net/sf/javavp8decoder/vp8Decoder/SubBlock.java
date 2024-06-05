@@ -18,12 +18,15 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+import static java.lang.System.getLogger;
 
 
 public class SubBlock {
 
-    private static final Logger logger = Logger.getLogger(SubBlock.class.getName());
+    private static final Logger logger = getLogger(SubBlock.class.getName());
 
     public enum PLANE {
         U,
@@ -55,7 +58,6 @@ public class SubBlock {
             return 2;
         }
         return -1;
-
     }
 
     private final SubBlock above;
@@ -188,7 +190,6 @@ public class SubBlock {
 
             int inputValue = sb.getTokens()[i];
             adjustedValues[i] = inputValue * QValue;
-
         }
 
         if (Dc != null)
@@ -196,7 +197,6 @@ public class SubBlock {
 
         int[][] diff = IDCT.idct4x4llm(adjustedValues);
         sb.setDiff(diff);
-
     }
 
     public void drawDebug() {
@@ -210,7 +210,6 @@ public class SubBlock {
             dest[0][2] = 128;
             dest[0][3] = 128;
         }
-
     }
 
     public void drawDebugH() {
@@ -220,7 +219,6 @@ public class SubBlock {
             dest[2][0] = 0;
             dest[3][0] = 0;
         }
-
     }
 
     public void drawDebugV() {
@@ -371,7 +369,7 @@ public class SubBlock {
         int[] pp;
         switch (sb.getMode()) {
         case Globals.B_DC_PRED:
-            logger.finer("B_DC_PRED");
+            logger.log(Level.TRACE, "B_DC_PRED");
             int expected_dc = 0;
 
             for (int i = 0; i < 4; i++) {
@@ -387,7 +385,7 @@ public class SubBlock {
             break;
         case Globals.B_TM_PRED:
 
-            logger.finer("B_TM_PRED");
+            logger.log(Level.TRACE, "B_TM_PRED");
 
             // prediction similar to true_motion prediction
 
@@ -406,7 +404,7 @@ public class SubBlock {
             }
             break;
         case Globals.B_VE_PRED:
-            logger.finer("B_VE_PRED");
+            logger.log(Level.TRACE, "B_VE_PRED");
 
             int[] ap = new int[4];
             ap[0] = (al + 2 * above[0] + above[1] + 2) >> 2;
@@ -423,7 +421,7 @@ public class SubBlock {
             }
             break;
         case Globals.B_HE_PRED:
-            logger.finer("B_HE_PRED");
+            logger.log(Level.TRACE, "B_HE_PRED");
 
             int[] lp = new int[4];
             lp[0] = (al + 2 * left[0] + left[1] + 2) >> 2;
@@ -438,7 +436,7 @@ public class SubBlock {
             }
             break;
         case Globals.B_LD_PRED:
-            logger.finer("B_LD_PRED");
+            logger.log(Level.TRACE, "B_LD_PRED");
             p[0][0] = (above[0] + above[1] * 2 + above[2] + 2) >> 2;
             p[1][0] = p[0][1] = (above[1] + above[2] * 2 + above[3] + 2) >> 2;
             p[2][0] = p[1][1] = p[0][2] = (above[2] + above[3] * 2 + ar[0] + 2) >> 2;
@@ -449,7 +447,7 @@ public class SubBlock {
 
             break;
         case Globals.B_RD_PRED:
-            logger.finer("B_RD_PRED");
+            logger.log(Level.TRACE, "B_RD_PRED");
             pp = new int[9];
 
             pp[0] = left[3];
@@ -472,7 +470,7 @@ public class SubBlock {
             break;
 
         case Globals.B_VR_PRED:
-            logger.finer("B_VR_PRED");
+            logger.log(Level.TRACE, "B_VR_PRED");
             pp = new int[9];
 
             pp[0] = left[3];
@@ -498,7 +496,7 @@ public class SubBlock {
 
             break;
         case Globals.B_VL_PRED:
-            logger.finer("B_VL_PRED");
+            logger.log(Level.TRACE, "B_VL_PRED");
 
             p[0][0] = (above[0] + above[1] + 1) >> 1;
             p[0][1] = (above[0] + above[1] * 2 + above[2] + 2) >> 2;
@@ -513,7 +511,7 @@ public class SubBlock {
 
             break;
         case Globals.B_HD_PRED:
-            logger.finer("B_HD_PRED");
+            logger.log(Level.TRACE, "B_HD_PRED");
             pp = new int[9];
             pp[0] = left[3];
             pp[1] = left[2];
@@ -537,7 +535,7 @@ public class SubBlock {
             p[3][0] = (pp[5] + pp[6] * 2 + pp[7] + 2) >> 2;
             break;
         case Globals.B_HU_PRED:
-            logger.finer("B_HU_PRED");
+            logger.log(Level.TRACE, "B_HU_PRED");
 
             p[0][0] = (left[0] + left[1] + 1) >> 1;
             p[1][0] = (left[0] + left[1] * 2 + left[2] + 2) >> 2;
@@ -575,9 +573,7 @@ public class SubBlock {
                     a = 255;
 
                 dest[r][c] = a;
-
             }
-
         }
 
         sb.setDest(dest);
@@ -609,7 +605,6 @@ public class SubBlock {
 
     public void setPredict(int[][] predict) {
         this.predict = predict;
-
     }
 
     public String toString() {
@@ -620,5 +615,4 @@ public class SubBlock {
 
         return r.toString();
     }
-
 }
