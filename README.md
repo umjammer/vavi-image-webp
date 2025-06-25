@@ -6,13 +6,13 @@
 
 # vavi-image-webp
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/0/00/WebP_logo_2010.png" width="160" /><sub>© <a href="https://developers.google.com/speed/webp">Google</a></sub>
+<img alt="webp logo" src="https://upload.wikimedia.org/wikipedia/commons/0/00/WebP_logo_2010.png" width="100" /> <sub>© <a href="https://developers.google.com/speed/webp">Google</a></sub>
 
 An implementation of the VP8 image/video codec in _**pure Java**_.
 
 ## Install
 
-https://jitpack.io/#umjammer/vavi-image-webp
+ * [maven](https://jitpack.io/#umjammer/vavi-image-webp)
 
 ## Usage
 
@@ -23,3 +23,5 @@ https://jitpack.io/#umjammer/vavi-image-webp
 ## Reference
 
  * [Original](https://sourceforge.net/projects/javavp8decoder/)
+
+## TODO
