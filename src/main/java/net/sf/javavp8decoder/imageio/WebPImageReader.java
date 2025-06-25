@@ -21,10 +21,10 @@ import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageReadParam;
@@ -37,10 +37,12 @@ import javax.imageio.stream.ImageInputStream;
 
 import net.sf.javavp8decoder.vp8Decoder.VP8Frame;
 
+import static java.lang.System.getLogger;
+
 
 public class WebPImageReader extends ImageReader implements IIOReadProgressListener {
 
-    private static final Logger logger = Logger.getLogger(WebPImageReader.class.getName());
+    private static final Logger logger = getLogger(WebPImageReader.class.getName());
 
     // Constants enumerating the values of colorType
     static final int COLOR_TYPE_GRAY = 0;
@@ -224,14 +226,10 @@ public class WebPImageReader extends ImageReader implements IIOReadProgressListe
                 }
                 decoder.decodeFrame(false);
             } catch (IOException e) {
-                if (logger.isLoggable(Level.FINE)) {
-                    e.printStackTrace();
-                }
+                logger.log(Level.DEBUG, e.getMessage(), e);
             }
         } catch (IOException e) {
-            if (logger.isLoggable(Level.FINE)) {
-                e.printStackTrace();
-            }
+            logger.log(Level.DEBUG, e.getMessage(), e);
         }
         this.width = decoder.getWidth();
         this.height = decoder.getHeight();

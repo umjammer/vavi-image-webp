@@ -20,16 +20,22 @@ package net.sf.javavp8decoder.vp8Decoder;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Logger;
 
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.stream.ImageInputStream;
 
+import static java.lang.System.getLogger;
+
 
 public class VP8Frame {
+
+    private static final Logger logger = getLogger(VP8Frame.class.getName());
+
     private static final int BLOCK_TYPES = 4;
 
     private static final int COEF_BANDS = 8;
@@ -61,8 +67,6 @@ public class VP8Frame {
     private int frameType;
 
     private int height;
-
-    private static final Logger logger = Logger.getLogger(VP8Frame.class.getName());
 
     private int macroBlockCols;
 
@@ -133,10 +137,8 @@ public class VP8Frame {
         for (int x = 0; x < macroBlockCols + 2; x++) {
             for (int y = 0; y < macroBlockRows + 2; y++) {
                 macroBlocks[x][y] = new MacroBlock(x, y, debug);
-
             }
         }
-
     }
 
     public boolean decodeFrame(boolean debug) throws IOException {
@@ -146,17 +148,17 @@ public class VP8Frame {
         int c;
         frame.seek(offset++);
         c = frame.readUnsignedByte();
-        logger.fine("frame.length: " + frame.length());
+        logger.log(Level.DEBUG, "frame.length: " + frame.length());
         frameType = getBitAsInt(c, 0);
-        logger.fine("Frame type: " + frameType);
+        logger.log(Level.DEBUG, "Frame type: " + frameType);
         if (frameType != 0)
             return false;
         int versionNumber = getBitAsInt(c, 1) << 1;
 
         versionNumber += getBitAsInt(c, 2) << 1;
         versionNumber += getBitAsInt(c, 3);
-        logger.fine("Version Number: " + versionNumber);
-        logger.fine("show_frame: " + getBit(c, 4));
+        logger.log(Level.DEBUG, "Version Number: " + versionNumber);
+        logger.log(Level.DEBUG, "show_frame: " + getBit(c, 4));
 
         int firstPartitionLengthInBytes;
         firstPartitionLengthInBytes = getBitAsInt(c, 5) << 0;
@@ -168,17 +170,17 @@ public class VP8Frame {
         frame.seek(offset++);
         c = frame.readUnsignedByte();
         firstPartitionLengthInBytes += c << 11;
-        logger.fine("first_partition_length_in_bytes: " + firstPartitionLengthInBytes);
+        logger.log(Level.DEBUG, "first_partition_length_in_bytes: " + firstPartitionLengthInBytes);
 
         frame.seek(offset++);
         c = frame.readUnsignedByte();
-        logger.fine("StartCode: " + c);
+        logger.log(Level.DEBUG, "StartCode: " + c);
         frame.seek(offset++);
         c = frame.readUnsignedByte();
-        logger.fine(" " + c);
+        logger.log(Level.DEBUG, " " + c);
         frame.seek(offset++);
         c = frame.readUnsignedByte();
-        logger.fine(" " + c);
+        logger.log(Level.DEBUG, " " + c);
 
         frame.seek(offset++);
         c = frame.readUnsignedByte();
@@ -187,8 +189,8 @@ public class VP8Frame {
         c = frame.readUnsignedByte();
         hBytes += c << 8;
         width = (hBytes & 0x3fff);
-        logger.fine("width: " + width);
-        logger.fine("hScale: " + (hBytes >> 14));
+        logger.log(Level.DEBUG, "width: " + width);
+        logger.log(Level.DEBUG, "hScale: " + (hBytes >> 14));
 
         frame.seek(offset++);
         c = frame.readUnsignedByte();
@@ -197,8 +199,8 @@ public class VP8Frame {
         c = frame.readUnsignedByte();
         vBytes += c << 8;
         height = (vBytes & 0x3fff);
-        logger.fine("height: " + height);
-        logger.fine("vScale: " + (vBytes >> 14));
+        logger.log(Level.DEBUG, "height: " + height);
+        logger.log(Level.DEBUG, "vScale: " + (vBytes >> 14));
         int tWidth = width;
         int tHeight = height;
         if ((tWidth & 0xf) != 0)
@@ -208,8 +210,8 @@ public class VP8Frame {
             tHeight += 16 - (tHeight & 0xf);
         macroBlockRows = tHeight >> 4;
         macroBlockCols = tWidth >> 4;
-        logger.fine("macroBlockCols: " + macroBlockCols);
-        logger.fine("macroBlockRows: " + macroBlockRows);
+        logger.log(Level.DEBUG, "macroBlockCols: " + macroBlockCols);
+        logger.log(Level.DEBUG, "macroBlockRows: " + macroBlockRows);
 
         createMacroBlocks();
 
@@ -217,21 +219,20 @@ public class VP8Frame {
 
         if (frameType == 0) {
             int clr_type = bc.readBit();
-            logger.fine("clr_type: " + clr_type);
-            logger.fine("" + bc);
+            logger.log(Level.DEBUG, "clr_type: " + clr_type);
+            logger.log(Level.DEBUG, "" + bc);
 
             int clamp_type = bc.readBit();
-            logger.fine("clamp_type: " + clamp_type);
-
+            logger.log(Level.DEBUG, "clamp_type: " + clamp_type);
         }
         segmentationIsEnabled = bc.readBit();
-        logger.fine("segmentation_enabled: " + segmentationIsEnabled);
+        logger.log(Level.DEBUG, "segmentation_enabled: " + segmentationIsEnabled);
         if (segmentationIsEnabled > 0) {
-            logger.fine("TODO: ");
+            logger.log(Level.DEBUG, "TODO: ");
             updateMacroBlockSegmentationMap = bc.readBit();
             updateMacroBlockSegmentatonData = bc.readBit();
-            logger.fine("update_mb_segmentaton_map: " + updateMacroBlockSegmentationMap);
-            logger.fine("update_mb_segmentaton_data: " + updateMacroBlockSegmentatonData);
+            logger.log(Level.DEBUG, "update_mb_segmentaton_map: " + updateMacroBlockSegmentationMap);
+            logger.log(Level.DEBUG, "update_mb_segmentaton_data: " + updateMacroBlockSegmentatonData);
             if (updateMacroBlockSegmentatonData > 0) {
 
                 macroBlockSegementAbsoluteDelta = bc.readBit();
@@ -269,18 +270,18 @@ public class VP8Frame {
             }
         }
         simpleFilter = bc.readBit();
-        logger.fine("simpleFilter: " + simpleFilter);
+        logger.log(Level.DEBUG, "simpleFilter: " + simpleFilter);
         filterLevel = bc.readLiteral(6);
 
-        logger.fine("filter_level: " + filterLevel);
+        logger.log(Level.DEBUG, "filter_level: " + filterLevel);
         sharpnessLevel = bc.readLiteral(3);
-        logger.fine("sharpness_level: " + sharpnessLevel);
+        logger.log(Level.DEBUG, "sharpness_level: " + sharpnessLevel);
         modeRefLoopFilterDeltaEnabled = bc.readBit();
-        logger.fine("mode_ref_lf_delta_enabled: " + modeRefLoopFilterDeltaEnabled);
+        logger.log(Level.DEBUG, "mode_ref_lf_delta_enabled: " + modeRefLoopFilterDeltaEnabled);
         if (modeRefLoopFilterDeltaEnabled > 0) {
             // Do the deltas need to be updated
             modeRefLoopFilterDeltaUpdate = bc.readBit();
-            logger.fine("mode_ref_lf_delta_update: " + modeRefLoopFilterDeltaUpdate);
+            logger.log(Level.DEBUG, "mode_ref_lf_delta_update: " + modeRefLoopFilterDeltaUpdate);
             if (modeRefLoopFilterDeltaUpdate > 0) {
                 for (int i = 0; i < MAX_REF_LF_DELTAS; i++) {
 
@@ -288,7 +289,7 @@ public class VP8Frame {
                         refLoopFilterDeltas[i] = bc.readLiteral(6);
                         if (bc.readBit() > 0) // Apply sign
                             refLoopFilterDeltas[i] = refLoopFilterDeltas[i] * -1;
-                        logger.fine("ref_lf_deltas[i]: " + refLoopFilterDeltas[i]);
+                        logger.log(Level.DEBUG, "ref_lf_deltas[i]: " + refLoopFilterDeltas[i]);
                     }
                 }
                 for (int i = 0; i < MAX_MODE_LF_DELTAS; i++) {
@@ -297,14 +298,14 @@ public class VP8Frame {
                         modeLoopFilterDeltas[i] = bc.readLiteral(6);
                         if (bc.readBit() > 0) // Apply sign
                             modeLoopFilterDeltas[i] = modeLoopFilterDeltas[i] * -1;
-                        logger.fine("mode_lf_deltas[i]: " + modeLoopFilterDeltas[i]);
+                        logger.log(Level.DEBUG, "mode_lf_deltas[i]: " + modeLoopFilterDeltas[i]);
                     }
                 }
             }
         }
 
         filterType = (filterLevel == 0) ? 0 : (simpleFilter > 0) ? 1 : 2;
-        logger.fine("filter_type: " + filterType);
+        logger.log(Level.DEBUG, "filter_type: " + filterType);
 
         setupTokenDecoder(bc, firstPartitionLengthInBytes, offset);
         bc.seek();
@@ -316,11 +317,11 @@ public class VP8Frame {
         // For all non key frames the GF and ARF refresh flags and sign bias
         // flags must be set explicitly.
         if (frameType != 0) {
-            logger.severe("TODO:");
+            logger.log(Level.ERROR, "TODO:");
             throw new IllegalArgumentException("bad input: not intra");
         }
         refreshEntropyProbs = bc.readBit();
-        logger.fine("refresh_entropy_probs: " + refreshEntropyProbs);
+        logger.log(Level.DEBUG, "refresh_entropy_probs: " + refreshEntropyProbs);
         if (refreshEntropyProbs > 0) {
 
         }
@@ -329,7 +330,7 @@ public class VP8Frame {
             refreshLastFrame = 1;
         else
             refreshLastFrame = bc.readBit();
-        logger.fine("refresh_last_frame: " + refreshLastFrame);
+        logger.log(Level.DEBUG, "refresh_last_frame: " + refreshLastFrame);
 
         for (int i = 0; i < BLOCK_TYPES; i++)
             for (int j = 0; j < COEF_BANDS; j++)
@@ -344,12 +345,12 @@ public class VP8Frame {
 
         // Read the mb_no_coeff_skip flag
         macroBlockNoCoeffSkip = bc.readBit();
-        logger.fine("mb_no_coeff_skip: " + macroBlockNoCoeffSkip);
+        logger.log(Level.DEBUG, "mb_no_coeff_skip: " + macroBlockNoCoeffSkip);
 
         if (frameType == 0) {
             readModes(bc);
         } else {
-            logger.severe("TODO:");
+            logger.log(Level.ERROR, "TODO:");
             throw new IllegalArgumentException("bad input: not intra");
         }
 
@@ -370,8 +371,8 @@ public class VP8Frame {
                     ibc = 0;
             } else
                 decodeMacroBlockRow(mb_row);
-            fireProgressUpdate(mb_row);
 
+            fireProgressUpdate(mb_row);
         }
 
         if (this.getFilterType() > 0 && this.getFilterLevel() != 0)
@@ -387,7 +388,6 @@ public class VP8Frame {
             mb.decodeMacroBlock(this);
 
             mb.dequantMacroBlock(this);
-
         }
     }
 
@@ -444,16 +444,15 @@ public class VP8Frame {
                                         .getSubBlock(SubBlock.PLANE.Y1, 3, 3)
                                         .getDest()[3][3];
                         }
+
                     r = new SubBlock(mb2, null, null, SubBlock.PLANE.Y1);
                     r.setDest(dest);
-
                 }
 
                 return r;
             }
             // not right edge or top row
             else if (y > 0 && x < 3) {
-
                 r = mb.getSubBlock(plane, x + 1, y - 1);
                 return r;
             }
@@ -475,12 +474,11 @@ public class VP8Frame {
             int x = mb.getSubblockX(sb);
 
             MacroBlock mb2 = getMacroBlock(mb.getX(), mb.getY() - 1);
-            //TODO: SPLIT
+            // TODO: SPLIT
             while (plane == SubBlock.PLANE.Y2 && mb2.getYMode() == Globals.B_PRED) {
                 mb2 = getMacroBlock(mb2.getX(), mb2.getY() - 1);
             }
             r = mb2.getBottomSubBlock(x, sb.getPlane());
-
         }
 
         return r;
@@ -852,13 +850,12 @@ public class VP8Frame {
             MacroBlock mb = sb.getMacroBlock();
             int y = mb.getSubblockY(sb);
             MacroBlock mb2 = getMacroBlock(mb.getX() - 1, mb.getY());
-            //TODO: SPLIT
+            // TODO: SPLIT
 
             while (plane == SubBlock.PLANE.Y2 && mb2.getYMode() == Globals.B_PRED)
                 mb2 = getMacroBlock(mb2.getX() - 1, mb2.getY());
 
             r = mb2.getRightSubBlock(y, sb.getPlane());
-
         }
 
         return r;
@@ -923,7 +920,6 @@ public class VP8Frame {
                         for (int d = 0; d < 4; d++) {
                             for (int c = 0; c < 4; c++) {
                                 r[(x * 8) + (a * 4) + c][(y * 8) + (b * 4) + d] = sb.getDest()[c][d];
-
                             }
                         }
                     }
@@ -944,7 +940,6 @@ public class VP8Frame {
                         for (int d = 0; d < 4; d++) {
                             for (int c = 0; c < 4; c++) {
                                 r[(x * 8) + (a * 4) + c][(y * 8) + (b * 4) + d] = sb.getDest()[c][d];
-
                             }
                         }
                     }
@@ -969,7 +964,6 @@ public class VP8Frame {
                         for (int d = 0; d < 4; d++) {
                             for (int c = 0; c < 4; c++) {
                                 r[(x * 16) + (a * 4) + c][(y * 16) + (b * 4) + d] = sb.getDest()[c][d];
-
                             }
                         }
                     }
@@ -995,10 +989,10 @@ public class VP8Frame {
             int mb_col = -1;
             while (++mb_col < macroBlockCols) {
 
-                //if (this.segmentation_enabled > 0) {
-                //    logger.fine(Level.SEVERE, "TODO:");
-                //    throw new IllegalArgumentException("bad input: segmentation_enabled()");
-                //}
+//                if (this.segmentation_enabled > 0) {
+//                    logger.log(Level.TRACE, Level.SEVERE, "TODO:");
+//                    throw new IllegalArgumentException("bad input: segmentation_enabled()");
+//                }
                 // Read the macroblock coeff skip flag if this feature is in
                 // use, else default to 0
                 MacroBlock mb = getMacroBlock(mb_col, mb_row);
@@ -1015,7 +1009,7 @@ public class VP8Frame {
                     mb.setFilterLevel(level);
                 } else {
                     mb.setFilterLevel(segmentQuants.getSegQuants()[mb.getSegmentId()].getFilterStrength());
-//                    logger.error("TODO:");
+//                    logger.log(Level.ERROR, "TODO:");
                 }
 
                 int mb_skip_coeff = 0;
@@ -1043,7 +1037,6 @@ public class VP8Frame {
                             int mode = readSubBlockMode(bc, A.getMode(), L.getMode());
 
                             sb.setMode(mode);
-
                         }
                     }
                     if (modeRefLoopFilterDeltaEnabled > 0) {
@@ -1078,7 +1071,6 @@ public class VP8Frame {
         frame.seek(l);
         int size = frame.readUnsignedByte() + (frame.readUnsignedByte() << 8) + (frame.readUnsignedByte() << 16);
         return size;
-
     }
 
     private static int readSubBlockMode(BoolDecoder bc, int A, int L) throws IOException {
@@ -1111,15 +1103,15 @@ public class VP8Frame {
         long partitionsStart = offset + first_partition_length_in_bytes;
         long partition = partitionsStart;
         multiTokenPartition = bc.readLiteral(2);
-        logger.fine("multi_token_partition: " + multiTokenPartition);
+        logger.log(Level.DEBUG, "multi_token_partition: " + multiTokenPartition);
         int num_part = 1 << multiTokenPartition;
-        logger.fine("num_part: " + num_part);
+        logger.log(Level.DEBUG, "num_part: " + num_part);
         if (num_part > 1) {
             partition += 3L * (num_part - 1);
         }
         for (int i = 0; i < num_part; i++) {
-            /* Calculate the length of this partition. The last partition size
-             * is implicit. */
+            // Calculate the length of this partition. The last partition size
+            // is implicit.
             if (i < num_part - 1) {
 
                 partitionSize = readPartitionSize(partitionsStart + (i * 3L));

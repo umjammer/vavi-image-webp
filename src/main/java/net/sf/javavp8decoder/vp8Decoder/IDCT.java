@@ -18,7 +18,9 @@
 package net.sf.javavp8decoder.vp8Decoder;
 
 public class IDCT {
-    /* IDCT implementation */
+
+    // IDCT implementation
+
     private static final int cospi8sqrt2minus1 = 20091;
 
     private static final int sinpi8sqrt2 = 35468;
@@ -83,7 +85,6 @@ public class IDCT {
         }
 
         return diff;
-
     }
 
     public static int[][] iwalsh4x4(int[] input) {
@@ -131,6 +132,5 @@ public class IDCT {
         }
 
         return diff;
-
     }
 }
